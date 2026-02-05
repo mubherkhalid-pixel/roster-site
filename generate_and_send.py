@@ -326,7 +326,7 @@ def main():
 
     # Load Excel
     data = download_excel(EXCEL_URL)
-    wb = load_workbook(filename=bytes(data), data_only=True)
+    wb = load_workbook(BytesIO(data), data_only=True)
 
     all_sections_html = ""
     now_sections_html = ""

@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Roster</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roster - Now (ظهر)</title>
   <style>
 :root{
   --primary:#6366f1;
@@ -11,11 +11,9 @@
   --secondary:#ec4899;
   --success:#10b981;
   --warn:#fde68a;
-
   --bg:#0f172a;
   --bg-light:#1e293b;
   --border:#334155;
-
   --text:#f1f5f9;
   --text-muted:#cbd5e1;
 }
@@ -26,309 +24,265 @@ body{
   background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#172554 100%);
   color:var(--text);
 }
-header{
+a{color:inherit}
+.container{max-width:1100px;margin:0 auto;padding:16px 14px 26px}
+.header{
   background:rgba(15,23,42,.78);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(148,163,184,.12);
-  padding:10px 16px;
-  position:sticky;
-  top:0;
-  z-index:10;
+  backdrop-filter: blur(18px);
+  border:1px solid rgba(148,163,184,.12);
+  border-radius:18px;
+  padding:14px 16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
-.header-inner{
-  max-width:1100px;
-  margin:0 auto;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+.header-top{
+  display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
 }
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.title{
+  display:flex;gap:10px;align-items:center;
 }
-.brand .logo{
-  width:38px;height:38px;border-radius:12px;
-  background:linear-gradient(135deg,var(--primary),#7c3aed);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 10px 26px rgba(99,102,241,.25);
-  font-weight:900;
-}
-.brand .title{
-  line-height:1.1;
-}
-.brand .title .h{
-  font-weight:900;
-  font-size:16px;
-}
-.brand .title .sub{
-  font-size:12px;
-  color:var(--text-muted);
-  margin-top:2px;
-}
-
-.nav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:10px 14px;
-  border-radius:12px;
-  border:1px solid rgba(148,163,184,.22);
-  background:rgba(255,255,255,.06);
-  color:var(--text);
-  text-decoration:none;
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 12px;border-radius:999px;
+  background:rgba(99,102,241,.16);
+  border:1px solid rgba(99,102,241,.25);
   font-weight:800;
 }
-.btn.primary{
-  background:linear-gradient(135deg,var(--primary),#7c3aed);
-  border-color:rgba(99,102,241,.55);
-}
-.btn:hover{transform:translateY(-1px)}
-main{
-  max-width:1100px;
-  margin:0 auto;
-  padding:18px 14px 30px;
-}
-.panel{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(148,163,184,.18);
-  border-radius:16px;
-  box-shadow:0 18px 60px rgba(0,0,0,.25);
-  backdrop-filter:blur(10px);
-  padding:14px;
-}
-.meta{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:12px;
-}
-.chip{
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(148,163,184,.16);
-  padding:8px 12px;
-  border-radius:999px;
-  font-size:12px;
+.sub{
+  margin-top:8px;
   color:var(--text-muted);
+  font-size:13px;
 }
-.deptCard{
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(148,163,184,.18);
-  border-radius:16px;
+.nav{
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.nav a{
+  text-decoration:none;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(30,41,59,.6);
+  border:1px solid rgba(148,163,184,.12);
+  font-weight:800;
+}
+.nav a:hover{border-color:rgba(99,102,241,.35)}
+.grid{
+  margin-top:16px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+}
+.card{
+  background:rgba(15,23,42,.72);
+  backdrop-filter: blur(16px);
+  border:1px solid rgba(148,163,184,.12);
+  border-radius:18px;
   overflow:hidden;
-  margin-top:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
 }
-.deptBar{height:5px}
-.deptHead{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:12px 14px;
+.cardBar{height:6px;background:linear-gradient(90deg,var(--primary),rgba(99,102,241,.35))}
+.cardHead{
+  padding:14px 14px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
 }
-.deptName{
-  font-size:16px;
+.cardHead h2{
+  margin:0;font-size:18px;font-weight:900;letter-spacing:-.2px;
+}
+.countPill{
+  padding:8px 12px;border-radius:999px;
+  background:rgba(16,185,129,.15);
+  border:1px solid rgba(16,185,129,.25);
   font-weight:900;
 }
-.deptCount{
-  min-width:54px;
-  text-align:center;
-  padding:6px 10px;
-  border-radius:12px;
-  background:rgba(99,102,241,.10);
-  border:1px solid rgba(99,102,241,.22);
-  color:#c7d2fe;
-}
+.groupWrap{padding:0 14px 14px}
 .groupTitle{
-  padding:8px 14px;
+  display:inline-block;
+  margin:10px 0 8px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(253,230,138,.12);
+  border:1px solid rgba(253,230,138,.18);
+  color:var(--warn);
   font-weight:900;
-  color:#e2e8f0;
-  border-top:1px solid rgba(148,163,184,.12);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
 }
 .table{
   width:100%;
-  border-collapse:collapse;
-}
-.table th,.table td{
-  padding:10px 12px;
-  border-top:1px solid rgba(148,163,184,.12);
-  font-size:13px;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border-radius:14px;
+  border:1px solid rgba(148,163,184,.14);
+  background:rgba(30,41,59,.35);
 }
 .table th{
   text-align:right;
-  color:var(--text-muted);
-  background:rgba(15,23,42,.22);
+  padding:10px 12px;
+  background:rgba(30,41,59,.55);
+  color:var(--text);
+  font-size:13px;
 }
-.table td:last-child{text-align:center;white-space:nowrap}
-.empty{
-  padding:14px;
-  text-align:center;
-  color:var(--text-muted);
+.table td{
+  padding:10px 12px;
   border-top:1px solid rgba(148,163,184,.12);
+  color:var(--text);
+  font-weight:700;
+}
+.table td:last-child{text-align:center;white-space:nowrap;font-weight:800;color:rgba(241,245,249,.92)}
+.muted{
+  color:var(--text-muted);
+  font-weight:800;
+  text-align:center;
+  padding:18px 12px;
 }
 .footer{
   margin-top:14px;
   text-align:center;
-  color:rgba(203,213,225,.75);
+  color:rgba(203,213,225,.8);
   font-size:12px;
 }
-hr.sep{
-  border:none;
-  border-top:1px solid rgba(148,163,184,.12);
-  margin:12px 0;
-}
-@media(max-width:520px){
-  .brand .title .h{font-size:14px}
-  .btn{padding:9px 12px}
+@media (min-width:900px){
+  .grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
-
-<header>
-  <div class="header-inner">
-    <div class="brand">
-      <div class="logo">📋</div>
-      <div class="title">
-        <div class="h">Roster</div>
-        <div class="sub">Duty Roster (Now: ظهر)</div>
+  <div class="container">
+    <div class="header">
+      <div class="header-top">
+        <div class="title">
+          <div class="badge">📋 جدول المناوبين</div>
+          <div class="badge" style="background:rgba(236,72,153,.14);border-color:rgba(236,72,153,.25);">
+            الشفت الحالي: ظهر
+          </div>
+          <div class="badge" style="background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.22);">
+            العدد: 11
+          </div>
+        </div>
+        <div class="nav">
+          <a href="./">الصفحة الرئيسية</a>
+          <a href="./now/">المناوب الآن</a>
+        </div>
       </div>
+      <div class="sub">تم التحديث: 2026-02-06 16:33 (مسقط)</div>
     </div>
 
-    <div class="nav">
-      <a class="btn" href="./">🏠 الصفحة الرئيسية</a>
-      <a class="btn primary" href="./now/">⏱️ المناوب الآن</a>
+    <div class="grid">
+      
+    <div class="card">
+      <div class="cardBar"></div>
+      <div class="cardHead">
+        <h2>Officers</h2>
+        <div class="countPill">الإجمالي: 0</div>
+      </div>
+      <div class="groupWrap">
+        <div class="muted">لا توجد بيانات اليوم لهذا القسم</div>
+      </div>
     </div>
-  </div>
-</header>
+    
+    <div class="card">
+      <div class="cardBar"></div>
+      <div class="cardHead">
+        <h2>Supervisors</h2>
+        <div class="countPill">الإجمالي: 1</div>
+      </div>
+      <div class="groupWrap">
+        
+      <div class="groupTitle">ظهر (1)</div>
+      <table class="table" dir="rtl">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th>الحالة / الشفت</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mohamed Al Amri - 81404</td><td>🌆 ظهر (AN13)</td></tr>
+        </tbody>
+      </table>
+    
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="cardBar"></div>
+      <div class="cardHead">
+        <h2>Load Control</h2>
+        <div class="countPill">الإجمالي: 2</div>
+      </div>
+      <div class="groupWrap">
+        
+      <div class="groupTitle">ظهر (2)</div>
+      <table class="table" dir="rtl">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th>الحالة / الشفت</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Marwan Al Difai - 82437</td><td>🌆 ظهر (AN13)</td></tr>
+<tr><td>Jaafar Al Balushi - 81258</td><td>🌆 ظهر (AN13)</td></tr>
+        </tbody>
+      </table>
+    
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="cardBar"></div>
+      <div class="cardHead">
+        <h2>Export Checker</h2>
+        <div class="countPill">الإجمالي: 5</div>
+      </div>
+      <div class="groupWrap">
+        
+      <div class="groupTitle">ظهر (5)</div>
+      <table class="table" dir="rtl">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th>الحالة / الشفت</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Marlon Esmilla - 80270</td><td>🌆 ظهر (AN13)</td></tr>
+<tr><td>Ali Yousuf Al Balushi - 990752</td><td>🌆 ظهر (AN13)</td></tr>
+<tr><td>Ali Al Farsi - 81393</td><td>🌆 ظهر (AN13)</td></tr>
+<tr><td>Mohamed Al Mamari - 82674</td><td>🌆 ظهر (AN13)</td></tr>
+<tr><td>Riyadh Al Sulti - 82424</td><td>🌆 ظهر (AN13)</td></tr>
+        </tbody>
+      </table>
+    
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="cardBar"></div>
+      <div class="cardHead">
+        <h2>Export Operators</h2>
+        <div class="countPill">الإجمالي: 3</div>
+      </div>
+      <div class="groupWrap">
+        
+      <div class="groupTitle">ظهر (3)</div>
+      <table class="table" dir="rtl">
+        <thead>
+          <tr>
+            <th>الموظف</th>
+            <th>الحالة / الشفت</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mohamed Al Amri - 81224</td><td>🌆 ظهر (AN13)</td></tr>
+<tr><td>Mohamed Al Falahi - 8762</td><td>🌆 ظهر (AN13)</td></tr>
+<tr><td>Salim Sulieman - 8722</td><td>🌆 ظهر (AN13)</td></tr>
+        </tbody>
+      </table>
+    
+      </div>
+    </div>
+    
+    </div>
 
-<main>
-  <div class="panel">
-    <div class="meta"><div class='chip'>📅 2026-02-06 (مسقط)</div><div class='chip'>⏱️ 16:31</div><div class='chip'>⏱️ المناوب الآن: ظهر</div><div class='chip'>👥 العدد الآن: 11</div></div>
-    
-    <div class="deptCard">
-      <div class="deptBar" style="background:linear-gradient(90deg,#2563eb,#2563ebaa)"></div>
-      <div class="deptHead">
-        <div class="deptName">Officers</div>
-        <div class="deptCount">0</div>
-      </div>
-      <div class='empty'>لا يوجد مناوبين الآن لهذا القسم</div>
-    </div>
-    
-    <div class="deptCard">
-      <div class="deptBar" style="background:linear-gradient(90deg,#7c3aed,#7c3aedaa)"></div>
-      <div class="deptHead">
-        <div class="deptName">Supervisors</div>
-        <div class="deptCount">1</div>
-      </div>
-      
-      <div class="groupTitle">
-        <span>ظهر</span>
-        <span style="color:rgba(203,213,225,.85);font-weight:800">1</span>
-      </div>
-      <table class="table" dir="rtl">
-        <thead>
-          <tr>
-            <th>الموظف</th>
-            <th style="text-align:center">الحالة / الشفت</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style='text-align:right'>Mohamed Al Amri - 81404</td><td>🌆 ظهر (AN13)</td></tr>
-        </tbody>
-      </table>
-    
-    </div>
-    
-    <div class="deptCard">
-      <div class="deptBar" style="background:linear-gradient(90deg,#0891b2,#0891b2aa)"></div>
-      <div class="deptHead">
-        <div class="deptName">Load Control</div>
-        <div class="deptCount">2</div>
-      </div>
-      
-      <div class="groupTitle">
-        <span>ظهر</span>
-        <span style="color:rgba(203,213,225,.85);font-weight:800">2</span>
-      </div>
-      <table class="table" dir="rtl">
-        <thead>
-          <tr>
-            <th>الموظف</th>
-            <th style="text-align:center">الحالة / الشفت</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style='text-align:right'>Marwan Al Difai - 82437</td><td>🌆 ظهر (AN13)</td></tr><tr><td style='text-align:right'>Jaafar Al Balushi - 81258</td><td>🌆 ظهر (AN13)</td></tr>
-        </tbody>
-      </table>
-    
-    </div>
-    
-    <div class="deptCard">
-      <div class="deptBar" style="background:linear-gradient(90deg,#059669,#059669aa)"></div>
-      <div class="deptHead">
-        <div class="deptName">Export Checker</div>
-        <div class="deptCount">5</div>
-      </div>
-      
-      <div class="groupTitle">
-        <span>ظهر</span>
-        <span style="color:rgba(203,213,225,.85);font-weight:800">5</span>
-      </div>
-      <table class="table" dir="rtl">
-        <thead>
-          <tr>
-            <th>الموظف</th>
-            <th style="text-align:center">الحالة / الشفت</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style='text-align:right'>Marlon Esmilla - 80270</td><td>🌆 ظهر (AN13)</td></tr><tr><td style='text-align:right'>Ali Yousuf Al Balushi - 990752</td><td>🌆 ظهر (AN13)</td></tr><tr><td style='text-align:right'>Ali Al Farsi - 81393</td><td>🌆 ظهر (AN13)</td></tr><tr><td style='text-align:right'>Mohamed Al Mamari - 82674</td><td>🌆 ظهر (AN13)</td></tr><tr><td style='text-align:right'>Riyadh Al Sulti - 82424</td><td>🌆 ظهر (AN13)</td></tr>
-        </tbody>
-      </table>
-    
-    </div>
-    
-    <div class="deptCard">
-      <div class="deptBar" style="background:linear-gradient(90deg,#dc2626,#dc2626aa)"></div>
-      <div class="deptHead">
-        <div class="deptName">Export Operators</div>
-        <div class="deptCount">3</div>
-      </div>
-      
-      <div class="groupTitle">
-        <span>ظهر</span>
-        <span style="color:rgba(203,213,225,.85);font-weight:800">3</span>
-      </div>
-      <table class="table" dir="rtl">
-        <thead>
-          <tr>
-            <th>الموظف</th>
-            <th style="text-align:center">الحالة / الشفت</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style='text-align:right'>Mohamed Al Amri - 81224</td><td>🌆 ظهر (AN13)</td></tr><tr><td style='text-align:right'>Mohamed Al Falahi - 8762</td><td>🌆 ظهر (AN13)</td></tr><tr><td style='text-align:right'>Salim Sulieman - 8722</td><td>🌆 ظهر (AN13)</td></tr>
-        </tbody>
-      </table>
-    
-    </div>
-    
     <div class="footer">تم التحديث تلقائيًا بواسطة GitHub Actions</div>
   </div>
-</main>
-
 </body>
 </html>

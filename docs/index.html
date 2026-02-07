@@ -180,46 +180,31 @@
       .summaryChip .chipVal { font-size:19px; }
     }
 
-    /* Date picker inside header */
-    .datePicker {
-      margin-top:10px;
-      background:rgba(255,255,255,.18);
-      padding:6px 14px;
-      border-radius:30px;
-      border:1px solid rgba(255,255,255,.30);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-      outline:none;
-    }
-    .datePicker::-webkit-calendar-picker-indicator {
-      filter: invert(1);
-      opacity: .9;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
 <div class="wrap">
 
+  <!-- ════ HEADER ════ -->
   <div class="header">
     <h1>📋 Duty Roster</h1>
-    <input id="datePicker" class="datePicker" type="date" aria-label="Choose date">
+    <div class="dateTag">📅 7 February 2026</div>
   </div>
 
+  <!-- ════ SUMMARY CHIPS ════ -->
   <div class="summaryBar">
     <div class="summaryChip">
-      <div id="empCount" class="chipVal">80</div>
+      <div class="chipVal">80</div>
       <div class="chipLabel">Employees</div>
     </div>
     <div class="summaryChip">
-      <div id="deptCount" class="chipVal" style="color:#059669;">5</div>
+      <div class="chipVal" style="color:#059669;">5</div>
       <div class="chipLabel">Departments</div>
     </div>
   </div>
 
-  <div id="content">
-    
+  <!-- ════ DEPARTMENT CARDS ════ -->
+  
     <div class="deptCard">
       <div style="height:5px; background:linear-gradient(to right, #2563eb, #2563ebcc);"></div>
 
@@ -821,54 +806,18 @@
             </div>
     </div>
     
-  </div>
 
+  <!-- ════ CTA ════ -->
   <div class="btnWrap">
-    <a class="btn" href="https://khalidsaif912.github.io/roster-site/now/">🌙 View NOW</a>
+    <a class="btn" href="https://khalidsaif912.github.io/roster-site/now/">📋 View Full Duty Roster</a>
   </div>
 
+  <!-- ════ FOOTER ════ -->
   <div class="footer">
-    Sent at <strong>17:10</strong>
-     &nbsp;·&nbsp; Month: <strong>2026-02</strong>
+    Sent at <strong>19:18</strong>
+     &nbsp;·&nbsp; Total: <strong>80 employees</strong>
   </div>
 
 </div>
-
-<script>
-(async function() {
-  const picker = document.getElementById('datePicker');
-  const content = document.getElementById('content');
-  const empCount = document.getElementById('empCount');
-
-  const res = await fetch('./data/roster.json', { cache: 'no-store' });
-  const data = await res.json();
-
-  const days = Object.keys(data.days || {}).sort();
-  if (!days.length) return;
-
-  const urlDate = new URLSearchParams(location.search).get('date');
-  const defaultDay = (urlDate && data.days[urlDate]) ? urlDate : (data.default_day || days[0]);
-
-  picker.min = days[0];
-  picker.max = days[days.length - 1];
-  picker.value = defaultDay;
-
-  function render(dayISO) {
-    const d = data.days[dayISO];
-    if (!d) {
-      content.innerHTML = '<div class="deptCard" style="padding:16px;text-align:center;">No data for this date.</div>';
-      empCount.textContent = '0';
-      return;
-    }
-    content.innerHTML = d.cards_html || '';
-    empCount.textContent = String(d.employees_total || 0);
-    history.replaceState({}, '', '?date=' + dayISO);
-  }
-
-  render(defaultDay);
-  picker.addEventListener('change', (e) => render(e.target.value));
-})();
-</script>
-
 </body>
 </html>

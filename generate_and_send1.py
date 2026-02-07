@@ -1,6 +1,6 @@
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
 
@@ -141,19 +141,6 @@ def current_shift_key(now: datetime) -> str:
     if t >= 14 * 60:
         return "ظهر"
     return "صباح"
-
-
-def roster_effective_datetime(now: datetime) -> datetime:
-    """
-    Fix night-shift date crossing midnight:
-    - If we're in Night shift and it's after midnight but before 06:00 (Muscat),
-      use yesterday's date so we still read the roster column for the shift's start day.
-    """
-    active = current_shift_key(now)
-    if active == "ليل" and now.hour < 6:
-        return now - timedelta(days=1)
-    return now
-
 
 def download_excel(url: str) -> bytes:
     r = requests.get(url, timeout=60)
@@ -802,13 +789,11 @@ def main():
         raise RuntimeError("EXCEL_URL missing")
 
     now = datetime.now(TZ)
-    effective = roster_effective_datetime(now)
+    # Sun=0..Sat=6
+    today_dow = (now.weekday() + 1) % 7
+    today_day = now.day
 
-    # Sun=0..Sat=6 (n8n style)
-    today_dow = (effective.weekday() + 1) % 7
-    today_day = effective.day
-
-    active_group = current_shift_key(now)  # "صباح" / "ظهر" / "ليل" (based on current time)
+    active_group = current_shift_key(now)  # "صباح" / "ظهر" / "ليل"
     pages_base = (PAGES_BASE_URL or infer_pages_base_url()).rstrip("/")
 
     data = download_excel(EXCEL_URL)
@@ -914,7 +899,7 @@ def main():
         f.write(html_now)
 
     # Email: send a dedicated email-safe template (better rendering in Gmail/Outlook)
-    subject = f"Duty Roster — {active_group} — {effective.strftime('%Y-%m-%d')}"
+    subject = f"Duty Roster — {active_group} — {now.strftime('%Y-%m-%d')}"
     email_html = build_pretty_email_html(active_group, now, rows_by_dept, pages_base)
     send_email(subject, email_html)
 

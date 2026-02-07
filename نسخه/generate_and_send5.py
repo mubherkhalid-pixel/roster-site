@@ -39,15 +39,6 @@ DEPARTMENTS = [
     ("Export Operators", "Export Operators"),
 ]
 
-
-# Email / UI colors per department (used in email headers)
-DEPT_EMAIL_COLORS = {
-    "Officers": "#2563eb",
-    "Supervisors": "#7c3aed",
-    "Load Control": "#0891b2",
-    "Export Checker": "#059669",
-    "Export Operators": "#dc2626",
-}
 # For day-row matching only
 DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
@@ -63,10 +54,19 @@ SHIFT_MAP = {
 }
 
 GROUP_ORDER = ["صباح", "ظهر", "ليل", "مناوبات", "راحة", "إجازات", "تدريب", "أخرى"]
-
-
-
 DEPT_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#dc2626", "#ea580c"]
+
+# أضف هذا في بداية الملف مع المتغيرات الثابتة الأخرى
+DEPT_EMAIL_COLORS = {
+    "Emergency": "#dc2626",      # أحمر
+    "ICU": "#7c3aed",           # بنفسجي
+    "Surgery": "#2563eb",        # أزرق
+    "Pediatrics": "#16a34a",     # أخضر
+    "Radiology": "#ea580c",      # برتقالي
+    # أضف بقية الأقسام...
+}
+
+
 
 def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list, pages_base: str) -> str:
     """
@@ -778,28 +778,17 @@ def page_shell_html(date_label: str, employees_total: int, departments_total: in
   <div style="margin-top:18px;background:#fff;border-radius:18px;border:1px solid rgba(15,23,42,.07);box-shadow:0 4px 18px rgba(15,23,42,.08);padding:14px;text-align:center;">
     <div style="font-weight:900;font-size:16px;color:#0f172a;margin-bottom:10px;">📩 Subscribe</div>
     <div style="color:#64748b;font-weight:700;font-size:13px;margin-bottom:10px;">Enter your email to receive roster updates automatically</div>
-    
-<div style="margin-top:14px;text-align:center;">
-  <div style="max-width:720px;margin:0 auto;background:#ffffff;border:1px solid rgba(15,23,42,.08);
-              border-radius:18px;padding:14px;box-shadow:0 4px 18px rgba(15,23,42,.08);">
-    <div style="font-weight:900;color:#0f172a;font-size:15px;margin-bottom:8px;">📩 اشترك لاستقبال جدول المناوبات</div>
-    <form action="__SUBSCRIBE_URL__" method="POST" target="_blank" style="margin:0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <input type="hidden" name="token" value="__SUBSCRIBE_TOKEN__">
-      <input name="email" type="email" required placeholder="اكتب بريدك الإلكتروني"
-        style="padding:12px 14px;border-radius:14px;border:1px solid rgba(15,23,42,.12);
-               background:#f8fafc;color:#0f172a;font-weight:800;outline:none;min-width:260px;" />
-      <button type="submit"
-        style="padding:12px 16px;border-radius:14px;border:none;background:linear-gradient(135deg,#1e40af,#1976d2);
-               color:#fff;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(30,64,175,.22);">
-        اشتراك
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <input id="subEmail" type="email" placeholder="name@example.com"
+        style="padding:12px 14px;border-radius:14px;border:1px solid rgba(15,23,42,.12);min-width:240px;font-weight:800;outline:none;">
+      <button id="subBtn"
+        style="padding:12px 16px;border-radius:14px;border:none;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;font-weight:900;cursor:pointer;">
+        Subscribe
       </button>
-    </form>
-    <div style="margin-top:8px;color:#64748b;font-weight:700;font-size:12px;line-height:1.6;">
-      بعد الضغط على "اشتراك" سيفتح تبويب جديد برسالة تأكيد.
     </div>
+    <div id="subMsg" style="margin-top:10px;font-weight:900;"></div>
+    <div style="margin-top:8px;font-size:12px;color:#94a3b8;">We won’t share your email.</div>
   </div>
-</div>
-
 
 
   <div class="footer">

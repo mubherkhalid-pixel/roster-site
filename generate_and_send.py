@@ -415,6 +415,16 @@ CSS = r"""
 
 DEPT_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#dc2626", "#ea580c"]
 
+
+# Email colors per department (to match site)
+DEPT_EMAIL_COLORS = {
+    "Officers": "#2563eb",
+    "Supervisors": "#7c3aed",
+    "Load Control": "#0891b2",
+    "Export Checker": "#059669",
+    "Export Operators": "#dc2626",
+}
+
 SVG_ICON = """
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
@@ -563,29 +573,30 @@ def page_shell_html(date_label: str, employees_total: int, departments_total: in
 </html>"""
 
 
-# =========================
-# Email
-# =========================
-
 def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list, pages_base: str) -> str:
     """
-    Email-safe HTML (inline + tables) قريب من تصميم الصفحة.
-    rows_by_dept = [{"dept":"Officers","rows":[{"name":"..","shift":".."}, ...]}, ...]
+    Email-safe HTML (tables + inline styles) with department header colors like the site.
+    rows_by_dept = [{"dept": str, "rows": [{"name": str, "shift": str}, ...]}, ...]
     """
-    date_label = now.strftime("%d %B %Y")
+    # Date label (robust for runners)
+    try:
+        date_label = now.strftime("%-d %B %Y")
+    except Exception:
+        date_label = now.strftime("%d %B %Y")
+
     sent_time = now.strftime("%H:%M")
 
+    # Shift theme (for status color)
     def shift_theme(g: str):
-        # (bg, border, text, chipBg)
         if g == "صباح":
-            return ("#fef3c7", "#f59e0b55", "#92400e", "#f59e0b22")
+            return ("#fef3c7", "#f59e0b55", "#92400e")
         if g == "ظهر":
-            return ("#ffedd5", "#f9731655", "#9a3412", "#f9731622")
+            return ("#ffedd5", "#f9731655", "#9a3412")
         if g == "ليل":
-            return ("#ede9fe", "#8b5cf655", "#5b21b6", "#8b5cf622")
-        return ("#e0e7ff", "#6366f155", "#3730a3", "#6366f122")
+            return ("#ede9fe", "#8b5cf655", "#5b21b6")
+        return ("#e0e7ff", "#6366f155", "#3730a3")
 
-    bg, border, textc, chip = shift_theme(active_group)
+    bg, border, textc = shift_theme(active_group)
 
     dept_blocks = []
     total_now = 0
@@ -614,33 +625,67 @@ def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list
               </tr>
             """)
 
+        dept_color = DEPT_EMAIL_COLORS.get(dept, "#1e40af")
+
         dept_blocks.append(f"""
-          <div style="margin:14px 0 0 0;">
-            <div style="font-size:16px;font-weight:900;color:#0f172a;margin:0 0 8px 0;">{dept}</div>
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-                   style="border:1px solid rgba(15,23,42,.10);border-radius:14px;overflow:hidden;border-collapse:separate;border-spacing:0;background:#fff;">
-              <tr style="background:#f6f7f9;">
-                <th align="left" style="padding:10px 12px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
-                  Employee
-                </th>
-                <th align="left" style="padding:10px 12px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
-                  Status
-                </th>
-              </tr>
-              {''.join(trs)}
-            </table>
-          </div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                 style="margin-top:16px;border:1px solid #e6e6e6;border-radius:16px;overflow:hidden;background:#ffffff;">
+            <tr>
+              <td style="height:6px;background:{dept_color};font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 14px;border-bottom:1px solid #eef2f7;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="font-size:16px;font-weight:900;color:{dept_color};">
+                      {dept}
+                    </td>
+                    <td align="right">
+                      <span style="
+                        display:inline-block;
+                        padding:6px 12px;
+                        border-radius:12px;
+                        font-size:13px;
+                        font-weight:900;
+                        color:{dept_color};
+                        background:{dept_color}22;
+                        border:1px solid {dept_color}55;
+                      ">
+                        TOTAL {len(rows)}
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr style="background:#f6f7f9;">
+                    <th align="left" style="padding:10px 14px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
+                      Employee
+                    </th>
+                    <th align="left" style="padding:10px 14px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
+                      Status
+                    </th>
+                  </tr>
+                  {''.join(trs)}
+                </table>
+              </td>
+            </tr>
+          </table>
         """)
 
-    if not dept_blocks:
-        dept_html = """
-          <div style="margin-top:12px;padding:14px;border-radius:14px;border:1px dashed rgba(15,23,42,.18);background:#ffffff;">
+    dept_html = "\n".join(dept_blocks) if dept_blocks else f"""
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+        <tr>
+          <td style="padding:14px;border-radius:14px;border:1px dashed rgba(15,23,42,.18);background:#ffffff;">
             <div style="font-weight:900;color:#334155;">No staff for current shift.</div>
             <div style="margin-top:6px;color:#64748b;font-size:13px;">Open the website for full details.</div>
-          </div>
-        """
-    else:
-        dept_html = "\n".join(dept_blocks)
+          </td>
+        </tr>
+      </table>
+    """
 
     pages_base = (pages_base or "").rstrip("/")
 
@@ -654,7 +699,6 @@ def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list
             <tr>
               <td style="border-radius:20px;overflow:hidden;box-shadow:0 8px 28px rgba(30,64,175,.18);">
 
-                <!-- HEADER -->
                 <div style="background:linear-gradient(135deg,#1e40af 0%,#1976d2 50%,#0ea5e9 100%);padding:22px 18px;color:#fff;text-align:center;">
                   <div style="font-size:22px;font-weight:900;letter-spacing:-.2px;">📋 Duty Roster</div>
                   <div style="margin-top:8px;display:inline-block;background:rgba(255,255,255,.18);padding:6px 16px;border-radius:30px;font-size:13px;font-weight:700;">
@@ -662,10 +706,9 @@ def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list
                   </div>
                 </div>
 
-                <!-- CONTENT -->
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;">
                   <tr>
-                    <td style="padding:16px 16px 8px 16px;">
+                    <td style="padding:16px 16px 10px 16px;">
 
                       <div style="margin:0 auto 12px auto;display:inline-block;padding:10px 14px;border-radius:14px;background:{bg};border:1px solid {border};color:{textc};font-weight:900;">
                         Current shift: {active_group}
@@ -717,6 +760,13 @@ def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list
   </body>
 </html>"""
 
+
+
+
+
+# =========================
+# Email
+# =========================
 def send_email(subject: str, html: str):
     if not (SMTP_HOST and SMTP_USER and SMTP_PASS and MAIL_FROM and MAIL_TO):
         return
@@ -751,7 +801,7 @@ def main():
 
     dept_cards_all = []
     dept_cards_now = []
-    rows_by_dept_email = []  # for email (NOW only)
+    rows_by_dept = []  # for email (NOW only)
     employees_total_all = 0
     employees_total_now = 0
     depts_count = 0
@@ -791,12 +841,13 @@ def main():
             if grp == active_group:
                 buckets_now.setdefault(grp, []).append({"name": name, "shift": label})
 
-        # collect rows for email: only current shift rows for this department
+        # Collect NOW rows for email (current shift only)
         now_rows = buckets_now.get(active_group, [])
-        rows_by_dept_email.append({"dept": dept_name, "rows": now_rows})
+        rows_by_dept.append({"dept": dept_name, "rows": now_rows})
 
         dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
-        card_all = dept_card_html(dept_name, dept_color, buckets, open_group=None)
+        open_group_full = active_group if AUTO_OPEN_ACTIVE_SHIFT_IN_FULL else None
+        card_all = dept_card_html(dept_name, dept_color, buckets, open_group=open_group_full)
         dept_cards_all.append(card_all)
 
         # For NOW page: open the active shift group by default
@@ -847,9 +898,9 @@ def main():
     with open("docs/now/index.html", "w", encoding="utf-8") as f:
         f.write(html_now)
 
-    # Email: send NOW page design (same exact template)
+    # Email: send a dedicated email-safe template (better rendering in Gmail/Outlook)
     subject = f"Duty Roster — {active_group} — {now.strftime('%Y-%m-%d')}"
-    email_html = build_pretty_email_html(active_group, now, rows_by_dept_email, pages_base)
+    email_html = build_pretty_email_html(active_group, now, rows_by_dept, pages_base)
     send_email(subject, email_html)
 
 

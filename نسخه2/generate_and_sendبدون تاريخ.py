@@ -5,8 +5,6 @@ from zoneinfo import ZoneInfo
 from io import BytesIO
 
 import requests
-import json
-import calendar
 from openpyxl import load_workbook
 import smtplib
 from email.mime.text import MIMEText
@@ -23,9 +21,6 @@ SMTP_USER = os.environ.get("SMTP_USER", "").strip()
 SMTP_PASS = os.environ.get("SMTP_PASS", "").strip()
 MAIL_FROM = os.environ.get("MAIL_FROM", "").strip()
 MAIL_TO = os.environ.get("MAIL_TO", "").strip()
-
-SUBSCRIBE_URL = os.environ.get("SUBSCRIBE_URL", "").strip()
-SUBSCRIBE_TOKEN = os.environ.get("SUBSCRIBE_TOKEN", "").strip()
 
 PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "").strip()  # optional
 TZ = ZoneInfo("Asia/Muscat")
@@ -54,214 +49,6 @@ SHIFT_MAP = {
 }
 
 GROUP_ORDER = ["صباح", "ظهر", "ليل", "مناوبات", "راحة", "إجازات", "تدريب", "أخرى"]
-DEPT_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#dc2626", "#ea580c"]
-
-# أضف هذا في بداية الملف مع المتغيرات الثابتة الأخرى
-DEPT_EMAIL_COLORS = {
-    "Emergency": "#dc2626",      # أحمر
-    "ICU": "#7c3aed",           # بنفسجي
-    "Surgery": "#2563eb",        # أزرق
-    "Pediatrics": "#16a34a",     # أخضر
-    "Radiology": "#ea580c",      # برتقالي
-    # أضف بقية الأقسام...
-}
-
-
-
-def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list, pages_base: str) -> str:
-    """
-    Email-safe HTML (tables + inline styles) with department header colors like the site.
-    rows_by_dept = [{"dept": str, "rows": [{"name": str, "shift": str}, ...]}, ...]
-    """
-    # Date label (robust for runners)
-    try:
-        date_label = now.strftime("%-d %B %Y")
-    except Exception:
-        date_label = now.strftime("%d %B %Y")
-
-    sent_time = now.strftime("%H:%M")
-
-    # Shift theme (for status color)
-    def shift_theme(g: str):
-        if g == "صباح":
-            return ("#fef3c7", "#f59e0b55", "#92400e")
-        if g == "ظهر":
-            return ("#ffedd5", "#f9731655", "#9a3412")
-        if g == "ليل":
-            return ("#ede9fe", "#8b5cf655", "#5b21b6")
-        return ("#e0e7ff", "#6366f155", "#3730a3")
-
-    bg, border, textc = shift_theme(active_group)
-
-    dept_blocks = []
-    total_now = 0
-    depts_now = 0
-
-    for item in rows_by_dept:
-        dept = item.get("dept", "")
-        rows = item.get("rows", []) or []
-        if not rows:
-            continue
-
-        depts_now += 1
-        total_now += len(rows)
-
-        trs = []
-        for i, r in enumerate(rows):
-            alt_bg = "#f8fafc" if i % 2 == 1 else "#ffffff"
-            trs.append(f"""
-              <tr>
-                <td style="padding:10px 12px;border-top:1px solid #eef2f7;background:{alt_bg};font-weight:700;color:#0f172a;">
-                  {r["name"]}
-                </td>
-                <td style="padding:10px 12px;border-top:1px solid #eef2f7;background:{alt_bg};white-space:nowrap;font-weight:700;color:{textc};">
-                  {r["shift"]}
-                </td>
-              </tr>
-            """)
-
-        dept_color = DEPT_EMAIL_COLORS.get(dept, "#1e40af")
-
-        dept_blocks.append(f"""
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-                 style="margin-top:16px;border:1px solid #e6e6e6;border-radius:16px;overflow:hidden;background:#ffffff;">
-            <tr>
-              <td style="height:6px;background:{dept_color};font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            <tr>
-              <td style="padding:12px 14px;border-bottom:1px solid #eef2f7;">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="font-size:16px;font-weight:900;color:{dept_color};">
-                      {dept}
-                    </td>
-                    <td align="right">
-                      <span style="
-                        display:inline-block;
-                        padding:6px 12px;
-                        border-radius:12px;
-                        font-size:13px;
-                        font-weight:900;
-                        color:{dept_color};
-                        background:{dept_color}22;
-                        border:1px solid {dept_color}55;
-                      ">
-                        TOTAL {len(rows)}
-                      </span>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                  <tr style="background:#f6f7f9;">
-                    <th align="left" style="padding:10px 14px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
-                      Employee
-                    </th>
-                    <th align="left" style="padding:10px 14px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
-                      Status
-                    </th>
-                  </tr>
-                  {''.join(trs)}
-                </table>
-              </td>
-            </tr>
-          </table>
-        """)
-
-    dept_html = "\n".join(dept_blocks) if dept_blocks else f"""
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
-        <tr>
-          <td style="padding:14px;border-radius:14px;border:1px dashed rgba(15,23,42,.18);background:#ffffff;">
-            <div style="font-weight:900;color:#334155;">No staff for current shift.</div>
-            <div style="margin-top:6px;color:#64748b;font-size:13px;">Open the website for full details.</div>
-          </td>
-        </tr>
-      </table>
-    """
-
-    pages_base = (pages_base or "").rstrip("/")
-
-    html = f"""<!doctype html>
-<html>
-  <body style="margin:0;padding:0;background:#eef1f7;font-family:Segoe UI,Arial,Helvetica,sans-serif;color:#0f172a;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f7;">
-      <tr>
-        <td align="center" style="padding:16px 10px;">
-          <table role="presentation" width="680" cellpadding="0" cellspacing="0" style="max-width:680px;width:100%;">
-            <tr>
-              <td style="border-radius:20px;overflow:hidden;box-shadow:0 8px 28px rgba(30,64,175,.18);">
-
-                <div style="background:linear-gradient(135deg,#1e40af 0%,#1976d2 50%,#0ea5e9 100%);padding:22px 18px;color:#fff;text-align:center;">
-                  <div style="font-size:22px;font-weight:900;letter-spacing:-.2px;">📋 Duty Roster</div>
-                  <div style="margin-top:8px;display:inline-block;background:rgba(255,255,255,.18);padding:6px 16px;border-radius:30px;font-size:13px;font-weight:700;">
-                    📅 {date_label}
-                  </div>
-                </div>
-
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;">
-                  <tr>
-                    <td style="padding:16px 16px 10px 16px;">
-
-                      <div style="margin:0 auto 12px auto;display:inline-block;padding:10px 14px;border-radius:14px;background:{bg};border:1px solid {border};color:{textc};font-weight:900;">
-                        Current shift: {active_group}
-                      </div>
-
-                      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin-top:6px;">
-                        <tr>
-                          <td style="width:50%;padding-right:6px;">
-                            <div style="border:1px solid rgba(15,23,42,.10);border-radius:14px;padding:10px 12px;text-align:center;background:#fff;">
-                              <div style="font-size:22px;font-weight:900;color:#1e40af;">{total_now}</div>
-                              <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;">Now</div>
-                            </div>
-                          </td>
-                          <td style="width:50%;padding-left:6px;">
-                            <div style="border:1px solid rgba(15,23,42,.10);border-radius:14px;padding:10px 12px;text-align:center;background:#fff;">
-                              <div style="font-size:22px;font-weight:900;color:#059669;">{depts_now}</div>
-                              <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;">Departments</div>
-                            </div>
-                          </td>
-                        </tr>
-                      </table>
-
-                      {dept_html}
-
-                      <div style="text-align:center;margin-top:16px;">
-                        <a href="{pages_base}/now/" style="display:inline-block;padding:12px 18px;border-radius:16px;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;text-decoration:none;font-weight:900;">
-                          Open Now Page
-                        </a>
-                        <span style="display:inline-block;width:10px;"></span>
-                        <a href="{pages_base}/" style="display:inline-block;padding:12px 18px;border-radius:16px;background:#0ea5e9;color:#fff;text-decoration:none;font-weight:900;">
-                          Open Full Page
-                        </a>
-                      </div>
-
-                      <div style="margin-top:14px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.9;">
-                        Sent at <strong style="color:#64748b;">{sent_time}</strong> · GitHub Actions
-                      </div>
-
-                    </td>
-                  </tr>
-                </table>
-
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>"""
-
-
-
-
-
-# =========================
-# Email
-# =========================
 
 
 # =========================
@@ -357,11 +144,16 @@ def current_shift_key(now: datetime) -> str:
 
 
 def roster_effective_datetime(now: datetime) -> datetime:
-    """Night shift after midnight should still use yesterday's roster date (until 06:00 Muscat)."""
+    """
+    Fix night-shift date crossing midnight:
+    - If we're in Night shift and it's after midnight but before 06:00 (Muscat),
+      use yesterday's date so we still read the roster column for the shift's start day.
+    """
     active = current_shift_key(now)
     if active == "ليل" and now.hour < 6:
         return now - timedelta(days=1)
     return now
+
 
 def download_excel(url: str) -> bytes:
     r = requests.get(url, timeout=60)
@@ -636,6 +428,16 @@ CSS = r"""
 
 DEPT_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#dc2626", "#ea580c"]
 
+
+# Email colors per department (to match site)
+DEPT_EMAIL_COLORS = {
+    "Officers": "#2563eb",
+    "Supervisors": "#7c3aed",
+    "Load Control": "#0891b2",
+    "Export Checker": "#059669",
+    "Export Operators": "#dc2626",
+}
+
 SVG_ICON = """
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
@@ -774,23 +576,6 @@ def page_shell_html(date_label: str, employees_total: int, departments_total: in
   </div>
 
   <!-- ════ FOOTER ════ -->
-
-  <div style="margin-top:18px;background:#fff;border-radius:18px;border:1px solid rgba(15,23,42,.07);box-shadow:0 4px 18px rgba(15,23,42,.08);padding:14px;text-align:center;">
-    <div style="font-weight:900;font-size:16px;color:#0f172a;margin-bottom:10px;">📩 Subscribe</div>
-    <div style="color:#64748b;font-weight:700;font-size:13px;margin-bottom:10px;">Enter your email to receive roster updates automatically</div>
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-      <input id="subEmail" type="email" placeholder="name@example.com"
-        style="padding:12px 14px;border-radius:14px;border:1px solid rgba(15,23,42,.12);min-width:240px;font-weight:800;outline:none;">
-      <button id="subBtn"
-        style="padding:12px 16px;border-radius:14px;border:none;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;font-weight:900;cursor:pointer;">
-        Subscribe
-      </button>
-    </div>
-    <div id="subMsg" style="margin-top:10px;font-weight:900;"></div>
-    <div style="margin-top:8px;font-size:12px;color:#94a3b8;">We won’t share your email.</div>
-  </div>
-
-
   <div class="footer">
     Sent at <strong>{sent_time}</strong>
      &nbsp;·&nbsp; Total: <strong>{employees_total} employees</strong>
@@ -801,268 +586,229 @@ def page_shell_html(date_label: str, employees_total: int, departments_total: in
 </html>"""
 
 
+def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list, pages_base: str) -> str:
+    """
+    Email-safe HTML (tables + inline styles) with department header colors like the site.
+    rows_by_dept = [{"dept": str, "rows": [{"name": str, "shift": str}, ...]}, ...]
+    """
+    # Date label (robust for runners)
+    try:
+        date_label = now.strftime("%-d %B %Y")
+    except Exception:
+        date_label = now.strftime("%d %B %Y")
+
+    sent_time = now.strftime("%H:%M")
+
+    # Shift theme (for status color)
+    def shift_theme(g: str):
+        if g == "صباح":
+            return ("#fef3c7", "#f59e0b55", "#92400e")
+        if g == "ظهر":
+            return ("#ffedd5", "#f9731655", "#9a3412")
+        if g == "ليل":
+            return ("#ede9fe", "#8b5cf655", "#5b21b6")
+        return ("#e0e7ff", "#6366f155", "#3730a3")
+
+    bg, border, textc = shift_theme(active_group)
+
+    dept_blocks = []
+    total_now = 0
+    depts_now = 0
+
+    for item in rows_by_dept:
+        dept = item.get("dept", "")
+        rows = item.get("rows", []) or []
+        if not rows:
+            continue
+
+        depts_now += 1
+        total_now += len(rows)
+
+        trs = []
+        for i, r in enumerate(rows):
+            alt_bg = "#f8fafc" if i % 2 == 1 else "#ffffff"
+            trs.append(f"""
+              <tr>
+                <td style="padding:10px 12px;border-top:1px solid #eef2f7;background:{alt_bg};font-weight:700;color:#0f172a;">
+                  {r["name"]}
+                </td>
+                <td style="padding:10px 12px;border-top:1px solid #eef2f7;background:{alt_bg};white-space:nowrap;font-weight:700;color:{textc};">
+                  {r["shift"]}
+                </td>
+              </tr>
+            """)
+
+        dept_color = DEPT_EMAIL_COLORS.get(dept, "#1e40af")
+
+        dept_blocks.append(f"""
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                 style="margin-top:16px;border:1px solid #e6e6e6;border-radius:16px;overflow:hidden;background:#ffffff;">
+            <tr>
+              <td style="height:6px;background:{dept_color};font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 14px;border-bottom:1px solid #eef2f7;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="font-size:16px;font-weight:900;color:{dept_color};">
+                      {dept}
+                    </td>
+                    <td align="right">
+                      <span style="
+                        display:inline-block;
+                        padding:6px 12px;
+                        border-radius:12px;
+                        font-size:13px;
+                        font-weight:900;
+                        color:{dept_color};
+                        background:{dept_color}22;
+                        border:1px solid {dept_color}55;
+                      ">
+                        TOTAL {len(rows)}
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr style="background:#f6f7f9;">
+                    <th align="left" style="padding:10px 14px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
+                      Employee
+                    </th>
+                    <th align="left" style="padding:10px 14px;border-bottom:1px solid #eef2f7;color:#334155;font-size:12px;letter-spacing:.4px;text-transform:uppercase;">
+                      Status
+                    </th>
+                  </tr>
+                  {''.join(trs)}
+                </table>
+              </td>
+            </tr>
+          </table>
+        """)
+
+    dept_html = "\n".join(dept_blocks) if dept_blocks else f"""
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+        <tr>
+          <td style="padding:14px;border-radius:14px;border:1px dashed rgba(15,23,42,.18);background:#ffffff;">
+            <div style="font-weight:900;color:#334155;">No staff for current shift.</div>
+            <div style="margin-top:6px;color:#64748b;font-size:13px;">Open the website for full details.</div>
+          </td>
+        </tr>
+      </table>
+    """
+
+    pages_base = (pages_base or "").rstrip("/")
+
+    return f"""<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#eef1f7;font-family:Segoe UI,Arial,Helvetica,sans-serif;color:#0f172a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f7;">
+      <tr>
+        <td align="center" style="padding:16px 10px;">
+          <table role="presentation" width="680" cellpadding="0" cellspacing="0" style="max-width:680px;width:100%;">
+            <tr>
+              <td style="border-radius:20px;overflow:hidden;box-shadow:0 8px 28px rgba(30,64,175,.18);">
+
+                <div style="background:linear-gradient(135deg,#1e40af 0%,#1976d2 50%,#0ea5e9 100%);padding:22px 18px;color:#fff;text-align:center;">
+                  <div style="font-size:22px;font-weight:900;letter-spacing:-.2px;">📋 Duty Roster</div>
+                  <div style="margin-top:8px;display:inline-block;background:rgba(255,255,255,.18);padding:6px 16px;border-radius:30px;font-size:13px;font-weight:700;">
+                    📅 {date_label}
+                  </div>
+                </div>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;">
+                  <tr>
+                    <td style="padding:16px 16px 10px 16px;">
+
+                      <div style="margin:0 auto 12px auto;display:inline-block;padding:10px 14px;border-radius:14px;background:{bg};border:1px solid {border};color:{textc};font-weight:900;">
+                        Current shift: {active_group}
+                      </div>
+
+                      <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin-top:6px;">
+                        <tr>
+                          <td style="width:50%;padding-right:6px;">
+                            <div style="border:1px solid rgba(15,23,42,.10);border-radius:14px;padding:10px 12px;text-align:center;background:#fff;">
+                              <div style="font-size:22px;font-weight:900;color:#1e40af;">{total_now}</div>
+                              <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;">Now</div>
+                            </div>
+                          </td>
+                          <td style="width:50%;padding-left:6px;">
+                            <div style="border:1px solid rgba(15,23,42,.10);border-radius:14px;padding:10px 12px;text-align:center;background:#fff;">
+                              <div style="font-size:22px;font-weight:900;color:#059669;">{depts_now}</div>
+                              <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;">Departments</div>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+
+                      {dept_html}
+
+                      <div style="text-align:center;margin-top:16px;">
+                        <a href="{pages_base}/now/" style="display:inline-block;padding:12px 18px;border-radius:16px;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;text-decoration:none;font-weight:900;">
+                          Open Now Page
+                        </a>
+                        <span style="display:inline-block;width:10px;"></span>
+                        <a href="{pages_base}/" style="display:inline-block;padding:12px 18px;border-radius:16px;background:#0ea5e9;color:#fff;text-decoration:none;font-weight:900;">
+                          Open Full Page
+                        </a>
+                      </div>
+
+                      <div style="margin-top:14px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.9;">
+                        Sent at <strong style="color:#64748b;">{sent_time}</strong> · GitHub Actions
+                      </div>
+
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>"""
+
+
+
+
+
 # =========================
 # Email
 # =========================
-
-def send_email(subject: str, html: str, mail_to: str):
-    """Send HTML email to one or more recipients (comma-separated)."""
-    mail_to = (mail_to or "").strip()
-    recipients = [x.strip() for x in mail_to.split(",") if x.strip()]
-    if not recipients:
-        raise RuntimeError("MAIL_TO is empty (no recipients). Add MAIL_TO secret and/or subscribers.")
-
+def send_email(subject: str, html: str):
+    if not (SMTP_HOST and SMTP_USER and SMTP_PASS and MAIL_FROM and MAIL_TO):
+        return
     msg = MIMEText(html, "html", "utf-8")
     msg["Subject"] = subject
     msg["From"] = MAIL_FROM
-    msg["To"] = ", ".join(recipients)
+    msg["To"] = MAIL_TO
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
         s.starttls()
         s.login(SMTP_USER, SMTP_PASS)
-        s.sendmail(MAIL_FROM, recipients, msg.as_string())
-
-def build_cards_for_date(wb, target_date: datetime, active_group: str):
-    """Build department cards HTML + totals for a given date."""
-    today_dow = (target_date.weekday() + 1) % 7  # Sun=0..Sat=6
-    today_day = target_date.day
-
-    dept_cards = []
-    employees_total = 0
-    depts_count = 0
-
-    for idx, (sheet_name, dept_name) in enumerate(DEPARTMENTS):
-        if sheet_name not in wb.sheetnames:
-            continue
-
-        ws = wb[sheet_name]
-        days_row, date_row = find_days_and_dates_rows(ws)
-        day_col = find_day_col(ws, days_row, date_row, today_dow, today_day)
-
-        if not (days_row and date_row and day_col):
-            continue
-
-        start_row = date_row + 1
-        emp_col = find_employee_col(ws, start_row=start_row)
-        if not emp_col:
-            continue
-
-        buckets = {k: [] for k in GROUP_ORDER}
-
-        for r in range(start_row, ws.max_row + 1):
-            name = norm(ws.cell(row=r, column=emp_col).value)
-            if not looks_like_employee_name(name):
-                continue
-
-            raw = norm(ws.cell(row=r, column=day_col).value)
-            if not looks_like_shift_code(raw):
-                continue
-
-            label, grp = map_shift(raw)
-            buckets.setdefault(grp, []).append({"name": name, "shift": label})
-
-        dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
-        open_group_full = active_group if AUTO_OPEN_ACTIVE_SHIFT_IN_FULL else None
-        dept_cards.append(dept_card_html(dept_name, dept_color, buckets, open_group=open_group_full))
-
-        employees_total += sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
-        depts_count += 1
-
-    return "\n".join(dept_cards), employees_total, depts_count
+        s.sendmail(MAIL_FROM, [x.strip() for x in MAIL_TO.split(",") if x.strip()], msg.as_string())
 
 
-
-
-def build_rows_for_email(wb, target_date: datetime, active_group: str):
-    """Return rows grouped by department for EMAIL (active shift only)."""
-    today_dow = (target_date.weekday() + 1) % 7  # Sun=0..Sat=6
-    today_day = target_date.day
-
-    rows_by_dept = []
-    for idx, (sheet_name, dept_name) in enumerate(DEPARTMENTS):
-        if sheet_name not in wb.sheetnames:
-            continue
-
-        ws = wb[sheet_name]
-        days_row, date_row = find_days_and_dates_rows(ws)
-        day_col = find_day_col(ws, days_row, date_row, today_dow, today_day)
-        if not (days_row and date_row and day_col):
-            continue
-
-        start_row = date_row + 1
-        emp_col = find_employee_col(ws, start_row=start_row)
-        if not emp_col:
-            continue
-
-        rows = []
-        for r in range(start_row, ws.max_row + 1):
-            name = norm(ws.cell(row=r, column=emp_col).value)
-            if not looks_like_employee_name(name):
-                continue
-
-            raw = norm(ws.cell(row=r, column=day_col).value)
-            if not looks_like_shift_code(raw):
-                continue
-
-            label, grp = map_shift(raw)
-            if grp == active_group:
-                rows.append({"name": name, "shift": label})
-
-        if not rows:
-            continue
-
-        dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
-        base_color = dept_color.get("base") if isinstance(dept_color, dict) else str(dept_color)
-        rows_by_dept.append({"dept": dept_name, "color": base_color or "#2563eb", "rows": rows})
-
-    return rows_by_dept
-
-
-def page_shell_html_full_with_picker(month_iso: str, employees_total: int, departments_total: int, dept_cards_html: str, cta_url: str, sent_time: str):
-    """Full page with a date picker. It loads per-day HTML from ./data/roster.json."""
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>Duty Roster</title>
-  <style>
-{CSS}
-    /* Date picker inside header */
-    .datePicker {{
-      margin-top:10px;
-      background:rgba(255,255,255,.18);
-      padding:6px 14px;
-      border-radius:30px;
-      border:1px solid rgba(255,255,255,.30);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-      outline:none;
-    }}
-    .datePicker::-webkit-calendar-picker-indicator {{
-      filter: invert(1);
-      opacity: .9;
-      cursor: pointer;
-    }}
-  </style>
-</head>
-<body>
-<div class="wrap">
-
-  <div class="header">
-    <h1>📋 Duty Roster</h1>
-    <input id="datePicker" class="datePicker" type="date" aria-label="Choose date">
-  </div>
-
-  <div class="summaryBar">
-    <div class="summaryChip">
-      <div id="empCount" class="chipVal">{employees_total}</div>
-      <div class="chipLabel">Employees</div>
-    </div>
-    <div class="summaryChip">
-      <div id="deptCount" class="chipVal" style="color:#059669;">{departments_total}</div>
-      <div class="chipLabel">Departments</div>
-    </div>
-  </div>
-
-  <div id="content">
-    {dept_cards_html}
-  </div>
-
-  <div class="btnWrap">
-    <a class="btn" href="{cta_url}">🌙 View NOW</a>
-  </div>
-
-  <div class="footer">
-    Sent at <strong>{sent_time}</strong>
-     &nbsp;·&nbsp; Month: <strong>{month_iso}</strong>
-  </div>
-
-</div>
-
-<script>
-(async function() {{
-  const picker = document.getElementById('datePicker');
-  const content = document.getElementById('content');
-  const empCount = document.getElementById('empCount');
-
-  const res = await fetch('./data/roster.json', {{ cache: 'no-store' }});
-  const data = await res.json();
-
-  const days = Object.keys(data.days || {{}}).sort();
-  if (!days.length) return;
-
-  const urlDate = new URLSearchParams(location.search).get('date');
-  const defaultDay = (urlDate && data.days[urlDate]) ? urlDate : (data.default_day || days[0]);
-
-  picker.min = days[0];
-  picker.max = days[days.length - 1];
-  picker.value = defaultDay;
-
-  function render(dayISO) {{
-    const d = data.days[dayISO];
-    if (!d) {{
-      content.innerHTML = '<div class="deptCard" style="padding:16px;text-align:center;">No data for this date.</div>';
-      empCount.textContent = '0';
-      return;
-    }}
-    content.innerHTML = d.cards_html || '';
-    empCount.textContent = String(d.employees_total || 0);
-    history.replaceState({{}}, '', '?date=' + dayISO);
-  }}
-
-  render(defaultDay);
-  picker.addEventListener('change', (e) => render(e.target.value));
-}})();
-</script>
-
-</body>
-</html>"""
-
-def load_subscribers() -> list[str]:
-    """Load subscriber emails from Google Apps Script (Google Sheet) via GET ?token=...
-
-    Expected JSON: {"ok": true, "emails": ["a@b.com", ...]}
-    """
-    if not SUBSCRIBE_URL or not SUBSCRIBE_TOKEN:
-        return []
-    try:
-        r = requests.get(SUBSCRIBE_URL, params={"token": SUBSCRIBE_TOKEN}, timeout=30)
-        r.raise_for_status()
-        j = r.json()
-        if j.get("ok"):
-            emails = []
-            for e in (j.get("emails") or []):
-                e = str(e).strip().lower()
-                if e and "@" in e:
-                    emails.append(e)
-            # unique preserve order
-            seen=set()
-            out=[]
-            for e in emails:
-                if e not in seen:
-                    seen.add(e)
-                    out.append(e)
-            return out
-    except Exception:
-        return []
-    return []
-
-
-
+# =========================
+# Main
+# =========================
 def main():
     if not EXCEL_URL:
         raise RuntimeError("EXCEL_URL missing")
 
     now = datetime.now(TZ)
     effective = roster_effective_datetime(now)
-    # Sun=0..Sat=6 (based on roster effective date)
+
+    # Sun=0..Sat=6 (n8n style)
     today_dow = (effective.weekday() + 1) % 7
     today_day = effective.day
 
-    active_group = current_shift_key(now)  # "صباح" / "ظهر" / "ليل"
+    active_group = current_shift_key(now)  # "صباح" / "ظهر" / "ليل" (based on current time)
     pages_base = (PAGES_BASE_URL or infer_pages_base_url()).rstrip("/")
 
     data = download_excel(EXCEL_URL)
@@ -1070,6 +816,7 @@ def main():
 
     dept_cards_all = []
     dept_cards_now = []
+    rows_by_dept = []  # for email (NOW only)
     employees_total_all = 0
     employees_total_now = 0
     depts_count = 0
@@ -1109,8 +856,13 @@ def main():
             if grp == active_group:
                 buckets_now.setdefault(grp, []).append({"name": name, "shift": label})
 
+        # Collect NOW rows for email (current shift only)
+        now_rows = buckets_now.get(active_group, [])
+        rows_by_dept.append({"dept": dept_name, "rows": now_rows})
+
         dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
-        card_all = dept_card_html(dept_name, dept_color, buckets, open_group=None)
+        open_group_full = active_group if AUTO_OPEN_ACTIVE_SHIFT_IN_FULL else None
+        card_all = dept_card_html(dept_name, dept_color, buckets, open_group=open_group_full)
         dept_cards_all.append(card_all)
 
         # For NOW page: open the active shift group by default
@@ -1122,55 +874,30 @@ def main():
 
         depts_count += 1
 
-    
-# pages
+    # pages
     os.makedirs("docs", exist_ok=True)
     os.makedirs("docs/now", exist_ok=True)
-    os.makedirs("docs/data", exist_ok=True)
 
-    # Display date based on roster effective date
+    date_label = now.strftime("%-d %B %Y") if hasattr(now, "strftime") else now.strftime("%d %B %Y")
+    # Windows runners sometimes don't support %-d; safe fallback
     try:
-        date_label = effective.strftime("%-d %B %Y")
+        date_label = now.strftime("%-d %B %Y")
     except Exception:
-        date_label = effective.strftime("%d %B %Y")
+        date_label = now.strftime("%d %B %Y")
 
     sent_time = now.strftime("%H:%M")
 
     full_url = f"{pages_base}/"
     now_url = f"{pages_base}/now/"
 
-    # Build per-day HTML for the whole month (static JSON for the date picker)
-    month_iso = effective.strftime("%Y-%m")
-    year = effective.year
-    month = effective.month
-    last_day = calendar.monthrange(year, month)[1]
-
-    roster_days = {}
-    for d in range(1, last_day + 1):
-        dt = effective.replace(day=d)
-        cards_html, emp_total, dept_total = build_cards_for_date(wb, dt, active_group)
-        day_iso = dt.strftime("%Y-%m-%d")
-        roster_days[day_iso] = {
-            "cards_html": cards_html,
-            "employees_total": emp_total,
-            "departments_total": dept_total,
-        }
-
-    default_day = effective.strftime("%Y-%m-%d")
-    with open("docs/data/roster.json", "w", encoding="utf-8") as f:
-        json.dump({"month": month_iso, "default_day": default_day, "days": roster_days}, f, ensure_ascii=False)
-
-    # Full page with picker (initially renders default day)
-    cards_today, emp_today, dept_today = build_cards_for_date(wb, effective, active_group)
-    html_full = page_shell_html_full_with_picker(
-        month_iso=month_iso,
-        employees_total=emp_today,
-        departments_total=dept_today,
-        dept_cards_html=cards_today,
-        cta_url=now_url,
+    html_full = page_shell_html(
+        date_label=date_label,
+        employees_total=employees_total_all,
+        departments_total=depts_count,
+        dept_cards_html="\n".join(dept_cards_all),
+        cta_url=now_url,   # button on full page goes to NOW page
         sent_time=sent_time,
     )
-
     html_now = page_shell_html(
         date_label=date_label,
         employees_total=employees_total_now,
@@ -1186,18 +913,11 @@ def main():
     with open("docs/now/index.html", "w", encoding="utf-8") as f:
         f.write(html_now)
 
-    # Email: send NOW page design (same exact template)
+    # Email: send a dedicated email-safe template (better rendering in Gmail/Outlook)
     subject = f"Duty Roster — {active_group} — {effective.strftime('%Y-%m-%d')}"
-    rows_by_dept = build_rows_for_email(wb, effective, active_group)
     email_html = build_pretty_email_html(active_group, now, rows_by_dept, pages_base)
+    send_email(subject, email_html)
 
-    # ✅ Merge manual recipients (MAIL_TO) + subscribers from Google Sheet
-    manual = [x.strip().lower() for x in MAIL_TO.split(",") if x.strip()]
-    subs = load_subscribers()
-    all_recipients = sorted(set(manual + subs))
-    mail_to_final = ",".join(all_recipients)
-
-    send_email(subject, email_html, mail_to_final)
 
 if __name__ == "__main__":
     main()

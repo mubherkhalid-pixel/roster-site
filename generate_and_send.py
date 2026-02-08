@@ -10,6 +10,7 @@ import calendar
 from openpyxl import load_workbook
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 # =========================
@@ -51,6 +52,8 @@ SHIFT_MAP = {
 }
 
 GROUP_ORDER = ["صباح", "ظهر", "ليل", "مناوبات", "راحة", "إجازات", "تدريب", "أخرى"]
+
+DEPT_COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4"]
 
 
 # =========================
@@ -246,358 +249,270 @@ def find_employee_col(ws, start_row: int, max_scan_rows: int = 200):
 
 
 # =========================
-# EXACT DESIGN (as you provided)
+# EMAIL CSS DESIGN
 # =========================
-CSS = r"""
-    /* ═══════ RESET ═══════ */
+EMAIL_CSS = """
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
     body {
-      margin:0; padding:0;
-      background:#eef1f7;
-      font-family:'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-      color:#0f172a;
-      -webkit-font-smoothing:antialiased;
+        background: #eef1f7;
+        font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+        color: #0f172a;
+        line-height: 1.6;
+        padding: 20px;
     }
-    * { box-sizing:border-box; }
-
-    /* ═══════ WRAP ═══════ */
-    .wrap { max-width:680px; margin:0 auto; padding:16px 14px 28px; }
-
-    /* ═══════ HEADER ═══════ */
+    .email-container {
+        max-width: 650px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
     .header {
-      background:linear-gradient(135deg, #1e40af 0%, #1976d2 50%, #0ea5e9 100%);
-      color:#fff;
-      padding:26px 18px 24px;
-      border-radius:20px;
-      text-align:center;
-      box-shadow:0 8px 28px rgba(30,64,175,.25);
-      position:relative;
-      overflow:hidden;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        padding: 30px 24px;
+        text-align: center;
     }
-    .header::before {
-      content:''; position:absolute;
-      top:-30px; right:-40px;
-      width:140px; height:140px;
-      border-radius:50%;
-      background:rgba(255,255,255,.08);
+    .header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
     }
-    .header::after {
-      content:''; position:absolute;
-      bottom:-50px; left:-30px;
-      width:160px; height:160px;
-      border-radius:50%;
-      background:rgba(255,255,255,.06);
+    .header p {
+        font-size: 14px;
+        opacity: 0.95;
     }
-    .header h1 { margin:0; font-size:24px; font-weight:800; position:relative; z-index:1; letter-spacing:-.3px; }
-    .header .dateTag {
-      display:inline-block; margin-top:10px;
-      background:rgba(255,255,255,.18);
-      padding:5px 18px; border-radius:30px;
-      font-size:13px; font-weight:600; letter-spacing:.3px;
-      position:relative; z-index:1;
+    .summary-bar {
+        display: flex;
+        gap: 16px;
+        padding: 20px 24px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
     }
-
-    /* ═══════ SUMMARY BAR ═══════ */
-    .summaryBar { display:flex; justify-content:center; gap:12px; margin-top:14px; }
-    .summaryChip {
-      background:#fff;
-      border:1px solid rgba(15,23,42,.1);
-      border-radius:14px;
-      padding:10px 20px;
-      text-align:center;
-      box-shadow:0 2px 8px rgba(15,23,42,.06);
+    .summary-chip {
+        flex: 1;
+        text-align: center;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
     }
-    .summaryChip .chipVal { font-size:22px; font-weight:900; color:#1e40af; }
-    .summaryChip .chipLabel { font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.6px; margin-top:2px; }
-
-    /* ═══════ DEPARTMENT CARD ═══════ */
-    .deptCard {
-      margin-top:18px;
-      background:#fff;
-      border-radius:18px;
-      overflow:hidden;
-      border:1px solid rgba(15,23,42,.07);
-      box-shadow:0 4px 18px rgba(15,23,42,.08);
+    .chip-val {
+        font-size: 24px;
+        font-weight: 700;
+        color: #3b82f6;
+        margin-bottom: 4px;
     }
-    .deptHead {
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:14px 16px;
-      background:#fff;
+    .chip-label {
+        font-size: 12px;
+        color: #64748b;
+        text-transform: uppercase;
+        font-weight: 600;
     }
-    .deptIcon {
-      width:40px; height:40px;
-      border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      flex-shrink:0;
+    .content {
+        padding: 24px;
     }
-    .deptTitle { font-size:18px; font-weight:800; color:#1e293b; flex:1; letter-spacing:-.2px; }
-    .deptBadge { min-width:48px; padding:6px 10px; border-radius:12px; text-align:center; }
-
-    /* ═══════ SHIFT STACK ═══════ */
-    .shiftStack { padding:10px; display:flex; flex-direction:column; gap:8px; }
-
-    /* ═══════ SHIFT CARD — <details> ═══════ */
-    .shiftCard {
-      border-radius:14px;
-      overflow:hidden;
+    .dept-card {
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
     }
-
-    .shiftSummary {
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:11px 14px;
-      cursor:pointer;
-      list-style:none;
-      -webkit-appearance:none;
-      appearance:none;
-      user-select:none;
+    .dept-header {
+        padding: 14px 16px;
+        font-weight: 700;
+        color: white;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    .shiftSummary::-webkit-details-marker { display:none; }
-    .shiftSummary::marker              { display:none; }
-
-    .shiftIcon  { font-size:20px; line-height:1; flex-shrink:0; }
-    .shiftLabel { font-size:15px; font-weight:800; flex:1; letter-spacing:-.1px; }
-    .shiftCount {
-      font-size:13px; font-weight:800;
-      padding:3px 10px; border-radius:20px;
-      flex-shrink:0;
+    .dept-body {
+        padding: 16px;
     }
-
-    /* chevron يدور لما يفتح */
-    .shiftSummary::after {
-      content:'▾';
-      font-size:14px;
-      color:#94a3b8;
-      transition:transform .2s;
-      flex-shrink:0;
+    .shift-group {
+        margin-bottom: 16px;
     }
-    .shiftCard[open] .shiftSummary::after {
-      transform:rotate(180deg);
+    .shift-group:last-child {
+        margin-bottom: 0;
     }
-
-    .shiftBody { background:rgba(255,255,255,.7); }
-
-    /* ── employee row ── */
-    .empRow {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:9px 16px;
-      border-top:1px solid rgba(15,23,42,.06);
+    .group-title {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 13px;
+        margin-bottom: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #e2e8f0;
     }
-    .empRowAlt { background:rgba(15,23,42,.02); }
-    .empName  { font-size:15px; font-weight:700; color:#1e293b; }
-    .empStatus { font-size:13px; font-weight:600; }
-
-    /* ═══════ CTA ═══════ */
-    .btnWrap { margin-top:20px; text-align:center; }
-    .btn {
-      display:inline-block;
-      padding:14px 38px;
-      border-radius:16px;
-      background:linear-gradient(135deg, #1e40af, #1976d2);
-      color:#fff !important;
-      text-decoration:none;
-      font-weight:800;
-      font-size:15px;
-      box-shadow:0 6px 20px rgba(30,64,175,.3);
+    .employee-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
     }
-
-    /* ═══════ FOOTER ═══════ */
-    .footer { margin-top:18px; text-align:center; font-size:12px; color:#94a3b8; padding:12px 0; line-height:1.9; }
-    .footer strong { color:#64748b; }
-
-    /* ═══════ MOBILE ═══════ */
-    @media (max-width:480px){
-      .wrap            { padding:12px 10px 22px; }
-      .header h1       { font-size:21px; }
-      .deptTitle       { font-size:16px; }
-      .empName         { font-size:14px; }
-      .empStatus       { font-size:12px; }
-      .shiftLabel      { font-size:14px; }
-      .summaryBar      { gap:8px; }
-      .summaryChip     { padding:8px 14px; }
-      .summaryChip .chipVal { font-size:19px; }
+    .employee-badge {
+        background: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        display: inline-block;
+    }
+    .shift-label {
+        color: #64748b;
+        font-size: 11px;
+        margin-left: 4px;
+    }
+    .footer {
+        padding: 16px 24px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+        font-size: 12px;
+        color: #64748b;
+    }
+    .cta-button {
+        display: inline-block;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        padding: 12px 28px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        margin: 20px 0;
+    }
+    .empty-message {
+        text-align: center;
+        padding: 20px;
+        color: #94a3b8;
+        font-size: 13px;
     }
 """
 
-DEPT_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#dc2626", "#ea580c"]
 
-SVG_ICON = """
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
-  <rect x="9" y="14" width="2" height="3"/>
-  <rect x="13" y="14" width="2" height="3"/>
-</svg>
-"""
+def dept_card_html_email(dept_name: str, dept_color: str, buckets: dict) -> str:
+    """Generate a single department card for email."""
+    body_html = ""
+    has_employees = False
 
-def shift_style(grp: str, label_text: str):
-    """
-    Returns: (shift_title, icon, border_color, bg_color, text_color, count_bg)
-    """
-    if grp == "صباح":
-        return ("Morning", "☀️", "#f59e0b44", "#fef3c7", "#92400e", "#f59e0b22")
-    if grp == "ظهر":
-        return ("Afternoon", "🌤️", "#f9731644", "#ffedd5", "#9a3412", "#f9731622")
-    if grp == "ليل":
-        return ("Night", "🌙", "#8b5cf644", "#ede9fe", "#5b21b6", "#8b5cf622")
-    if grp == "راحة":
-        return ("Off Day", "🛋️", "#6366f144", "#e0e7ff", "#3730a3", "#6366f122")
-    if grp == "إجازات":
-        # differentiate sick via label
-        if "SICK" in label_text.upper() or "🤒" in label_text:
-            return ("Sick Leave", "🏥", "#ef444444", "#fee2e2", "#991b1b", "#ef444422")
-        return ("Annual Leave", "✈️", "#10b98144", "#d1fae5", "#065f46", "#10b98122")
-    if grp == "تدريب":
-        return ("Training", "📚", "#0ea5e944", "#e0f2fe", "#075985", "#0ea5e922")
-    if grp == "مناوبات":
-        return ("Standby", "🧍", "#94a3b844", "#f1f5f9", "#334155", "#94a3b822")
-    return ("Other", "📌", "#64748b44", "#f8fafc", "#334155", "#64748b22")
-
-def dept_card_html(dept_name: str, dept_color: str, buckets: dict, open_group: str | None = None):
-    total = sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
-    shift_blocks = []
-
-    for g in GROUP_ORDER:
-        rows = buckets.get(g, [])
-        if not rows:
+    for grp in GROUP_ORDER:
+        employees = buckets.get(grp, [])
+        if not employees:
             continue
+        
+        has_employees = True
+        employee_html = ""
+        for emp in employees:
+            employee_html += f'<span class="employee-badge">{emp["name"]}<span class="shift-label">{emp["shift"]}</span></span>'
 
-        # use first row label for style decision (sick vs annual)
-        first_label = rows[0]["shift"] if rows else ""
-        title, icon, border, bg, text_color, count_bg = shift_style(g, first_label)
+        body_html += f"""
+        <div class="shift-group">
+            <div class="group-title">{grp}</div>
+            <div class="employee-list">
+                {employee_html}
+            </div>
+        </div>
+        """
 
-        # open only one group if requested
-        open_attr = " open" if (open_group and g == open_group) else ""
-
-        emp_rows_html = []
-        for i, x in enumerate(rows):
-            alt = " empRowAlt" if i % 2 == 1 else ""
-            emp_rows_html.append(
-                f"""<div class="empRow{alt}">
-       <span class="empName">{x["name"]}</span>
-       <span class="empStatus" style="color:{text_color};">{x["shift"]}</span>
-     </div>"""
-            )
-
-        shift_blocks.append(
-            f"""
-    <details class="shiftCard" style="border:1px solid {border}; background:{bg};"{open_attr}>
-      <summary class="shiftSummary" style="background:{bg}; border-bottom:1px solid {border.replace('44','33')};">
-        <span class="shiftIcon">{icon}</span>
-        <span class="shiftLabel" style="color:{text_color};">{title}</span>
-        <span class="shiftCount" style="background:{count_bg}; color:{text_color};">{len(rows)}</span>
-      </summary>
-      <div class="shiftBody">
-        {''.join(emp_rows_html)}
-      </div>
-    </details>
-            """
-        )
-
-    if not shift_blocks:
-        shift_blocks_html = '<div class="shiftStack"><div class="footer" style="margin:0; padding:14px 0;">No data for today</div></div>'
-    else:
-        shift_blocks_html = f'<div class="shiftStack">{"".join(shift_blocks)}</div>'
+    if not has_employees:
+        body_html = '<div class="empty-message">No employees scheduled</div>'
 
     return f"""
-    <div class="deptCard">
-      <div style="height:5px; background:linear-gradient(to right, {dept_color}, {dept_color}cc);"></div>
-
-      <div class="deptHead" style="border-bottom:2px solid {dept_color}18;">
-        <div class="deptIcon" style="background:{dept_color}15; color:{dept_color};">
-          {SVG_ICON}
+    <div class="dept-card">
+        <div class="dept-header" style="background-color: {dept_color};">
+            📋 {dept_name}
         </div>
-        <div class="deptTitle">{dept_name}</div>
-        <div class="deptBadge" style="background:{dept_color}12; color:{dept_color}; border:1px solid {dept_color}28;">
-          <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">{total}</span>
+        <div class="dept-body">
+            {body_html}
         </div>
-      </div>
-
-      {shift_blocks_html}
     </div>
     """
 
-def page_shell_html(date_label: str, employees_total: int, departments_total: int, dept_cards_html: str, cta_url: str, sent_time: str):
-    return f"""<!doctype html>
+
+def email_html(date_label: str, employees_total: int, departments_total: int, dept_cards_html: str, cta_url: str, sent_time: str):
+    """Generate the complete email HTML."""
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>Duty Roster</title>
-  <style>
-{CSS}
-  </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Duty Roster</title>
+    <style>
+        {EMAIL_CSS}
+    </style>
 </head>
 <body>
-<div class="wrap">
+    <div class="email-container">
+        <div class="header">
+            <h1>📋 Duty Roster</h1>
+            <p>{date_label}</p>
+        </div>
 
-  <!-- ════ HEADER ════ -->
-  <div class="header">
-    <h1>📋 Duty Roster</h1>
-    <div class="dateTag">📅 {date_label}</div>
-  </div>
+        <div class="summary-bar">
+            <div class="summary-chip">
+                <div class="chip-val">{employees_total}</div>
+                <div class="chip-label">Employees</div>
+            </div>
+            <div class="summary-chip">
+                <div class="chip-val" style="color: #059669;">{departments_total}</div>
+                <div class="chip-label">Departments</div>
+            </div>
+        </div>
 
-  <!-- ════ SUMMARY CHIPS ════ -->
-  <div class="summaryBar">
-    <div class="summaryChip">
-      <div class="chipVal">{employees_total}</div>
-      <div class="chipLabel">Employees</div>
+        <div class="content">
+            {dept_cards_html}
+            
+            <div style="text-align: center;">
+                <a href="{cta_url}" class="cta-button">🌙 View Full Roster</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            Sent at <strong>{sent_time}</strong> · {date_label}
+        </div>
     </div>
-    <div class="summaryChip">
-      <div class="chipVal" style="color:#059669;">{departments_total}</div>
-      <div class="chipLabel">Departments</div>
-    </div>
-  </div>
-
-  <!-- ════ DEPARTMENT CARDS ════ -->
-  {dept_cards_html}
-
-  <!-- ════ CTA ════ -->
-  <div class="btnWrap">
-    <a class="btn" href="{cta_url}">📋 View Full Duty Roster</a>
-  </div>
-
-  <!-- ════ FOOTER ════ -->
-  <div class="footer">
-    Sent at <strong>{sent_time}</strong>
-     &nbsp;·&nbsp; Total: <strong>{employees_total} employees</strong>
-  </div>
-
-</div>
 </body>
 </html>"""
 
 
-# =========================
-# Email
-# =========================
-def send_email(subject: str, html: str):
-    if not (SMTP_HOST and SMTP_USER and SMTP_PASS and MAIL_FROM and MAIL_TO):
+def send_email(subject: str, html_content: str):
+    """Send email with HTML content."""
+    if not all([SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_FROM, MAIL_TO]):
+        print("⚠️ Email settings incomplete, skipping email send")
         return
-    msg = MIMEText(html, "html", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = MAIL_FROM
-    msg["To"] = MAIL_TO
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
-        s.starttls()
-        s.login(SMTP_USER, SMTP_PASS)
-        s.sendmail(MAIL_FROM, [x.strip() for x in MAIL_TO.split(",") if x.strip()], msg.as_string())
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = MAIL_FROM
+        msg["To"] = MAIL_TO
+
+        # Attach HTML
+        msg.attach(MIMEText(html_content, "html"))
+
+        # Send
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(MAIL_FROM, MAIL_TO.split(","), msg.as_string())
+
+        print(f"✅ Email sent to {MAIL_TO}")
+
+    except Exception as e:
+        print(f"❌ Email send failed: {e}")
 
 
-# =========================
-# Main
-# =========================
-
-def build_cards_for_date(wb, target_date: datetime, active_group: str):
-    """Build department cards HTML + totals for a given date."""
-    today_dow = (target_date.weekday() + 1) % 7  # Sun=0..Sat=6
-    today_day = target_date.day
+def build_cards_for_date(wb, dt: datetime, active_group: str):
+    """Build department cards for a specific date."""
+    today_dow = (dt.weekday() + 1) % 7
+    today_day = dt.day
 
     dept_cards = []
     employees_total = 0
@@ -634,8 +549,7 @@ def build_cards_for_date(wb, target_date: datetime, active_group: str):
             buckets.setdefault(grp, []).append({"name": name, "shift": label})
 
         dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
-        open_group_full = active_group if AUTO_OPEN_ACTIVE_SHIFT_IN_FULL else None
-        dept_cards.append(dept_card_html(dept_name, dept_color, buckets, open_group=open_group_full))
+        dept_cards.append(dept_card_html_email(dept_name, dept_color, buckets))
 
         employees_total += sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
         depts_count += 1
@@ -643,186 +557,22 @@ def build_cards_for_date(wb, target_date: datetime, active_group: str):
     return "\n".join(dept_cards), employees_total, depts_count
 
 
-def page_shell_html_full_with_picker(month_iso: str, employees_total: int, departments_total: int, dept_cards_html: str, cta_url: str, sent_time: str):
-    """Full page with a date picker. It loads per-day HTML from ./data/roster.json."""
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>Duty Roster</title>
-  <style>
-{CSS}
-    /* Date picker inside header */
-    .datePicker {{
-      margin-top:10px;
-      background:rgba(255,255,255,.18);
-      padding:6px 14px;
-      border-radius:30px;
-      border:1px solid rgba(255,255,255,.30);
-      color:#fff;
-      font-size:13px;
-      font-weight:700;
-      outline:none;
-    }}
-    .datePicker::-webkit-calendar-picker-indicator {{
-      filter: invert(1);
-      opacity: .9;
-      cursor: pointer;
-    }}
-  </style>
-</head>
-<body>
-<div class="wrap">
-
-  <div class="header">
-    <h1>📋 Duty Roster</h1>
-    <input id="datePicker" class="datePicker" type="date" aria-label="Choose date">
-  </div>
-
-  <div class="summaryBar">
-    <div class="summaryChip">
-      <div id="empCount" class="chipVal">{employees_total}</div>
-      <div class="chipLabel">Employees</div>
-    </div>
-    <div class="summaryChip">
-      <div id="deptCount" class="chipVal" style="color:#059669;">{departments_total}</div>
-      <div class="chipLabel">Departments</div>
-    </div>
-  </div>
-
-  <div id="content">
-    {dept_cards_html}
-  </div>
-
-  <div class="btnWrap">
-    <a class="btn" href="{cta_url}">🌙 View NOW</a>
-  </div>
-
-  <div class="footer">
-    Sent at <strong>{sent_time}</strong>
-     &nbsp;·&nbsp; Month: <strong>{month_iso}</strong>
-  </div>
-
-</div>
-
-<script>
-(async function() {{
-  const picker = document.getElementById('datePicker');
-  const content = document.getElementById('content');
-  const empCount = document.getElementById('empCount');
-
-  const res = await fetch('./data/roster.json', {{ cache: 'no-store' }});
-  const data = await res.json();
-
-  const days = Object.keys(data.days || {{}}).sort();
-  if (!days.length) return;
-
-  const urlDate = new URLSearchParams(location.search).get('date');
-  const defaultDay = (urlDate && data.days[urlDate]) ? urlDate : (data.default_day || days[0]);
-
-  picker.min = days[0];
-  picker.max = days[days.length - 1];
-  picker.value = defaultDay;
-
-  function render(dayISO) {{
-    const d = data.days[dayISO];
-    if (!d) {{
-      content.innerHTML = '<div class="deptCard" style="padding:16px;text-align:center;">No data for this date.</div>';
-      empCount.textContent = '0';
-      return;
-    }}
-    content.innerHTML = d.cards_html || '';
-    empCount.textContent = String(d.employees_total || 0);
-    history.replaceState({{}}, '', '?date=' + dayISO);
-  }}
-
-  render(defaultDay);
-  picker.addEventListener('change', (e) => render(e.target.value));
-}})();
-</script>
-
-</body>
-</html>"""
-
 def main():
     if not EXCEL_URL:
         raise RuntimeError("EXCEL_URL missing")
 
     now = datetime.now(TZ)
     effective = roster_effective_datetime(now)
-    # Sun=0..Sat=6 (based on roster effective date)
     today_dow = (effective.weekday() + 1) % 7
     today_day = effective.day
 
-    active_group = current_shift_key(now)  # "صباح" / "ظهر" / "ليل"
+    active_group = current_shift_key(now)
     pages_base = (PAGES_BASE_URL or infer_pages_base_url()).rstrip("/")
 
     data = download_excel(EXCEL_URL)
     wb = load_workbook(BytesIO(data), data_only=True)
 
-    dept_cards_all = []
-    dept_cards_now = []
-    employees_total_all = 0
-    employees_total_now = 0
-    depts_count = 0
-
-    for idx, (sheet_name, dept_name) in enumerate(DEPARTMENTS):
-        if sheet_name not in wb.sheetnames:
-            continue
-
-        ws = wb[sheet_name]
-        days_row, date_row = find_days_and_dates_rows(ws)
-        day_col = find_day_col(ws, days_row, date_row, today_dow, today_day)
-
-        if not (days_row and date_row and day_col):
-            # skip if sheet layout unexpected
-            continue
-
-        start_row = date_row + 1
-        emp_col = find_employee_col(ws, start_row=start_row)
-        if not emp_col:
-            continue
-
-        buckets = {k: [] for k in GROUP_ORDER}
-        buckets_now = {k: [] for k in GROUP_ORDER}
-
-        for r in range(start_row, ws.max_row + 1):
-            name = norm(ws.cell(row=r, column=emp_col).value)
-            if not looks_like_employee_name(name):
-                continue
-
-            raw = norm(ws.cell(row=r, column=day_col).value)
-            if not looks_like_shift_code(raw):
-                continue
-
-            label, grp = map_shift(raw)
-            buckets.setdefault(grp, []).append({"name": name, "shift": label})
-
-            if grp == active_group:
-                buckets_now.setdefault(grp, []).append({"name": name, "shift": label})
-
-        dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
-        card_all = dept_card_html(dept_name, dept_color, buckets, open_group=None)
-        dept_cards_all.append(card_all)
-
-        # For NOW page: open the active shift group by default
-        card_now = dept_card_html(dept_name, dept_color, buckets_now, open_group=active_group)
-        dept_cards_now.append(card_now)
-
-        employees_total_all += sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
-        employees_total_now += sum(len(buckets_now.get(g, [])) for g in GROUP_ORDER)
-
-        depts_count += 1
-
-    
-# pages
-    os.makedirs("docs", exist_ok=True)
-    os.makedirs("docs/now", exist_ok=True)
-    os.makedirs("docs/data", exist_ok=True)
-
-    # Display date based on roster effective date
+    # Display date
     try:
         date_label = effective.strftime("%-d %B %Y")
     except Exception:
@@ -830,59 +580,23 @@ def main():
 
     sent_time = now.strftime("%H:%M")
 
-    full_url = f"{pages_base}/"
-    now_url = f"{pages_base}/now/"
-
-    # Build per-day HTML for the whole month (static JSON for the date picker)
-    month_iso = effective.strftime("%Y-%m")
-    year = effective.year
-    month = effective.month
-    last_day = calendar.monthrange(year, month)[1]
-
-    roster_days = {}
-    for d in range(1, last_day + 1):
-        dt = effective.replace(day=d)
-        cards_html, emp_total, dept_total = build_cards_for_date(wb, dt, active_group)
-        day_iso = dt.strftime("%Y-%m-%d")
-        roster_days[day_iso] = {
-            "cards_html": cards_html,
-            "employees_total": emp_total,
-            "departments_total": dept_total,
-        }
-
-    default_day = effective.strftime("%Y-%m-%d")
-    with open("docs/data/roster.json", "w", encoding="utf-8") as f:
-        json.dump({"month": month_iso, "default_day": default_day, "days": roster_days}, f, ensure_ascii=False)
-
-    # Full page with picker (initially renders default day)
-    cards_today, emp_today, dept_today = build_cards_for_date(wb, effective, active_group)
-    html_full = page_shell_html_full_with_picker(
-        month_iso=month_iso,
-        employees_total=emp_today,
-        departments_total=dept_today,
-        dept_cards_html=cards_today,
-        cta_url=now_url,
-        sent_time=sent_time,
-    )
-
-    html_now = page_shell_html(
+    # Build email content
+    cards_html, emp_total, dept_total = build_cards_for_date(wb, effective, active_group)
+    
+    html_email = email_html(
         date_label=date_label,
-        employees_total=employees_total_now,
-        departments_total=depts_count,
-        dept_cards_html="\n".join(dept_cards_now),
-        cta_url=full_url,  # button on now page goes to FULL page
+        employees_total=emp_total,
+        departments_total=dept_total,
+        dept_cards_html=cards_html,
+        cta_url=f"{pages_base}/now/",
         sent_time=sent_time,
     )
 
-    with open("docs/index.html", "w", encoding="utf-8") as f:
-        f.write(html_full)
-
-    with open("docs/now/index.html", "w", encoding="utf-8") as f:
-        f.write(html_now)
-
-    # Email: send NOW page design (same exact template)
+    # Send email
     subject = f"Duty Roster — {active_group} — {effective.strftime('%Y-%m-%d')}"
-    send_email(subject, html_now)
+    send_email(subject, html_email)
+    
+    print(f"✅ Process completed: {dept_total} departments, {emp_total} employees")
 
 
 if __name__ == "__main__":

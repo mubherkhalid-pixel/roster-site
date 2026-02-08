@@ -189,7 +189,7 @@
   <div class="header">
     <h1>📋 Duty Roster</h1>
     <div class="dateTag" id="dateTag" role="button" tabindex="0" style="cursor:pointer;">📅 16 February 2026</div>
-    <input id="datePicker" type="date" value="2026-02-16" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true" />
+    <input id="datePicker" type="date" value="2026-02-16" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" />
   </div>
 
   <!-- ════ SUMMARY CHIPS ════ -->
@@ -859,7 +859,7 @@
 
   <!-- ════ FOOTER ════ -->
   <div class="footer">
-    Sent at <strong>16:53</strong>
+    Sent at <strong>22:22</strong>
      &nbsp;·&nbsp; Total: <strong>80 employees</strong>
   </div>
 
@@ -872,6 +872,16 @@
   if(!tag || !picker) return;
 
   function openPicker(){
+    // Position the (hidden) input مباشرة تحت التاريخ حتى يظهر التقويم بالمكان الصحيح
+    try{
+      var r = tag.getBoundingClientRect();
+      var wrap = tag.closest('.header') || document.body;
+      var wr = wrap.getBoundingClientRect();
+      picker.style.left = (r.left - wr.left) + 'px';
+      picker.style.top  = (r.bottom - wr.top + 6) + 'px';
+      picker.style.width = Math.max(120, r.width) + 'px';
+    }catch(e){}
+
     try{
       if (picker.showPicker) { picker.showPicker(); }
       else { picker.focus(); picker.click(); }

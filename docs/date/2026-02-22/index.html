@@ -189,13 +189,13 @@
   <div class="header">
     <h1>📋 Duty Roster</h1>
     <div class="dateTag" id="dateTag" role="button" tabindex="0" style="cursor:pointer;">📅 22 February 2026</div>
-    <input id="datePicker" type="date" value="2026-02-22" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true" />
+    <input id="datePicker" type="date" value="2026-02-22" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" />
   </div>
 
   <!-- ════ SUMMARY CHIPS ════ -->
   <div class="summaryBar">
     <div class="summaryChip">
-      <div class="chipVal">78</div>
+      <div class="chipVal">80</div>
       <div class="chipLabel">Employees</div>
     </div>
     <div class="summaryChip">
@@ -512,7 +512,7 @@
         <div class="deptTitle">Export Checker</div>
         <div class="deptBadge" style="background:#05966912; color:#059669; border:1px solid #05966928;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">35</span>
+          <span style="font-size:17px;font-weight:900;">36</span>
         </div>
       </div>
 
@@ -610,6 +610,20 @@
       </div>
     </details>
             
+    <details class="shiftCard" style="border:1px solid #94a3b844; background:#f1f5f9;">
+      <summary class="shiftSummary" style="background:#f1f5f9; border-bottom:1px solid #94a3b833;">
+        <span class="shiftIcon">🧍</span>
+        <span class="shiftLabel" style="color:#334155;">Standby</span>
+        <span class="shiftCount" style="background:#94a3b822; color:#334155;">1</span>
+      </summary>
+      <div class="shiftBody">
+        <div class="empRow">
+       <span class="empName">Ahmed Al Hashmi - 82616</span>
+       <span class="empStatus" style="color:#334155;">🧍 Standby</span>
+     </div>
+      </div>
+    </details>
+            
     <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff;">
       <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
         <span class="shiftIcon">🛋️</span>
@@ -696,7 +710,7 @@
         <div class="deptTitle">Export Operators</div>
         <div class="deptBadge" style="background:#dc262612; color:#dc2626; border:1px solid #dc262628;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">18</span>
+          <span style="font-size:17px;font-weight:900;">19</span>
         </div>
       </div>
 
@@ -767,6 +781,20 @@
       </div>
     </details>
             
+    <details class="shiftCard" style="border:1px solid #94a3b844; background:#f1f5f9;">
+      <summary class="shiftSummary" style="background:#f1f5f9; border-bottom:1px solid #94a3b833;">
+        <span class="shiftIcon">🧍</span>
+        <span class="shiftLabel" style="color:#334155;">Standby</span>
+        <span class="shiftCount" style="background:#94a3b822; color:#334155;">1</span>
+      </summary>
+      <div class="shiftBody">
+        <div class="empRow">
+       <span class="empName">Salim Sulieman - 8722</span>
+       <span class="empStatus" style="color:#334155;">🧍 Standby</span>
+     </div>
+      </div>
+    </details>
+            
     <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff;">
       <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
         <span class="shiftIcon">🛋️</span>
@@ -820,8 +848,8 @@
 
   <!-- ════ FOOTER ════ -->
   <div class="footer">
-    Sent at <strong>16:53</strong>
-     &nbsp;·&nbsp; Total: <strong>78 employees</strong>
+    Sent at <strong>17:36</strong>
+     &nbsp;·&nbsp; Total: <strong>80 employees</strong>
   </div>
 
 </div>
@@ -833,6 +861,16 @@
   if(!tag || !picker) return;
 
   function openPicker(){
+    // Position the (hidden) input مباشرة تحت التاريخ حتى يظهر التقويم بالمكان الصحيح
+    try{
+      var r = tag.getBoundingClientRect();
+      var wrap = tag.closest('.header') || document.body;
+      var wr = wrap.getBoundingClientRect();
+      picker.style.left = (r.left - wr.left) + 'px';
+      picker.style.top  = (r.bottom - wr.top + 6) + 'px';
+      picker.style.width = Math.max(120, r.width) + 'px';
+    }catch(e){}
+
     try{
       if (picker.showPicker) { picker.showPicker(); }
       else { picker.focus(); picker.click(); }

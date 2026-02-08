@@ -1,33 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""
-═══════════════════════════════════════════════════════════════════════════
-🚀 Duty Roster System - نظام إدارة المناوبات الذكي
-═══════════════════════════════════════════════════════════════════════════
-
-نظام متكامل لإدارة وإرسال جداول المناوبات تلقائياً:
-✅ إرسال بريد احترافي 3 مرات يومياً
-✅ تحديث الصفحة الديناميكي
-✅ دعم اللغة العربية الكامل
-✅ معالجة أخطاء شاملة
-
-المتطلبات:
-pip install requests openpyxl
-
-المتغيرات البيئية:
-EXCEL_URL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,
-MAIL_FROM, MAIL_TO, PAGES_BASE_URL
-
-═══════════════════════════════════════════════════════════════════════════
-"""
-
 import os
 import re
-import sys
 import json
-import calendar
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 from io import BytesIO
 
@@ -35,18 +9,13 @@ import requests
 from openpyxl import load_workbook
 import smtplib
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# ⚙️ CONFIGURATION & SETTINGS
-# ═══════════════════════════════════════════════════════════════════════════
-
-# API & URLs
+# =========================
+# Settings / Secrets
+# =========================
 EXCEL_URL = os.environ.get("EXCEL_URL", "").strip()
-PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "https://khalidsaif912.github.io/roster-site").strip()
 
-# Email Settings
 SMTP_HOST = os.environ.get("SMTP_HOST", "").strip()
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER", "").strip()
@@ -54,10 +23,14 @@ SMTP_PASS = os.environ.get("SMTP_PASS", "").strip()
 MAIL_FROM = os.environ.get("MAIL_FROM", "").strip()
 MAIL_TO = os.environ.get("MAIL_TO", "").strip()
 
-# Timezone
-TZ = ZoneInfo("Asia/Muscat")
+SUBSCRIBE_URL = os.environ.get("SUBSCRIBE_URL", "").strip()
+SUBSCRIBE_TOKEN = os.environ.get("SUBSCRIBE_TOKEN", "").strip()
 
-# Excel Configuration
+
+PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "").strip()  # optional
+TZ = ZoneInfo("Asia/Muscat")
+AUTO_OPEN_ACTIVE_SHIFT_IN_FULL = True
+# Excel sheets
 DEPARTMENTS = [
     ("Officers", "Officers"),
     ("Supervisors", "Supervisors"),
@@ -66,10 +39,9 @@ DEPARTMENTS = [
     ("Export Operators", "Export Operators"),
 ]
 
-# Day Names (for matching)
+# For day-row matching only
 DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
-# Shift Codes Mapping
 SHIFT_MAP = {
     "MN06": ("🌅 Morning (MN06)", "صباح"),
     "ME06": ("🌅 Morning (ME06)", "صباح"),
@@ -81,81 +53,30 @@ SHIFT_MAP = {
     "NE22": ("🌙 Night (NE22)", "ليل"),
 }
 
-# Shift Groups Order
 GROUP_ORDER = ["صباح", "ظهر", "ليل", "مناوبات", "راحة", "إجازات", "تدريب", "أخرى"]
 
-# Department Colors
-DEPT_COLORS = {
-    "Officers": "#1F2937",
-    "Supervisors": "#3B82F6",
-    "Load Control": "#10B981",
-    "Export Checker": "#F59E0B",
-    "Export Operators": "#EF4444",
-}
 
-# Shift Colors
-SHIFT_COLORS = {
-    "صباح": "#FBBF24",
-    "ظهر": "#F97316",
-    "ليل": "#1E293B",
-    "مناوبات": "#8B5CF6",
-    "راحة": "#06B6D4",
-    "إجازات": "#EC4899",
-    "تدريب": "#3B82F6",
-    "أخرى": "#6B7280",
-}
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# 🛠️ UTILITY FUNCTIONS
-# ═══════════════════════════════════════════════════════════════════════════
-
-def log_info(message: str) -> None:
-    """Print info message with timestamp"""
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    print(f"ℹ️  [{timestamp}] {message}")
-
-
-def log_success(message: str) -> None:
-    """Print success message"""
-    print(f"✅ {message}")
-
-
-def log_error(message: str) -> None:
-    """Print error message"""
-    print(f"❌ {message}")
-
-
-def log_warning(message: str) -> None:
-    """Print warning message"""
-    print(f"⚠️  {message}")
-
-
+# =========================
+# Helpers
+# =========================
 def clean(v) -> str:
-    """Clean and normalize value"""
     if v is None:
         return ""
     return re.sub(r"\s+", " ", str(v).replace("\u00A0", " ")).strip()
 
-
 def to_western_digits(s: str) -> str:
-    """Convert Arabic/Farsi digits to Western"""
     if s is None:
         return ""
     s = str(s)
     arabic = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}
-    farsi = {'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'}
+    farsi  = {'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'}
     mp = {**arabic, **farsi}
     return "".join(mp.get(ch, ch) for ch in s)
 
-
 def norm(s) -> str:
-    """Normalize value: clean + convert digits"""
     return clean(to_western_digits(s))
 
-
 def looks_like_time(s: str) -> bool:
-    """Check if value looks like time"""
     up = norm(s).upper()
     return bool(
         re.match(r"^\d{3,4}\s*H?\s*-\s*\d{3,4}\s*H?$", up)
@@ -163,9 +84,7 @@ def looks_like_time(s: str) -> bool:
         or re.match(r"^\d{3,4}$", up)
     )
 
-
 def looks_like_employee_name(s: str) -> bool:
-    """Check if value looks like employee name"""
     v = norm(s)
     if not v:
         return False
@@ -174,14 +93,14 @@ def looks_like_employee_name(s: str) -> bool:
         return False
     if re.search(r"(ANNUAL\s*LEAVE|SICK\s*LEAVE|REST\/OFF\s*DAY|REST|OFF\s*DAY|TRAINING|STANDBY)", up):
         return False
+    # قوي: اسم - رقم
     if re.search(r"-\s*\d{3,}", v) and re.search(r"[A-Za-z\u0600-\u06FF]", v):
         return True
+    # بديل: كلمتين أو أكثر
     parts = [p for p in v.split(" ") if p]
     return bool(re.search(r"[A-Za-z\u0600-\u06FF]", v) and len(parts) >= 2)
 
-
 def looks_like_shift_code(s: str) -> bool:
-    """Check if value looks like shift code"""
     v = norm(s).upper()
     if not v:
         return False
@@ -195,13 +114,12 @@ def looks_like_shift_code(s: str) -> bool:
         return True
     return False
 
-
 def map_shift(code: str):
-    """Map shift code to display name and group"""
     c0 = norm(code)
     c = c0.upper()
     if not c or c == "0":
         return ("-", "أخرى")
+
     if c == "AL" or "ANNUAL LEAVE" in c:
         return ("🏖️ Leave", "إجازات")
     if c == "SL" or "SICK LEAVE" in c:
@@ -214,54 +132,37 @@ def map_shift(code: str):
         return ("🧍 Standby", "مناوبات")
     if c in ["OFF", "O"] or re.search(r"(REST|OFF\s*DAY|REST\/OFF)", c):
         return ("🛌 Off Day", "راحة")
+
     if c in SHIFT_MAP:
         return SHIFT_MAP[c]
+
     return (c0, "أخرى")
 
-
 def current_shift_key(now: datetime) -> str:
-    """Determine current shift based on time"""
-    hour = now.hour
-    if 6 <= hour < 14:
-        return "صباح"
-    elif 14 <= hour < 22:
-        return "ظهر"
-    else:
+    # 21:00–04:59 Night, 14:00–20:59 Afternoon, else Morning
+    t = now.hour * 60 + now.minute
+    if t >= 21 * 60 or t < 5 * 60:
         return "ليل"
-
-
-def roster_effective_datetime(now: datetime) -> datetime:
-    """Get effective roster date (night shift uses yesterday's date until 06:00)"""
-    active = current_shift_key(now)
-    if active == "ليل" and now.hour < 6:
-        return now - timedelta(days=1)
-    return now
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# 📥 EXCEL PROCESSING
-# ═══════════════════════════════════════════════════════════════════════════
+    if t >= 14 * 60:
+        return "ظهر"
+    return "صباح"
 
 def download_excel(url: str) -> bytes:
-    """Download Excel file from URL"""
-    log_info("Downloading Excel file...")
-    try:
-        r = requests.get(url, timeout=60)
-        r.raise_for_status()
-        log_success("Excel file downloaded")
-        return r.content
-    except Exception as e:
-        log_error(f"Failed to download Excel: {e}")
-        raise
+    r = requests.get(url, timeout=60)
+    r.raise_for_status()
+    return r.content
+
+def infer_pages_base_url():
+    return "https://khalidsaif912.github.io/roster-site"
 
 
+# =========================
+# Detect rows/cols (Days row + Date numbers row)
+# =========================
 def _row_values(ws, r: int):
-    """Get all values from a row"""
     return [norm(ws.cell(row=r, column=c).value) for c in range(1, ws.max_column + 1)]
 
-
 def _count_day_tokens(vals) -> int:
-    """Count how many day names are in values"""
     ups = [v.upper() for v in vals if v]
     count = 0
     for d in DAYS:
@@ -269,9 +170,7 @@ def _count_day_tokens(vals) -> int:
             count += 1
     return count
 
-
 def _is_date_number(v: str) -> bool:
-    """Check if value is a date number (1-31)"""
     v = norm(v)
     if not v:
         return False
@@ -280,9 +179,10 @@ def _is_date_number(v: str) -> bool:
         return 1 <= n <= 31
     return False
 
-
 def find_days_and_dates_rows(ws, scan_rows: int = 80):
-    """Find rows containing days (SUN-SAT) and date numbers"""
+    """
+    يبحث عن صف فيه SUN..SAT بكثرة ثم صف تحته فيه أرقام 1..31
+    """
     max_r = min(ws.max_row, scan_rows)
     days_row = None
 
@@ -305,22 +205,22 @@ def find_days_and_dates_rows(ws, scan_rows: int = 80):
 
     return days_row, date_row
 
-
 def find_day_col(ws, days_row: int, date_row: int, today_dow: int, today_day: int):
-    """Find column for today's date"""
+    """
+    يثبت العمود الصحيح باستخدام اليوم + رقم التاريخ
+    """
     if not days_row or not date_row:
         return None
 
     day_key = DAYS[today_dow]
-    
-    # Prefer day + date match
+    # Prefer (day + date) match
     for c in range(1, ws.max_column + 1):
         top = norm(ws.cell(row=days_row, column=c).value).upper()
         bot = norm(ws.cell(row=date_row, column=c).value)
         if day_key in top and _is_date_number(bot) and int(float(bot)) == today_day:
             return c
 
-    # Fallback: date only
+    # Fallback: date-only
     for c in range(1, ws.max_column + 1):
         bot = norm(ws.cell(row=date_row, column=c).value)
         if _is_date_number(bot) and int(float(bot)) == today_day:
@@ -328,9 +228,7 @@ def find_day_col(ws, days_row: int, date_row: int, today_dow: int, today_day: in
 
     return None
 
-
 def find_employee_col(ws, start_row: int, max_scan_rows: int = 200):
-    """Find column containing employee names"""
     scores = {}
     r_end = min(ws.max_row, start_row + max_scan_rows)
     for r in range(start_row, r_end + 1):
@@ -342,298 +240,613 @@ def find_employee_col(ws, start_row: int, max_scan_rows: int = 200):
     return max(scores.items(), key=lambda kv: kv[1])[0]
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 🎨 HTML GENERATION FOR COLLAPSIBLE CARDS
-# ═══════════════════════════════════════════════════════════════════════════
-
-def employee_item_html(name: str, shift: str, shift_group: str, color_code: str) -> str:
-    """Create single employee item HTML"""
-    color = SHIFT_COLORS.get(shift_group, "#6B7280")
-    return f"""
-    <div class="employee-item" style="border-left-color: {color};">
-        <div class="employee-dot dot-{color_code}"></div>
-        <div class="employee-info">
-            <span class="employee-name">{name}</span>
-            <span class="employee-shift">{shift}</span>
-        </div>
-    </div>
-    """
-
-
-def shift_group_html(group_name: str, employees: list, color_code: str) -> str:
-    """Create shift group HTML"""
-    if not employees:
-        return ""
-    
-    color = SHIFT_COLORS.get(group_name, "#6B7280")
-    employees_html = "".join([
-        employee_item_html(emp["name"], emp["shift"], group_name, color_code) 
-        for emp in employees
-    ])
-    
-    return f"""
-    <div class="shift-group">
-        <div class="shift-group-header shift-line-{color_code}">
-            <div class="shift-indicator-line color-{color_code}"></div>
-            <span class="shift-name">{group_name}</span>
-            <span class="shift-count">({len(employees)})</span>
-        </div>
-        <div class="employees-list">
-            {employees_html}
-        </div>
-    </div>
-    """
-
-
-def department_card_html(dept_name: str, dept_color: str, buckets: dict) -> str:
-    """Create collapsible department card"""
-    groups_html = ""
-    total_employees = 0
-    
-    # Color mapping
-    color_map = {
-        "صباح": "morning",
-        "ظهر": "afternoon",
-        "ليل": "night",
-        "مناوبات": "standby",
-        "راحة": "rest",
-        "إجازات": "leave",
-        "تدريب": "training",
-        "أخرى": "other"
+# =========================
+# EXACT DESIGN (as you provided)
+# =========================
+CSS = r"""
+    /* ═══════ RESET ═══════ */
+    body {
+      margin:0; padding:0;
+      background:#eef1f7;
+      font-family:'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
     }
-    
-    for grp in GROUP_ORDER:
-        employees = buckets.get(grp, [])
-        if employees:
-            color_code = color_map.get(grp, "other")
-            groups_html += shift_group_html(grp, employees, color_code)
-            total_employees += len(employees)
-    
-    if not groups_html:
-        groups_html = '<div class="empty-message">No employees scheduled</div>'
-    
-    return f"""
-    <div class="dept-card">
-        <div class="dept-header" style="background: {dept_color};">
-            <div class="dept-header-left">
-                <span class="dept-icon">📋</span>
-                <span>{dept_name}</span>
-            </div>
-            <div class="dept-count">{total_employees}</div>
-            <span class="toggle-icon">▼</span>
-        </div>
-        <div class="dept-body">
-            {groups_html}
-        </div>
-    </div>
-    """
+    * { box-sizing:border-box; }
 
+    /* ═══════ WRAP ═══════ */
+    .wrap { max-width:680px; margin:0 auto; padding:16px 14px 28px; }
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 📧 EMAIL GENERATION & SENDING
-# ═══════════════════════════════════════════════════════════════════════════
+    /* ═══════ HEADER ═══════ */
+    .header {
+      background:linear-gradient(135deg, #1e40af 0%, #1976d2 50%, #0ea5e9 100%);
+      color:#fff;
+      padding:26px 18px 24px;
+      border-radius:20px;
+      text-align:center;
+      box-shadow:0 8px 28px rgba(30,64,175,.25);
+      position:relative;
+      overflow:hidden;
+    }
+    .header::before {
+      content:''; position:absolute;
+      top:-30px; right:-40px;
+      width:140px; height:140px;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+    }
+    .header::after {
+      content:''; position:absolute;
+      bottom:-50px; left:-30px;
+      width:160px; height:160px;
+      border-radius:50%;
+      background:rgba(255,255,255,.06);
+    }
+    .header h1 { margin:0; font-size:24px; font-weight:800; position:relative; z-index:1; letter-spacing:-.3px; }
+    .header .dateTag {
+      display:inline-block; margin-top:10px;
+      background:rgba(255,255,255,.18);
+      padding:5px 18px; border-radius:30px;
+      font-size:13px; font-weight:600; letter-spacing:.3px;
+      position:relative; z-index:1;
+    }
 
-EMAIL_STYLE = """
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    /* ═══════ SUMMARY BAR ═══════ */
+    .summaryBar { display:flex; justify-content:center; gap:12px; margin-top:14px; }
+    .summaryChip {
+      background:#fff;
+      border:1px solid rgba(15,23,42,.1);
+      border-radius:14px;
+      padding:10px 20px;
+      text-align:center;
+      box-shadow:0 2px 8px rgba(15,23,42,.06);
+    }
+    .summaryChip .chipVal { font-size:22px; font-weight:900; color:#1e40af; }
+    .summaryChip .chipLabel { font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.6px; margin-top:2px; }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    background: #F9FAFB;
-    color: #1F2937;
-    line-height: 1.6;
-}
+    /* ═══════ DEPARTMENT CARD ═══════ */
+    .deptCard {
+      margin-top:18px;
+      background:#fff;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid rgba(15,23,42,.07);
+      box-shadow:0 4px 18px rgba(15,23,42,.08);
+    }
+    .deptHead {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px 16px;
+      background:#fff;
+    }
+    .deptIcon {
+      width:40px; height:40px;
+      border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
+    }
+    .deptTitle { font-size:18px; font-weight:800; color:#1e293b; flex:1; letter-spacing:-.2px; }
+    .deptBadge { min-width:48px; padding:6px 10px; border-radius:12px; text-align:center; }
 
-.wrapper {
-    background: #F9FAFB;
-    padding: 20px 0;
-}
+    /* ═══════ SHIFT STACK ═══════ */
+    .shiftStack { padding:10px; display:flex; flex-direction:column; gap:8px; }
 
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-}
+    /* ═══════ SHIFT CARD — <details> ═══════ */
+    .shiftCard {
+      border-radius:14px;
+      overflow:hidden;
+    }
 
-.header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 48px 30px;
-    text-align: center;
-    color: white;
-}
+    .shiftSummary {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:11px 14px;
+      cursor:pointer;
+      list-style:none;
+      -webkit-appearance:none;
+      appearance:none;
+      user-select:none;
+    }
+    .shiftSummary::-webkit-details-marker { display:none; }
+    .shiftSummary::marker              { display:none; }
 
-.header h1 {
-    font-size: 36px;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
+    .shiftIcon  { font-size:20px; line-height:1; flex-shrink:0; }
+    .shiftLabel { font-size:15px; font-weight:800; flex:1; letter-spacing:-.1px; }
+    .shiftCount {
+      font-size:13px; font-weight:800;
+      padding:3px 10px; border-radius:20px;
+      flex-shrink:0;
+    }
 
-.header p {
-    font-size: 15px;
-    opacity: 0.9;
-}
+    /* chevron يدور لما يفتح */
+    .shiftSummary::after {
+      content:'▾';
+      font-size:14px;
+      color:#94a3b8;
+      transition:transform .2s;
+      flex-shrink:0;
+    }
+    .shiftCard[open] .shiftSummary::after {
+      transform:rotate(180deg);
+    }
 
-.shift-badge {
-    display: inline-block;
-    background: rgba(255,255,255,0.15);
-    padding: 8px 16px;
-    border-radius: 24px;
-    font-size: 12px;
-    font-weight: 700;
-    margin-top: 16px;
-}
+    .shiftBody { background:rgba(255,255,255,.7); }
 
-.stats {
-    padding: 24px 30px;
-    background: #F3F4F6;
-    display: flex;
-    gap: 30px;
-    justify-content: center;
-}
+    /* ── employee row ── */
+    .empRow {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:9px 16px;
+      border-top:1px solid rgba(15,23,42,.06);
+    }
+    .empRowAlt { background:rgba(15,23,42,.02); }
+    .empName  { font-size:15px; font-weight:700; color:#1e293b; }
+    .empStatus { font-size:13px; font-weight:600; }
 
-.stat {
-    text-align: center;
-}
+    /* ═══════ CTA ═══════ */
+    .btnWrap { margin-top:20px; text-align:center; }
+    .btn {
+      display:inline-block;
+      padding:14px 38px;
+      border-radius:16px;
+      background:linear-gradient(135deg, #1e40af, #1976d2);
+      color:#fff !important;
+      text-decoration:none;
+      font-weight:800;
+      font-size:15px;
+      box-shadow:0 6px 20px rgba(30,64,175,.3);
+    }
 
-.stat-num {
-    font-size: 32px;
-    font-weight: 800;
-    color: #667eea;
-    display: block;
-}
+    /* ═══════ FOOTER ═══════ */
+    .footer { margin-top:18px; text-align:center; font-size:12px; color:#94a3b8; padding:12px 0; line-height:1.9; }
+    .footer strong { color:#64748b; }
 
-.stat-txt {
-    font-size: 11px;
-    color: #6B7280;
-    text-transform: uppercase;
-    font-weight: 700;
-}
-
-.content {
-    padding: 36px 30px;
-}
-
-.section-title {
-    font-size: 11px;
-    color: #9CA3AF;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 24px;
-}
-
-.footer {
-    background: #F9FAFB;
-    padding: 28px 30px;
-    border-top: 1px solid #E5E7EB;
-    text-align: center;
-    font-size: 12px;
-    color: #6B7280;
-}
+    /* ═══════ MOBILE ═══════ */
+    @media (max-width:480px){
+      .wrap            { padding:12px 10px 22px; }
+      .header h1       { font-size:21px; }
+      .deptTitle       { font-size:16px; }
+      .empName         { font-size:14px; }
+      .empStatus       { font-size:12px; }
+      .shiftLabel      { font-size:14px; }
+      .summaryBar      { gap:8px; }
+      .summaryChip     { padding:8px 14px; }
+      .summaryChip .chipVal { font-size:19px; }
+    }
 """
 
+DEPT_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#dc2626", "#ea580c"]
 
-def build_email_html(date_label: str, employees_total: int, departments_total: int, 
-                     dept_cards_html: str, cta_url: str, sent_time: str, active_shift: str) -> str:
-    """Build complete email HTML"""
-    return f"""<!DOCTYPE html>
+SVG_ICON = """
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
+  <rect x="9" y="14" width="2" height="3"/>
+  <rect x="13" y="14" width="2" height="3"/>
+</svg>
+"""
+
+def shift_style(grp: str, label_text: str):
+    """
+    Returns: (shift_title, icon, border_color, bg_color, text_color, count_bg)
+    """
+    if grp == "صباح":
+        return ("Morning", "☀️", "#f59e0b44", "#fef3c7", "#92400e", "#f59e0b22")
+    if grp == "ظهر":
+        return ("Afternoon", "🌤️", "#f9731644", "#ffedd5", "#9a3412", "#f9731622")
+    if grp == "ليل":
+        return ("Night", "🌙", "#8b5cf644", "#ede9fe", "#5b21b6", "#8b5cf622")
+    if grp == "راحة":
+        return ("Off Day", "🛋️", "#6366f144", "#e0e7ff", "#3730a3", "#6366f122")
+    if grp == "إجازات":
+        # differentiate sick via label
+        if "SICK" in label_text.upper() or "🤒" in label_text:
+            return ("Sick Leave", "🏥", "#ef444444", "#fee2e2", "#991b1b", "#ef444422")
+        return ("Annual Leave", "✈️", "#10b98144", "#d1fae5", "#065f46", "#10b98122")
+    if grp == "تدريب":
+        return ("Training", "📚", "#0ea5e944", "#e0f2fe", "#075985", "#0ea5e922")
+    if grp == "مناوبات":
+        return ("Standby", "🧍", "#94a3b844", "#f1f5f9", "#334155", "#94a3b822")
+    return ("Other", "📌", "#64748b44", "#f8fafc", "#334155", "#64748b22")
+
+def dept_card_html(dept_name: str, dept_color: str, buckets: dict, open_group: str | None = None):
+    total = sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
+    shift_blocks = []
+
+    for g in GROUP_ORDER:
+        rows = buckets.get(g, [])
+        if not rows:
+            continue
+
+        # use first row label for style decision (sick vs annual)
+        first_label = rows[0]["shift"] if rows else ""
+        title, icon, border, bg, text_color, count_bg = shift_style(g, first_label)
+
+        # open only one group if requested
+        open_attr = " open" if (open_group and g == open_group) else ""
+
+        emp_rows_html = []
+        for i, x in enumerate(rows):
+            alt = " empRowAlt" if i % 2 == 1 else ""
+            emp_rows_html.append(
+                f"""<div class="empRow{alt}">
+       <span class="empName">{x["name"]}</span>
+       <span class="empStatus" style="color:{text_color};">{x["shift"]}</span>
+     </div>"""
+            )
+
+        shift_blocks.append(
+            f"""
+    <details class="shiftCard" style="border:1px solid {border}; background:{bg};"{open_attr}>
+      <summary class="shiftSummary" style="background:{bg}; border-bottom:1px solid {border.replace('44','33')};">
+        <span class="shiftIcon">{icon}</span>
+        <span class="shiftLabel" style="color:{text_color};">{title}</span>
+        <span class="shiftCount" style="background:{count_bg}; color:{text_color};">{len(rows)}</span>
+      </summary>
+      <div class="shiftBody">
+        {''.join(emp_rows_html)}
+      </div>
+    </details>
+            """
+        )
+
+    if not shift_blocks:
+        shift_blocks_html = '<div class="shiftStack"><div class="footer" style="margin:0; padding:14px 0;">No data for today</div></div>'
+    else:
+        shift_blocks_html = f'<div class="shiftStack">{"".join(shift_blocks)}</div>'
+
+    return f"""
+    <div class="deptCard">
+      <div style="height:5px; background:linear-gradient(to right, {dept_color}, {dept_color}cc);"></div>
+
+      <div class="deptHead" style="border-bottom:2px solid {dept_color}18;">
+        <div class="deptIcon" style="background:{dept_color}15; color:{dept_color};">
+          {SVG_ICON}
+        </div>
+        <div class="deptTitle">{dept_name}</div>
+        <div class="deptBadge" style="background:{dept_color}12; color:{dept_color}; border:1px solid {dept_color}28;">
+          <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
+          <span style="font-size:17px;font-weight:900;">{total}</span>
+        </div>
+      </div>
+
+      {shift_blocks_html}
+    </div>
+    """
+
+def page_shell_html(date_label: str, employees_total: int, departments_total: int, dept_cards_html: str,
+                    cta_url: str, sent_time: str, *, roster_by_date_json: str = "", default_date: str = "",
+                    min_date: str = "", max_date: str = "", show_date_picker: bool = False):
+    """
+    If show_date_picker=True, dept_cards_html will be ignored at runtime and replaced by JS-rendered content
+    from roster_by_date_json (month only). The picker will persist selection using localStorage.
+    """
+    date_picker_html = ""
+    script_html = ""
+
+    if show_date_picker and roster_by_date_json:
+        # Input is month-limited
+        date_picker_html = f"""
+        <div style="margin-top:14px; display:flex; justify-content:center;">
+          <div style="background:#fff; border:1px solid rgba(15,23,42,.10); border-radius:14px;
+                      padding:10px 12px; box-shadow:0 2px 8px rgba(15,23,42,.06);">
+            <div style="font-size:12px; font-weight:800; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:.6px;">
+              اختر التاريخ
+            </div>
+            <input id="rosterDate" type="date"
+                   min="{min_date}" max="{max_date}"
+                   style="font-size:14px; padding:10px 12px; border-radius:12px; border:1px solid rgba(15,23,42,.15);
+                          outline:none; width:240px; text-align:center;">
+          </div>
+        </div>
+        """
+
+        script_html = f"""
+<script>
+(function() {{
+  const DATA = {roster_by_date_json};
+  const DEFAULT_DATE = "{default_date}";
+  const LS_KEY = "roster_selected_date";
+
+  function fmtDateLabel(iso) {{
+    // Keep it simple: YYYY-MM-DD
+    return iso;
+  }}
+
+  function applyDate(iso) {{
+    if (!DATA[iso]) iso = DEFAULT_DATE;
+
+    // Update UI
+    const dateTag = document.getElementById("dateTagText");
+    if (dateTag) dateTag.textContent = "📅 " + fmtDateLabel(iso);
+
+    const empVal = document.getElementById("chipEmployees");
+    const deptVal = document.getElementById("chipDepartments");
+    if (empVal) empVal.textContent = DATA[iso].employees_total ?? 0;
+    if (deptVal) deptVal.textContent = DATA[iso].departments_total ?? 0;
+
+    const cards = document.getElementById("deptCards");
+    if (cards) cards.innerHTML = DATA[iso].cards_html || "<div class='deptCard'><div style='padding:16px;text-align:center;color:#94a3b8'>No data</div></div>";
+
+    // Persist
+    try {{ localStorage.setItem(LS_KEY, iso); }} catch(e) {{}}
+
+    // Keep URL shareable without reload
+    try {{
+      const u = new URL(window.location.href);
+      u.searchParams.set("d", iso);
+      window.history.replaceState({{}}, "", u.toString());
+    }} catch(e) {{}}
+  }}
+
+  function initialDate() {{
+    try {{
+      const u = new URL(window.location.href);
+      const q = u.searchParams.get("d");
+      if (q && DATA[q]) return q;
+    }} catch(e) {{}}
+
+    try {{
+      const s = localStorage.getItem(LS_KEY);
+      if (s && DATA[s]) return s;
+    }} catch(e) {{}}
+
+    return DEFAULT_DATE;
+  }}
+
+  // init
+  const d0 = initialDate();
+  const input = document.getElementById("rosterDate");
+  if (input) {{
+    input.value = d0;
+    input.addEventListener("change", function() {{
+      const v = this.value;
+      if (v) applyDate(v);
+    }});
+  }}
+  applyDate(d0);
+}})();
+</script>
+        """
+
+    # When picker is on, we render placeholders that JS fills
+    dept_cards_html = '<div id="deptCards"></div>'
+    employees_total = employees_total or 0
+    departments_total = departments_total or 0
+    date_label = date_label or default_date
+
+    return f"""<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Duty Roster</title>
-    <style>{EMAIL_STYLE}</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Duty Roster</title>
+  <style>
+{CSS}
+  </style>
 </head>
 <body>
-    <table class="wrapper" width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td align="center">
-                <div class="container">
-                    <div class="header">
-                        <h1>📋 DUTY ROSTER</h1>
-                        <p>{date_label}</p>
-                        <div class="shift-badge">🔴 ACTIVE: {active_shift.upper()}</div>
-                    </div>
-                    
-                    <div class="stats">
-                        <div class="stat">
-                            <span class="stat-num">{employees_total}</span>
-                            <span class="stat-txt">Employees</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-num">{departments_total}</span>
-                            <span class="stat-txt">Departments</span>
-                        </div>
-                    </div>
-                    
-                    <div class="content">
-                        <span class="section-title">📅 Daily Schedule Overview</span>
-                        {dept_cards_html}
-                        
-                        <div style="text-align: center; margin-top: 36px;">
-                            <a href="{cta_url}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 36px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 14px;">
-                                📱 View Full Roster Online
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="footer">
-                        ✓ Generated <strong>{sent_time}</strong> • <strong>{date_label}</strong>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </table>
+<div class="wrap">
+
+  <!-- ════ HEADER ════ -->
+  <div class="header">
+    <h1>📋 Duty Roster</h1>
+    <div class="dateTag" id="dateTagText">📅 {date_label}</div>
+    {date_picker_html}
+  </div>
+
+  <!-- ════ SUMMARY CHIPS ════ -->
+  <div class="summaryBar">
+    <div class="summaryChip">
+      <div class="chipVal" id="chipEmployees">{employees_total}</div>
+      <div class="chipLabel">Employees</div>
+    </div>
+    <div class="summaryChip">
+      <div class="chipVal" id="chipDepartments" style="color:#059669;">{departments_total}</div>
+      <div class="chipLabel">Departments</div>
+    </div>
+  </div>
+
+  <!-- ════ DEPARTMENT CARDS ════ -->
+  {dept_cards_html}
+
+  <!-- ════ CTA ════ -->
+  <div class="btnWrap">
+    <a class="btn" href="{cta_url}">📋 View Now</a>
+  </div>
+
+  <!-- ════ EXTRA BUTTONS ════ -->
+  <div class="btnWrap" style="margin-top:12px;">
+    <a class="btn" style="background:linear-gradient(135deg,#0ea5e9,#1976d2);" href="./subscribe/">📩 Subscribe to Duty Emails</a>
+  </div>
+
+  <!-- ════ FOOTER ════ -->
+  <div class="footer">
+    Sent at <strong>{sent_time}</strong>
+     &nbsp;·&nbsp; Total: <strong><span id="footerEmp">{employees_total}</span> employees</strong>
+  </div>
+
+</div>
+{script_html}
 </body>
 </html>"""
 
 
-def send_email(subject: str, html_content: str) -> bool:
-    """Send email with HTML content"""
-    if not all([SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_FROM, MAIL_TO]):
-        log_warning("Email settings incomplete, skipping email send")
-        return False
 
-    try:
-        log_info("Sending email...")
-        
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = MAIL_FROM
-        msg["To"] = MAIL_TO
-        msg.add_header('Content-Type', 'text/html; charset=utf-8')
-        msg.attach(MIMEText(html_content, "html", "utf-8"))
+def subscribe_page_html(pages_base: str):
+    """
+    Separate subscription page (docs/subscribe/index.html).
+    Uses POST to Apps Script endpoint.
+    """
+    if not SUBSCRIBE_URL:
+        form = """
+        <div class="deptCard">
+          <div style="padding:16px;text-align:center;color:#b00020;font-weight:800;">
+            ⚠️ Subscription endpoint is not configured (SUBSCRIBE_URL secret missing).
+          </div>
+        </div>
+        """
+    else:
+        form = f"""
+        <div class="deptCard">
+          <div style="height:5px;background:linear-gradient(to right,#0ea5e9,#1976d2);"></div>
+          <div class="deptHead" style="border-bottom:2px solid rgba(14,165,233,.12);">
+            <div class="deptTitle">📩 Subscribe to Duty Emails</div>
+          </div>
+          <div style="padding:16px;">
+            <form method="POST" action="{SUBSCRIBE_URL}" target="_blank" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+              <input type="hidden" name="token" value="{SUBSCRIBE_TOKEN}">
+              <input name="email" type="email" required placeholder="your@email.com"
+                     style="flex:1;min-width:220px;padding:12px 14px;border-radius:14px;border:1px solid rgba(15,23,42,.15);font-size:14px;outline:none;">
+              <button type="submit"
+                      style="padding:12px 20px;border-radius:14px;border:none;background:linear-gradient(135deg,#1e40af,#1976d2);
+                             color:#fff;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(30,64,175,.25);">
+                ✅ Subscribe
+              </button>
+            </form>
+            <div style="margin-top:12px;text-align:center;color:#64748b;font-size:12px;line-height:1.7;">
+              بعد الاشتراك سيصل لك إيميل المناوبات تلقائيًا.<br>
+              للرجوع للجدول: <a href="{pages_base}/" style="color:#1e40af;font-weight:800;text-decoration:none;">اضغط هنا</a>
+            </div>
+          </div>
+        </div>
+        """
 
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            recipients = [x.strip() for x in MAIL_TO.split(",")]
-            server.sendmail(MAIL_FROM, recipients, msg.as_string())
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Subscribe</title>
+  <style>
+{CSS}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>📩 Subscribe</h1>
+    <div class="dateTag">Get duty roster emails automatically</div>
+  </div>
 
-        log_success(f"Email sent to {MAIL_TO}")
-        return True
+  <div style="margin-top:18px;">
+    {form}
+  </div>
 
-    except Exception as e:
-        log_error(f"Email send failed: {e}")
-        return False
+  <div class="btnWrap" style="margin-top:18px;">
+    <a class="btn" href="{pages_base}/">⬅️ Back to Roster</a>
+  </div>
+
+  <div class="footer">
+    Subscription is handled by Google Apps Script
+  </div>
+</div>
+</body>
+</html>"""
+
+# =========================
+# Email
+# =========================
+def send_email(subject: str, html: str):
+    if not (SMTP_HOST and SMTP_USER and SMTP_PASS and MAIL_FROM and MAIL_TO):
+        return
+    msg = MIMEText(html, "html", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = MAIL_FROM
+    msg["To"] = MAIL_TO
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
+        s.starttls()
+        s.login(SMTP_USER, SMTP_PASS)
+        s.sendmail(MAIL_FROM, [x.strip() for x in MAIL_TO.split(",") if x.strip()], msg.as_string())
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 📊 DATA BUILDING
-# ═══════════════════════════════════════════════════════════════════════════
+# =========================
+# Main
+# =========================
+def main():
+    if not EXCEL_URL:
+        raise RuntimeError("EXCEL_URL missing")
 
-def build_cards_for_date(wb, dt: datetime, active_group: str):
-    """Build department cards for specific date"""
-    today_dow = (dt.weekday() + 1) % 7
-    today_day = dt.day
+    now = datetime.now(TZ)
+    # Sun=0..Sat=6
+    today_dow = (now.weekday() + 1) % 7
+    today_day = now.day
 
-    dept_cards = []
-    employees_total = 0
+    active_group = current_shift_key(now)  # "صباح" / "ظهر" / "ليل"
+    pages_base = (PAGES_BASE_URL or infer_pages_base_url()).rstrip("/")
+
+    data = download_excel(EXCEL_URL)
+    wb = load_workbook(BytesIO(data), data_only=True)
+    # Month-only data (for date picker on FULL page)
+    month_year = (now.year, now.month)
+    last_day = calendar.monthrange(month_year[0], month_year[1])[1]
+
+    roster_by_date = {}  # iso -> {cards_html, employees_total, departments_total}
+
+    def build_cards_for_dt(dt):
+        tdow = (dt.weekday() + 1) % 7  # Sun=0..Sat=6
+        tday = dt.day
+
+        dept_cards = []
+        emp_total = 0
+        dept_total = 0
+
+        for idx, (sheet_name, dept_name) in enumerate(DEPARTMENTS):
+            if sheet_name not in wb.sheetnames:
+                continue
+
+            ws = wb[sheet_name]
+            days_row, date_row = find_days_and_dates_rows(ws)
+            day_col = find_day_col(ws, days_row, date_row, tdow, tday)
+            if not (days_row and date_row and day_col):
+                continue
+
+            start_row = date_row + 1
+            emp_col = find_employee_col(ws, start_row=start_row)
+            if not emp_col:
+                continue
+
+            buckets = {k: [] for k in GROUP_ORDER}
+            for r in range(start_row, ws.max_row + 1):
+                name = norm(ws.cell(row=r, column=emp_col).value)
+                if not looks_like_employee_name(name):
+                    continue
+
+                raw = norm(ws.cell(row=r, column=day_col).value)
+                if not looks_like_shift_code(raw):
+                    continue
+
+                label, grp = map_shift(raw)
+                buckets.setdefault(grp, []).append({"name": name, "shift": label})
+
+            dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
+            open_group = active_group if (AUTO_OPEN_ACTIVE_SHIFT_IN_FULL and dt.date() == now.date()) else None
+            dept_cards.append(dept_card_html(dept_name, dept_color, buckets, open_group=open_group))
+
+            emp_total += sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
+            dept_total += 1
+
+        return "\\n".join(dept_cards), emp_total, dept_total
+
+    # Precompute roster for current month only
+    for d in range(1, last_day + 1):
+        dt = datetime(now.year, now.month, d, 12, 0, tzinfo=TZ)
+        iso = dt.strftime("%Y-%m-%d")
+        cards_html, emp_total, dept_total = build_cards_for_dt(dt)
+        roster_by_date[iso] = {
+            "cards_html": cards_html,
+            "employees_total": emp_total,
+            "departments_total": dept_total,
+        }
+
+    dept_cards_all = []
+    dept_cards_now = []
+    employees_total_all = 0
+    employees_total_now = 0
     depts_count = 0
 
     for idx, (sheet_name, dept_name) in enumerate(DEPARTMENTS):
@@ -645,6 +858,7 @@ def build_cards_for_date(wb, dt: datetime, active_group: str):
         day_col = find_day_col(ws, days_row, date_row, today_dow, today_day)
 
         if not (days_row and date_row and day_col):
+            # skip if sheet layout unexpected
             continue
 
         start_row = date_row + 1
@@ -653,6 +867,7 @@ def build_cards_for_date(wb, dt: datetime, active_group: str):
             continue
 
         buckets = {k: [] for k in GROUP_ORDER}
+        buckets_now = {k: [] for k in GROUP_ORDER}
 
         for r in range(start_row, ws.max_row + 1):
             name = norm(ws.cell(row=r, column=emp_col).value)
@@ -666,138 +881,75 @@ def build_cards_for_date(wb, dt: datetime, active_group: str):
             label, grp = map_shift(raw)
             buckets.setdefault(grp, []).append({"name": name, "shift": label})
 
-        dept_color = DEPT_COLORS.get(dept_name, "#3B82F6")
-        dept_cards.append(department_card_html(dept_name, dept_color, buckets))
+            if grp == active_group:
+                buckets_now.setdefault(grp, []).append({"name": name, "shift": label})
 
-        employees_total += sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
+        dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
+        card_all = dept_card_html(dept_name, dept_color, buckets, open_group=None)
+        dept_cards_all.append(card_all)
+
+        # For NOW page: open the active shift group by default
+        card_now = dept_card_html(dept_name, dept_color, buckets_now, open_group=active_group)
+        dept_cards_now.append(card_now)
+
+        employees_total_all += sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
+        employees_total_now += sum(len(buckets_now.get(g, [])) for g in GROUP_ORDER)
+
         depts_count += 1
 
-    return "\n".join(dept_cards), employees_total, depts_count
+    # pages
+    os.makedirs("docs", exist_ok=True)
+    os.makedirs("docs/now", exist_ok=True)
 
-
-def build_full_month_json(wb, dt: datetime, active_group: str) -> dict:
-    """Build complete month data for dynamic page"""
-    month_iso = dt.strftime("%Y-%m")
-    year = dt.year
-    month = dt.month
-    last_day = calendar.monthrange(year, month)[1]
-
-    roster_days = {}
-    for d in range(1, last_day + 1):
-        day_dt = dt.replace(day=d)
-        cards_html, emp_total, dept_total = build_cards_for_date(wb, day_dt, active_group)
-        day_iso = day_dt.strftime("%Y-%m-%d")
-        roster_days[day_iso] = {
-            "cards_html": cards_html,
-            "employees_total": emp_total,
-            "departments_total": dept_total,
-        }
-
-    return {
-        "month": month_iso,
-        "default_day": dt.strftime("%Y-%m-%d"),
-        "days": roster_days,
-        "generated_at": datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S"),
-        "current_shift": active_group,
-    }
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# 🚀 MAIN FUNCTION
-# ═══════════════════════════════════════════════════════════════════════════
-
-def main():
-    """Main execution function"""
-    print("\n" + "═"*70)
-    print("🚀 Duty Roster System - نظام إدارة المناوبات الذكي")
-    print("═"*70 + "\n")
-
-    # Validate settings
-    if not EXCEL_URL:
-        log_error("EXCEL_URL environment variable not set")
-        sys.exit(1)
-
-    # Get current time
-    now = datetime.now(TZ)
-    effective = roster_effective_datetime(now)
-    today_dow = (effective.weekday() + 1) % 7
-    today_day = effective.day
-
-    # Detect shift
-    active_group = current_shift_key(now)
-    pages_base = PAGES_BASE_URL.rstrip("/")
-
-    log_info(f"Time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    log_info(f"Timezone: {TZ}")
-    log_info(f"Active Shift: {active_group}")
-
-    # Download Excel
+    date_label = now.strftime("%-d %B %Y") if hasattr(now, "strftime") else now.strftime("%d %B %Y")
+    # Windows runners sometimes don't support %-d; safe fallback
     try:
-        excel_data = download_excel(EXCEL_URL)
-        wb = load_workbook(BytesIO(excel_data), data_only=True)
-    except Exception as e:
-        log_error(f"Failed to process Excel: {e}")
-        sys.exit(1)
-
-    # Format date
-    try:
-        date_label = effective.strftime("%-d %B %Y")
+        date_label = now.strftime("%-d %B %Y")
     except Exception:
-        date_label = effective.strftime("%d %B %Y").lstrip("0")
+        date_label = now.strftime("%d %B %Y")
 
     sent_time = now.strftime("%H:%M")
 
-    # Build content
-    log_info("Building roster cards...")
-    cards_html, emp_total, dept_total = build_cards_for_date(wb, effective, active_group)
-    log_success(f"Built: {emp_total} employees, {dept_total} departments")
+    full_url = f"{pages_base}/"
+    now_url = f"{pages_base}/now/"
+    subscribe_url = f"{pages_base}/subscribe/"
 
-    # Build email
-    html_email = build_email_html(
+    html_full = page_shell_html(
         date_label=date_label,
-        employees_total=emp_total,
-        departments_total=dept_total,
-        dept_cards_html=cards_html,
-        cta_url=f"{pages_base}/?shift={active_group}",
+        employees_total=employees_total_all,
+        departments_total=depts_count,
+        dept_cards_html="\n".join(dept_cards_all),
+        cta_url=now_url,   # button on full page goes to NOW page
         sent_time=sent_time,
-        active_shift=active_group,
+        roster_by_date_json=json.dumps(roster_by_date),
+        default_date=now.strftime("%Y-%m-%d"),
+        min_date=f"{now.year}-{now.month:02d}-01",
+        max_date=f"{now.year}-{now.month:02d}-{last_day:02d}",
+        show_date_picker=True,
+    )
+    html_now = page_shell_html(
+        date_label=date_label,
+        employees_total=employees_total_now,
+        departments_total=depts_count,
+        dept_cards_html="\n".join(dept_cards_now),
+        cta_url=full_url,  # button on now page goes to FULL page
+        sent_time=sent_time,
     )
 
-    # Send email
-    subject = f"📋 Duty Roster — {active_group} — {effective.strftime('%Y-%m-%d')}"
-    send_email(subject, html_email)
+    with open("docs/index.html", "w", encoding="utf-8") as f:
+        f.write(html_full)
 
-    # Build and save JSON
-    log_info("Building month data...")
-    roster_json = build_full_month_json(wb, effective, active_group)
-    
-    os.makedirs("docs/data", exist_ok=True)
-    with open("docs/data/roster.json", "w", encoding="utf-8") as f:
-        json.dump(roster_json, f, ensure_ascii=False, indent=2)
-    
-    log_success("JSON saved to docs/data/roster.json")
+    with open("docs/now/index.html", "w", encoding="utf-8") as f:
+        f.write(html_now)
 
-    # Summary
-    print("\n" + "═"*70)
-    print("✅ PROCESS COMPLETED SUCCESSFULLY!")
-    print("═"*70)
-    print(f"📊 Roster: {emp_total} employees | {dept_total} departments")
-    print(f"📅 Date: {date_label}")
-    print(f"⏰ Time: {sent_time}")
-    print(f"🔴 Active Shift: {active_group}")
-    print(f"📧 Email Status: Sent")
-    print(f"📱 Page URL: {pages_base}")
-    print("═"*70 + "\n")
+    os.makedirs("docs/subscribe", exist_ok=True)
+    with open("docs/subscribe/index.html", "w", encoding="utf-8") as f:
+        f.write(subscribe_page_html(pages_base))
+
+    # Email: send NOW page design (same exact template)
+    subject = f"Duty Roster — {active_group} — {now.strftime('%Y-%m-%d')}"
+    send_email(subject, html_now)
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        log_warning("Process interrupted by user")
-        sys.exit(0)
-    except Exception as e:
-        log_error(f"Unexpected error: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    main()

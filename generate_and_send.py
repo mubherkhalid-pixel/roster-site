@@ -1099,6 +1099,9 @@ def main():
     except Exception:
         date_label = now.strftime("%d %B %Y")
 
+
+    iso_date = now.strftime("%Y-%m-%d")
+
     sent_time = now.strftime("%H:%M")
 
     full_url = f"{pages_base}/"

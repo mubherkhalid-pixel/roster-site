@@ -779,6 +779,8 @@ def build_pretty_email_html(active_group: str, now: datetime, rows_by_dept: list
 
     iso_date = now.strftime("%Y-%m-%d")
 
+    iso_date = now.strftime("%Y-%m-%d")
+
     # Shift theme (for status color)
     def shift_theme(g: str):
         if g == "صباح":
@@ -986,7 +988,6 @@ def main():
     args = parser.parse_args()
 
     now = datetime.now(TZ)
-    iso_date = now.strftime("%Y-%m-%d")
     if args.date:
         try:
             y, m, d = [int(x) for x in args.date.strip().split('-')]
@@ -1002,6 +1003,9 @@ def main():
 
     data = download_excel(EXCEL_URL)
     wb = load_workbook(BytesIO(data), data_only=True)
+
+    # Generate static pages for each date in the current month (used by the date picker)
+    generate_date_pages_for_month(wb, now.year, now.month, pages_base)
 
     dept_cards_all = []
     dept_cards_now = []

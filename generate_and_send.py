@@ -25,10 +25,10 @@ SMTP_PASS = os.environ.get("SMTP_PASS", "").strip()
 MAIL_FROM = os.environ.get("MAIL_FROM", "").strip()
 MAIL_TO = os.environ.get("MAIL_TO", "").strip()
 
-PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "").strip()  # optional
+PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "").strip()
 TZ = ZoneInfo("Asia/Muscat")
 AUTO_OPEN_ACTIVE_SHIFT_IN_FULL = True
-# Excel sheets
+
 DEPARTMENTS = [
     ("Officers", "Officers"),
     ("Supervisors", "Supervisors"),
@@ -37,7 +37,6 @@ DEPARTMENTS = [
     ("Export Operators", "Export Operators"),
 ]
 
-# For day-row matching only
 DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
 SHIFT_MAP = {
@@ -53,8 +52,24 @@ SHIFT_MAP = {
 
 GROUP_ORDER = ["صباح", "ظهر", "ليل", "مناوبات", "راحة", "إجازات", "تدريب", "أخرى"]
 
-DEPT_COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4"]
+DEPT_COLORS = {
+    "Officers": "#1F2937",
+    "Supervisors": "#3B82F6",
+    "Load Control": "#10B981",
+    "Export Checker": "#F59E0B",
+    "Export Operators": "#EF4444",
+}
 
+SHIFT_COLORS = {
+    "صباح": "#FBBF24",
+    "ظهر": "#F97316",
+    "ليل": "#1E293B",
+    "مناوبات": "#8B5CF6",
+    "راحة": "#06B6D4",
+    "إجازات": "#EC4899",
+    "تدريب": "#3B82F6",
+    "أخرى": "#6B7280",
+}
 
 # =========================
 # Helpers
@@ -93,10 +108,8 @@ def looks_like_employee_name(s: str) -> bool:
         return False
     if re.search(r"(ANNUAL\s*LEAVE|SICK\s*LEAVE|REST\/OFF\s*DAY|REST|OFF\s*DAY|TRAINING|STANDBY)", up):
         return False
-    # قوي: اسم - رقم
     if re.search(r"-\s*\d{3,}", v) and re.search(r"[A-Za-z\u0600-\u06FF]", v):
         return True
-    # بديل: كلمتين أو أكثر
     parts = [p for p in v.split(" ") if p]
     return bool(re.search(r"[A-Za-z\u0600-\u06FF]", v) and len(parts) >= 2)
 
@@ -119,7 +132,6 @@ def map_shift(code: str):
     c = c0.upper()
     if not c or c == "0":
         return ("-", "أخرى")
-
     if c == "AL" or "ANNUAL LEAVE" in c:
         return ("🏖️ Leave", "إجازات")
     if c == "SL" or "SICK LEAVE" in c:
@@ -132,14 +144,11 @@ def map_shift(code: str):
         return ("🧍 Standby", "مناوبات")
     if c in ["OFF", "O"] or re.search(r"(REST|OFF\s*DAY|REST\/OFF)", c):
         return ("🛌 Off Day", "راحة")
-
     if c in SHIFT_MAP:
         return SHIFT_MAP[c]
-
     return (c0, "أخرى")
 
 def current_shift_key(now: datetime) -> str:
-    # 21:00–04:59 Night, 14:00–20:59 Afternoon, else Morning
     t = now.hour * 60 + now.minute
     if t >= 21 * 60 or t < 5 * 60:
         return "ليل"
@@ -147,9 +156,7 @@ def current_shift_key(now: datetime) -> str:
         return "ظهر"
     return "صباح"
 
-
 def roster_effective_datetime(now: datetime) -> datetime:
-    """Night shift after midnight should still use yesterday's roster date (until 06:00 Muscat)."""
     active = current_shift_key(now)
     if active == "ليل" and now.hour < 6:
         return now - timedelta(days=1)
@@ -163,10 +170,6 @@ def download_excel(url: str) -> bytes:
 def infer_pages_base_url():
     return "https://khalidsaif912.github.io/roster-site"
 
-
-# =========================
-# Detect rows/cols (Days row + Date numbers row)
-# =========================
 def _row_values(ws, r: int):
     return [norm(ws.cell(row=r, column=c).value) for c in range(1, ws.max_column + 1)]
 
@@ -188,21 +191,15 @@ def _is_date_number(v: str) -> bool:
     return False
 
 def find_days_and_dates_rows(ws, scan_rows: int = 80):
-    """
-    يبحث عن صف فيه SUN..SAT بكثرة ثم صف تحته فيه أرقام 1..31
-    """
     max_r = min(ws.max_row, scan_rows)
     days_row = None
-
     for r in range(1, max_r + 1):
         vals = _row_values(ws, r)
         if _count_day_tokens(vals) >= 3:
             days_row = r
             break
-
     if not days_row:
         return None, None
-
     date_row = None
     for r in range(days_row + 1, min(days_row + 4, ws.max_row) + 1):
         vals = _row_values(ws, r)
@@ -210,30 +207,21 @@ def find_days_and_dates_rows(ws, scan_rows: int = 80):
         if nums >= 5:
             date_row = r
             break
-
     return days_row, date_row
 
 def find_day_col(ws, days_row: int, date_row: int, today_dow: int, today_day: int):
-    """
-    يثبت العمود الصحيح باستخدام اليوم + رقم التاريخ
-    """
     if not days_row or not date_row:
         return None
-
     day_key = DAYS[today_dow]
-    # Prefer (day + date) match
     for c in range(1, ws.max_column + 1):
         top = norm(ws.cell(row=days_row, column=c).value).upper()
         bot = norm(ws.cell(row=date_row, column=c).value)
         if day_key in top and _is_date_number(bot) and int(float(bot)) == today_day:
             return c
-
-    # Fallback: date-only
     for c in range(1, ws.max_column + 1):
         bot = norm(ws.cell(row=date_row, column=c).value)
         if _is_date_number(bot) and int(float(bot)) == today_day:
             return c
-
     return None
 
 def find_employee_col(ws, start_row: int, max_scan_rows: int = 200):
@@ -249,243 +237,337 @@ def find_employee_col(ws, start_row: int, max_scan_rows: int = 200):
 
 
 # =========================
-# EMAIL CSS DESIGN
+# EMAIL PROFESSIONAL DESIGN
 # =========================
-EMAIL_CSS = """
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    body {
-        background: #eef1f7;
-        font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-        color: #0f172a;
-        line-height: 1.6;
-        padding: 20px;
-    }
-    .email-container {
-        max-width: 650px;
-        margin: 0 auto;
-        background: #ffffff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .header {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: white;
-        padding: 30px 24px;
-        text-align: center;
-    }
-    .header h1 {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-    .header p {
-        font-size: 14px;
-        opacity: 0.95;
-    }
-    .summary-bar {
-        display: flex;
-        gap: 16px;
-        padding: 20px 24px;
-        background: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .summary-chip {
-        flex: 1;
-        text-align: center;
-        padding: 12px;
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-    }
-    .chip-val {
-        font-size: 24px;
-        font-weight: 700;
-        color: #3b82f6;
-        margin-bottom: 4px;
-    }
-    .chip-label {
-        font-size: 12px;
-        color: #64748b;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-    .content {
-        padding: 24px;
-    }
-    .dept-card {
-        margin-bottom: 20px;
-        border-radius: 8px;
-        overflow: hidden;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-    }
-    .dept-header {
-        padding: 14px 16px;
-        font-weight: 700;
-        color: white;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .dept-body {
-        padding: 16px;
-    }
-    .shift-group {
-        margin-bottom: 16px;
-    }
-    .shift-group:last-child {
-        margin-bottom: 0;
-    }
-    .group-title {
-        font-weight: 700;
-        color: #1e293b;
-        font-size: 13px;
-        margin-bottom: 10px;
-        padding: 8px 0;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .employee-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .employee-badge {
-        background: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        color: #334155;
-        border: 1px solid #cbd5e1;
-        display: inline-block;
-    }
-    .shift-label {
-        color: #64748b;
-        font-size: 11px;
-        margin-left: 4px;
-    }
-    .footer {
-        padding: 16px 24px;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        text-align: center;
-        font-size: 12px;
-        color: #64748b;
-    }
-    .cta-button {
-        display: inline-block;
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: white;
-        padding: 12px 28px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 14px;
-        margin: 20px 0;
-    }
-    .empty-message {
-        text-align: center;
-        padding: 20px;
-        color: #94a3b8;
-        font-size: 13px;
-    }
-"""
+
+def employee_item_html(name: str, shift: str, shift_group: str) -> str:
+    """Single employee with professional styling."""
+    shift_color = SHIFT_COLORS.get(shift_group, "#6B7280")
+    
+    return f"""
+    <tr>
+        <td style="padding: 10px 0; border-bottom: 1px solid #F3F4F6;">
+            <table style="width: 100%;" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="padding-right: 12px; width: 20px;">
+                        <div style="width: 8px; height: 8px; background-color: {shift_color}; border-radius: 50%;"></div>
+                    </td>
+                    <td>
+                        <span style="font-size: 14px; color: #1F2937; font-weight: 500;">{name}</span>
+                        <br/>
+                        <span style="font-size: 12px; color: #6B7280;">{shift}</span>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    """
 
 
-def dept_card_html_email(dept_name: str, dept_color: str, buckets: dict) -> str:
-    """Generate a single department card for email."""
-    body_html = ""
-    has_employees = False
+def shift_group_html(group_name: str, employees: list) -> str:
+    """Professional shift group section."""
+    if not employees:
+        return ""
+    
+    shift_color = SHIFT_COLORS.get(group_name, "#6B7280")
+    employees_list = "".join([employee_item_html(emp["name"], emp["shift"], group_name) for emp in employees])
+    
+    return f"""
+    <div style="margin-bottom: 24px;">
+        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+            <tr>
+                <td style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <div style="width: 3px; height: 20px; background-color: {shift_color}; border-radius: 2px;"></div>
+                    <span style="font-size: 13px; font-weight: 700; color: #1F2937; text-transform: uppercase; letter-spacing: 0.5px;">{group_name}</span>
+                    <span style="font-size: 12px; color: #9CA3AF; font-weight: 600;">({len(employees)})</span>
+                </td>
+            </tr>
+        </table>
+        <table style="width: 100%; border-collapse: collapse;" cellpadding="0" cellspacing="0">
+            {employees_list}
+        </table>
+    </div>
+    """
 
+
+def department_card_html(dept_name: str, dept_color: str, buckets: dict) -> str:
+    """Professional department card with modern design."""
+    groups_html = ""
+    total_employees = 0
+    
     for grp in GROUP_ORDER:
         employees = buckets.get(grp, [])
-        if not employees:
-            continue
-        
-        has_employees = True
-        employee_html = ""
-        for emp in employees:
-            employee_html += f'<span class="employee-badge">{emp["name"]}<span class="shift-label">{emp["shift"]}</span></span>'
-
-        body_html += f"""
-        <div class="shift-group">
-            <div class="group-title">{grp}</div>
-            <div class="employee-list">
-                {employee_html}
-            </div>
-        </div>
-        """
-
-    if not has_employees:
-        body_html = '<div class="empty-message">No employees scheduled</div>'
-
+        if employees:
+            groups_html += shift_group_html(grp, employees)
+            total_employees += len(employees)
+    
+    if not groups_html:
+        groups_html = '<div style="text-align: center; padding: 20px; color: #9CA3AF; font-size: 13px;">No employees scheduled</div>'
+    
     return f"""
-    <div class="dept-card">
-        <div class="dept-header" style="background-color: {dept_color};">
-            📋 {dept_name}
+    <div style="margin-bottom: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
+        <div style="background-color: {dept_color}; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 16px; font-weight: 700; color: white; margin: 0;">{dept_name}</h2>
+            <span style="font-size: 13px; background-color: rgba(255, 255, 255, 0.2); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 600;">{total_employees} staff</span>
         </div>
-        <div class="dept-body">
-            {body_html}
+        <div style="background-color: #FFFFFF; padding: 20px;">
+            {groups_html}
         </div>
     </div>
     """
 
 
-def email_html(date_label: str, employees_total: int, departments_total: int, dept_cards_html: str, cta_url: str, sent_time: str):
-    """Generate the complete email HTML."""
+def build_email_html(date_label: str, employees_total: int, departments_total: int, 
+                     dept_cards_html: str, cta_url: str, sent_time: str, active_shift: str) -> str:
+    """Professional email design - Enterprise Grade."""
+    
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Duty Roster</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Duty Roster Report</title>
     <style>
-        {EMAIL_CSS}
+        body {{
+            margin: 0;
+            padding: 0;
+            min-width: 100% !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #1F2937;
+            background-color: #F9FAFB;
+        }}
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        img {{
+            border: 0;
+            outline: none;
+        }}
+        .wrapper {{
+            background-color: #F9FAFB;
+            padding: 20px 0;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }}
+        .header {{
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            padding: 48px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }}
+        .header::before {{
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+        }}
+        .header-content {{
+            position: relative;
+            z-index: 1;
+        }}
+        .header-icon {{
+            font-size: 56px;
+            line-height: 1;
+            margin-bottom: 16px;
+            display: block;
+        }}
+        .header h1 {{
+            font-size: 36px;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }}
+        .header p {{
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0;
+            font-weight: 500;
+        }}
+        .shift-badge {{
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: #FFFFFF;
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }}
+        .stats {{
+            background-color: #F3F4F6;
+            padding: 24px 30px;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+        }}
+        .stat {{
+            text-align: center;
+            flex: 1;
+        }}
+        .stat-num {{
+            font-size: 32px;
+            font-weight: 800;
+            color: #1F2937;
+            display: block;
+            margin-bottom: 4px;
+        }}
+        .stat-txt {{
+            font-size: 11px;
+            color: #6B7280;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }}
+        .content {{
+            padding: 36px 30px;
+        }}
+        .section-label {{
+            font-size: 11px;
+            color: #9CA3AF;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+            display: block;
+        }}
+        .button-container {{
+            text-align: center;
+            margin: 36px 0;
+        }}
+        .button {{
+            display: inline-block;
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            color: #FFFFFF;
+            padding: 15px 36px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 6px rgba(31, 41, 55, 0.15);
+            transition: all 0.3s ease;
+        }}
+        .button:hover {{
+            background: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }}
+        .footer {{
+            background-color: #F9FAFB;
+            padding: 28px 30px;
+            border-top: 1px solid #E5E7EB;
+            text-align: center;
+            font-size: 12px;
+            color: #6B7280;
+        }}
+        .divider {{
+            color: #D1D5DB;
+            margin: 0 8px;
+        }}
+        .footer strong {{
+            color: #1F2937;
+            font-weight: 600;
+        }}
+        @media (max-width: 600px) {{
+            .container {{
+                border-radius: 0;
+            }}
+            .header {{
+                padding: 36px 20px;
+            }}
+            .header h1 {{
+                font-size: 28px;
+            }}
+            .header-icon {{
+                font-size: 44px;
+            }}
+            .content {{
+                padding: 24px 20px;
+            }}
+            .stats {{
+                padding: 16px 20px;
+                flex-direction: column;
+                gap: 12px;
+            }}
+        }}
     </style>
 </head>
 <body>
-    <div class="email-container">
-        <div class="header">
-            <h1>📋 Duty Roster</h1>
-            <p>{date_label}</p>
-        </div>
-
-        <div class="summary-bar">
-            <div class="summary-chip">
-                <div class="chip-val">{employees_total}</div>
-                <div class="chip-label">Employees</div>
-            </div>
-            <div class="summary-chip">
-                <div class="chip-val" style="color: #059669;">{departments_total}</div>
-                <div class="chip-label">Departments</div>
-            </div>
-        </div>
-
-        <div class="content">
-            {dept_cards_html}
-            
-            <div style="text-align: center;">
-                <a href="{cta_url}" class="cta-button">🌙 View Full Roster</a>
-            </div>
-        </div>
-
-        <div class="footer">
-            Sent at <strong>{sent_time}</strong> · {date_label}
-        </div>
-    </div>
+    <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+        <tr>
+            <td align="center">
+                <div class="container">
+                    <!-- HEADER -->
+                    <div class="header">
+                        <div class="header-content">
+                            <span class="header-icon">📋</span>
+                            <h1>DUTY ROSTER</h1>
+                            <p>{date_label}</p>
+                            <div class="shift-badge">🔴 ACTIVE SHIFT: {active_shift.upper()}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- STATS -->
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="stat-num">{employees_total}</span>
+                            <span class="stat-txt">Employees</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-num">{departments_total}</span>
+                            <span class="stat-txt">Departments</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CONTENT -->
+                    <div class="content">
+                        <span class="section-label">📅 Daily Schedule Overview</span>
+                        {dept_cards_html}
+                        
+                        <div class="button-container">
+                            <a href="{cta_url}" class="button">📱 View Full Roster Online</a>
+                        </div>
+                    </div>
+                    
+                    <!-- FOOTER -->
+                    <div class="footer">
+                        ✓ Generated <strong>{sent_time}</strong>
+                        <span class="divider">•</span>
+                        <strong>{date_label}</strong>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>"""
 
 
 def send_email(subject: str, html_content: str):
-    """Send email with HTML content."""
+    """Send enterprise-grade HTML email."""
     if not all([SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_FROM, MAIL_TO]):
-        print("⚠️ Email settings incomplete, skipping email send")
+        print("⚠️  Email settings incomplete")
         return
 
     try:
@@ -493,24 +575,23 @@ def send_email(subject: str, html_content: str):
         msg["Subject"] = subject
         msg["From"] = MAIL_FROM
         msg["To"] = MAIL_TO
+        msg.add_header('Content-Type', 'text/html; charset=utf-8')
 
-        # Attach HTML
-        msg.attach(MIMEText(html_content, "html"))
+        msg.attach(MIMEText(html_content, "html", "utf-8"))
 
-        # Send
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(MAIL_FROM, MAIL_TO.split(","), msg.as_string())
+            server.sendmail(MAIL_FROM, [x.strip() for x in MAIL_TO.split(",")], msg.as_string())
 
-        print(f"✅ Email sent to {MAIL_TO}")
+        print(f"✅ Email sent: {MAIL_TO}")
 
     except Exception as e:
-        print(f"❌ Email send failed: {e}")
+        print(f"❌ Email error: {e}")
 
 
 def build_cards_for_date(wb, dt: datetime, active_group: str):
-    """Build department cards for a specific date."""
+    """Build department cards for a date."""
     today_dow = (dt.weekday() + 1) % 7
     today_day = dt.day
 
@@ -548,8 +629,8 @@ def build_cards_for_date(wb, dt: datetime, active_group: str):
             label, grp = map_shift(raw)
             buckets.setdefault(grp, []).append({"name": name, "shift": label})
 
-        dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
-        dept_cards.append(dept_card_html_email(dept_name, dept_color, buckets))
+        dept_color = DEPT_COLORS.get(dept_name, "#3B82F6")
+        dept_cards.append(department_card_html(dept_name, dept_color, buckets))
 
         employees_total += sum(len(buckets.get(g, [])) for g in GROUP_ORDER)
         depts_count += 1
@@ -572,31 +653,29 @@ def main():
     data = download_excel(EXCEL_URL)
     wb = load_workbook(BytesIO(data), data_only=True)
 
-    # Display date
     try:
         date_label = effective.strftime("%-d %B %Y")
     except Exception:
-        date_label = effective.strftime("%d %B %Y")
+        date_label = effective.strftime("%d %B %Y").lstrip("0")
 
     sent_time = now.strftime("%H:%M")
 
-    # Build email content
     cards_html, emp_total, dept_total = build_cards_for_date(wb, effective, active_group)
     
-    html_email = email_html(
+    html_email = build_email_html(
         date_label=date_label,
         employees_total=emp_total,
         departments_total=dept_total,
         dept_cards_html=cards_html,
         cta_url=f"{pages_base}/now/",
         sent_time=sent_time,
+        active_shift=active_group,
     )
 
-    # Send email
-    subject = f"Duty Roster — {active_group} — {effective.strftime('%Y-%m-%d')}"
+    subject = f"📋 Duty Roster — {active_group} — {effective.strftime('%Y-%m-%d')}"
     send_email(subject, html_email)
     
-    print(f"✅ Process completed: {dept_total} departments, {emp_total} employees")
+    print(f"✅ Complete: {dept_total} departments, {emp_total} staff")
 
 
 if __name__ == "__main__":

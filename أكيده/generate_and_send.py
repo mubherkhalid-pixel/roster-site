@@ -54,8 +54,6 @@ GROUP_ORDER = ["صباح", "ظهر", "ليل", "مناوبات", "راحة", "إ
 # =========================
 # Helpers
 # =========================
-
-STANDBY_EXTENDED = {"ST", "STM", "STN", "STNE22", "STME06"}
 def clean(v) -> str:
     if v is None:
         return ""
@@ -111,41 +109,23 @@ def looks_like_shift_code(s: str) -> bool:
         return True
     return False
 
-# ==== ADDITIONS & MODIFICATIONS ONLY (SAFE PATCH) ====
-
-# 1) NEW SHIFT CODES
-STANDBY_EXTENDED = {"ST", "STM", "STN", "STNE22", "STME06"}
-
-# 2) helper to format date range
-def format_range(days: list[int]) -> str:
-    if not days:
-        return ""
-    if len(days) == 1:
-        return ""
-    return f"(من {days[0]} إلى {days[-1]})"
-
-
-# 3) override map_shift (extended)
 def map_shift(code: str):
     c0 = norm(code)
     c = c0.upper()
-
     if not c or c == "0":
         return ("-", "أخرى")
 
-    if c in ["AL"] or "ANNUAL" in c:
-        return ("🏖️ Annual Leave", "إجازات")
-
-    if c in ["SL"] or "SICK" in c:
+    if c == "AL" or "ANNUAL LEAVE" in c:
+        return ("🏖️ Leave", "إجازات")
+    if c == "SL" or "SICK LEAVE" in c:
         return ("🤒 Sick Leave", "إجازات")
-
+    if c == "LV":
+        return ("🏖️ Leave", "إجازات")
     if c in ["TR"] or "TRAINING" in c:
         return ("📚 Training", "تدريب")
-
-    if c in STANDBY_EXTENDED or "STANDBY" in c:
+    if c in ["ST", "STM", "STN"] or "STANDBY" in c:
         return ("🧍 Standby", "مناوبات")
-
-    if c in ["OFF", "O"] or "REST" in c:
+    if c in ["OFF", "O"] or re.search(r"(REST|OFF\s*DAY|REST\/OFF)", c):
         return ("🛌 Off Day", "راحة")
 
     if c in SHIFT_MAP:

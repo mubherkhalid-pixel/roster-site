@@ -812,7 +812,7 @@ def page_shell(now):
 </body></html>"""
 
 def send_email(html):
->>>>>>> 2da09e321d02b308cd703083e0eb3bc44f0616ff
+
     msg = MIMEText(html, "html", "utf-8")
     msg["From"] = MAIL_FROM
     msg["To"] = MAIL_TO

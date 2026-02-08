@@ -14,17 +14,18 @@ from email.mime.multipart import MIMEMultipart
 
 
 # =========================
-# SETTINGS & CONFIGURATION
+# Settings / Secrets
 # =========================
 EXCEL_URL = os.environ.get("EXCEL_URL", "").strip()
+
 SMTP_HOST = os.environ.get("SMTP_HOST", "").strip()
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER", "").strip()
 SMTP_PASS = os.environ.get("SMTP_PASS", "").strip()
 MAIL_FROM = os.environ.get("MAIL_FROM", "").strip()
 MAIL_TO = os.environ.get("MAIL_TO", "").strip()
-PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "").strip()
 
+PAGES_BASE_URL = os.environ.get("PAGES_BASE_URL", "").strip()
 TZ = ZoneInfo("Asia/Muscat")
 AUTO_OPEN_ACTIVE_SHIFT_IN_FULL = True
 
@@ -70,9 +71,8 @@ SHIFT_COLORS = {
     "أخرى": "#6B7280",
 }
 
-
 # =========================
-# HELPER FUNCTIONS
+# Helpers
 # =========================
 def clean(v) -> str:
     if v is None:
@@ -149,14 +149,12 @@ def map_shift(code: str):
     return (c0, "أخرى")
 
 def current_shift_key(now: datetime) -> str:
-    """تحديد المناوبة الحالية بناءً على الوقت"""
-    hour = now.hour
-    if 6 <= hour < 14:
-        return "صباح"
-    elif 14 <= hour < 22:
-        return "ظهر"
-    else:
+    t = now.hour * 60 + now.minute
+    if t >= 21 * 60 or t < 5 * 60:
         return "ليل"
+    if t >= 14 * 60:
+        return "ظهر"
+    return "صباح"
 
 def roster_effective_datetime(now: datetime) -> datetime:
     active = current_shift_key(now)
@@ -239,11 +237,13 @@ def find_employee_col(ws, start_row: int, max_scan_rows: int = 200):
 
 
 # =========================
-# EMAIL DESIGN
+# EMAIL PROFESSIONAL DESIGN
 # =========================
 
 def employee_item_html(name: str, shift: str, shift_group: str) -> str:
+    """Single employee with professional styling."""
     shift_color = SHIFT_COLORS.get(shift_group, "#6B7280")
+    
     return f"""
     <tr>
         <td style="padding: 10px 0; border-bottom: 1px solid #F3F4F6;">
@@ -263,39 +263,52 @@ def employee_item_html(name: str, shift: str, shift_group: str) -> str:
     </tr>
     """
 
+
 def shift_group_html(group_name: str, employees: list) -> str:
+    """Professional shift group section."""
     if not employees:
         return ""
+    
     shift_color = SHIFT_COLORS.get(group_name, "#6B7280")
     employees_list = "".join([employee_item_html(emp["name"], emp["shift"], group_name) for emp in employees])
+    
     return f"""
     <div style="margin-bottom: 24px;">
-        <div style="display: flex; align-items: center; margin-bottom: 12px; gap: 8px;">
-            <div style="width: 3px; height: 20px; background-color: {shift_color}; border-radius: 2px;"></div>
-            <span style="font-size: 13px; font-weight: 700; color: #1F2937; text-transform: uppercase; letter-spacing: 0.5px;">{group_name}</span>
-            <span style="font-size: 12px; color: #9CA3AF; font-weight: 600;">({len(employees)})</span>
-        </div>
+        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+            <tr>
+                <td style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <div style="width: 3px; height: 20px; background-color: {shift_color}; border-radius: 2px;"></div>
+                    <span style="font-size: 13px; font-weight: 700; color: #1F2937; text-transform: uppercase; letter-spacing: 0.5px;">{group_name}</span>
+                    <span style="font-size: 12px; color: #9CA3AF; font-weight: 600;">({len(employees)})</span>
+                </td>
+            </tr>
+        </table>
         <table style="width: 100%; border-collapse: collapse;" cellpadding="0" cellspacing="0">
             {employees_list}
         </table>
     </div>
     """
 
+
 def department_card_html(dept_name: str, dept_color: str, buckets: dict) -> str:
+    """Professional department card with modern design."""
     groups_html = ""
     total_employees = 0
+    
     for grp in GROUP_ORDER:
         employees = buckets.get(grp, [])
         if employees:
             groups_html += shift_group_html(grp, employees)
             total_employees += len(employees)
+    
     if not groups_html:
         groups_html = '<div style="text-align: center; padding: 20px; color: #9CA3AF; font-size: 13px;">No employees scheduled</div>'
+    
     return f"""
     <div style="margin-bottom: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
         <div style="background-color: {dept_color}; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
             <h2 style="font-size: 16px; font-weight: 700; color: white; margin: 0;">{dept_name}</h2>
-            <span style="font-size: 13px; background-color: rgba(255, 255, 255, 0.2); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 600;">{total_employees}</span>
+            <span style="font-size: 13px; background-color: rgba(255, 255, 255, 0.2); color: white; padding: 4px 10px; border-radius: 20px; font-weight: 600;">{total_employees} staff</span>
         </div>
         <div style="background-color: #FFFFFF; padding: 20px;">
             {groups_html}
@@ -303,20 +316,24 @@ def department_card_html(dept_name: str, dept_color: str, buckets: dict) -> str:
     </div>
     """
 
+
 def build_email_html(date_label: str, employees_total: int, departments_total: int, 
                      dept_cards_html: str, cta_url: str, sent_time: str, active_shift: str) -> str:
+    """Professional email design - Enterprise Grade."""
+    
     return f"""<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Duty Roster Report</title>
     <style>
         body {{
             margin: 0;
             padding: 0;
             min-width: 100% !important;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', sans-serif;
             font-size: 14px;
             line-height: 1.6;
             color: #1F2937;
@@ -482,6 +499,9 @@ def build_email_html(date_label: str, employees_total: int, departments_total: i
             .header h1 {{
                 font-size: 28px;
             }}
+            .header-icon {{
+                font-size: 44px;
+            }}
             .content {{
                 padding: 24px 20px;
             }}
@@ -498,14 +518,17 @@ def build_email_html(date_label: str, employees_total: int, departments_total: i
         <tr>
             <td align="center">
                 <div class="container">
+                    <!-- HEADER -->
                     <div class="header">
                         <div class="header-content">
                             <span class="header-icon">📋</span>
                             <h1>DUTY ROSTER</h1>
                             <p>{date_label}</p>
-                            <div class="shift-badge">🔴 ACTIVE: {active_shift.upper()}</div>
+                            <div class="shift-badge">🔴 ACTIVE SHIFT: {active_shift.upper()}</div>
                         </div>
                     </div>
+                    
+                    <!-- STATS -->
                     <div class="stats">
                         <div class="stat">
                             <span class="stat-num">{employees_total}</span>
@@ -516,13 +539,18 @@ def build_email_html(date_label: str, employees_total: int, departments_total: i
                             <span class="stat-txt">Departments</span>
                         </div>
                     </div>
+                    
+                    <!-- CONTENT -->
                     <div class="content">
                         <span class="section-label">📅 Daily Schedule Overview</span>
                         {dept_cards_html}
+                        
                         <div class="button-container">
                             <a href="{cta_url}" class="button">📱 View Full Roster Online</a>
                         </div>
                     </div>
+                    
+                    <!-- FOOTER -->
                     <div class="footer">
                         ✓ Generated <strong>{sent_time}</strong>
                         <span class="divider">•</span>
@@ -537,7 +565,7 @@ def build_email_html(date_label: str, employees_total: int, departments_total: i
 
 
 def send_email(subject: str, html_content: str):
-    """إرسال البريد الإلكتروني"""
+    """Send enterprise-grade HTML email."""
     if not all([SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_FROM, MAIL_TO]):
         print("⚠️  Email settings incomplete")
         return
@@ -548,6 +576,7 @@ def send_email(subject: str, html_content: str):
         msg["From"] = MAIL_FROM
         msg["To"] = MAIL_TO
         msg.add_header('Content-Type', 'text/html; charset=utf-8')
+
         msg.attach(MIMEText(html_content, "html", "utf-8"))
 
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
@@ -562,7 +591,7 @@ def send_email(subject: str, html_content: str):
 
 
 def build_cards_for_date(wb, dt: datetime, active_group: str):
-    """بناء بطاقات الأقسام لتاريخ معين"""
+    """Build department cards for a date."""
     today_dow = (dt.weekday() + 1) % 7
     today_day = dt.day
 
@@ -609,33 +638,6 @@ def build_cards_for_date(wb, dt: datetime, active_group: str):
     return "\n".join(dept_cards), employees_total, depts_count
 
 
-def build_full_month_json(wb, dt: datetime, active_group: str):
-    """بناء ملف JSON يحتوي على بيانات الشهر كاملاً للصفحة الديناميكية"""
-    month_iso = dt.strftime("%Y-%m")
-    year = dt.year
-    month = dt.month
-    last_day = calendar.monthrange(year, month)[1]
-
-    roster_days = {}
-    for d in range(1, last_day + 1):
-        day_dt = dt.replace(day=d)
-        cards_html, emp_total, dept_total = build_cards_for_date(wb, day_dt, active_group)
-        day_iso = day_dt.strftime("%Y-%m-%d")
-        roster_days[day_iso] = {
-            "cards_html": cards_html,
-            "employees_total": emp_total,
-            "departments_total": dept_total,
-        }
-
-    return {
-        "month": month_iso,
-        "default_day": dt.strftime("%Y-%m-%d"),
-        "days": roster_days,
-        "generated_at": datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S"),
-        "current_shift": active_group,
-    }
-
-
 def main():
     if not EXCEL_URL:
         raise RuntimeError("EXCEL_URL missing")
@@ -648,9 +650,6 @@ def main():
     active_group = current_shift_key(now)
     pages_base = (PAGES_BASE_URL or infer_pages_base_url()).rstrip("/")
 
-    print(f"⏰ Time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"🔴 Active Shift: {active_group}")
-
     data = download_excel(EXCEL_URL)
     wb = load_workbook(BytesIO(data), data_only=True)
 
@@ -661,30 +660,22 @@ def main():
 
     sent_time = now.strftime("%H:%M")
 
-    # بناء البريد الإلكتروني
     cards_html, emp_total, dept_total = build_cards_for_date(wb, effective, active_group)
+    
     html_email = build_email_html(
         date_label=date_label,
         employees_total=emp_total,
         departments_total=dept_total,
         dept_cards_html=cards_html,
-        cta_url=f"{pages_base}/?shift={active_group}",
+        cta_url=f"{pages_base}/now/",
         sent_time=sent_time,
         active_shift=active_group,
     )
 
-    # إرسال البريد
     subject = f"📋 Duty Roster — {active_group} — {effective.strftime('%Y-%m-%d')}"
     send_email(subject, html_email)
-
-    # بناء ملف JSON الديناميكي
-    os.makedirs("docs/data", exist_ok=True)
-    roster_json = build_full_month_json(wb, effective, active_group)
-    with open("docs/data/roster.json", "w", encoding="utf-8") as f:
-        json.dump(roster_json, f, ensure_ascii=False, indent=2)
-
+    
     print(f"✅ Complete: {dept_total} departments, {emp_total} staff")
-    print(f"📊 Data saved to docs/data/roster.json")
 
 
 if __name__ == "__main__":

@@ -129,8 +129,15 @@ def map_shift(code: str):
         return ("🏖️ Leave", "Leave")
     if c in ["TR"] or "TRAINING" in c:
         return ("📚 Training", "Training")
+
+    # 🔹 STAE14 = Standby محسوب مع الظهر
+    if c == "STAE14":
+        return ("🧍 Standby (Afternoon)", "Standby-Afternoon")
+
+    # 🔹 باقي الستاندباي
     if c in ["ST", "STM", "STN", "STNE22", "STME06", "STMN06", "STAE14"] or "STANDBY" in c:
         return ("🧍 Standby", "Standby")
+
     if c == "OT" or c.startswith("OT"):
         return ("⏱️ OT", "Standby")
     if c in ["OFF", "O"] or re.search(r"(REST|OFF\s*DAY|REST\/OFF)", c):
@@ -139,7 +146,6 @@ def map_shift(code: str):
     if c in SHIFT_MAP:
         return SHIFT_MAP[c]
 
-    # ← أي كود غير معروف (مثل STAR14) يوضع في "Other"
     return (f"❓ {c0}", "Other")
 
 def current_shift_key(now: datetime) -> str:

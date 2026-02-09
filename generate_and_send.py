@@ -898,25 +898,35 @@ def generate_date_pages_for_month(wb, year: int, month: int, pages_base: str):
             continue
 
 
-def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: list, pages_base: str) -> str:
+def build_pretty_email_html(active_shift_key: str, now: datetime, all_shifts_by_dept: list, pages_base: str) -> str:
     """
-    Builds a beautifully formatted HTML email matching the main page style.
-    rows_by_dept = [{"dept": ..., "rows": [{"name": ..., "shift": ...}]}, ...]
+    Builds a beautifully formatted HTML email showing ALL shifts for today.
+    all_shifts_by_dept = [{"dept": ..., "shifts": {"Morning": [...], "Afternoon": [...], ...}}, ...]
     """
-    total_now = sum(len(d["rows"]) for d in rows_by_dept)
-    depts_now = sum(1 for d in rows_by_dept if len(d["rows"]) > 0)
+    # Calculate totals across all shifts
+    total_employees = 0
+    depts_with_employees = 0
+    
+    for d in all_shifts_by_dept:
+        dept_total = sum(len(employees) for employees in d["shifts"].values())
+        if dept_total > 0:
+            depts_with_employees += 1
+            total_employees += dept_total
 
-    # Determine shift colors
+    # Determine current shift colors for header
     shift_colors = SHIFT_COLORS.get(active_shift_key, SHIFT_COLORS["Other"])
     shift_icon = shift_colors.get("icon", "⏰")
 
-    # Build department cards
+    # Build department cards with ALL shifts
     dept_cards = []
-    for idx, d in enumerate(rows_by_dept):
-        if not d["rows"]:
-            continue
-
+    for idx, d in enumerate(all_shifts_by_dept):
         dept_name = d["dept"]
+        shifts_data = d["shifts"]
+        
+        # Skip if department has no employees today
+        dept_total = sum(len(employees) for employees in shifts_data.values())
+        if dept_total == 0:
+            continue
         
         # Determine department color
         if dept_name == "Unassigned":
@@ -924,29 +934,79 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
         else:
             dept_color = DEPT_COLORS[idx % len(DEPT_COLORS)]
 
-        # Build employee rows
-        rows_html = ""
-        for i, e in enumerate(d["rows"]):
-            bg_color = "rgba(15,23,42,.02)" if i % 2 == 1 else "transparent"
-            rows_html += f"""
+        # Build shift sections
+        shift_sections = ""
+        for group_key in GROUP_ORDER:
+            employees = shifts_data.get(group_key, [])
+            if not employees:
+                continue
+
+            # Get shift display name
+            shift_display_names = {
+                "Morning": "Morning",
+                "Afternoon": "Afternoon",
+                "Night": "Night",
+                "Off Day": "Off Day",
+                "Leave": "Annual Leave",
+                "Training": "Training",
+                "Standby": "Standby",
+                "Other": "Other"
+            }
+            display_name = shift_display_names.get(group_key, group_key)
+            
+            colors = SHIFT_COLORS.get(group_key, SHIFT_COLORS["Other"])
+            count = len(employees)
+
+            # Highlight active shift
+            is_active = (group_key == active_shift_key)
+            active_border = f"border:2px solid {colors['border']};" if is_active else f"border:1px solid {colors['border']};"
+            active_badge = "⚡" if is_active else ""
+
+            # Build employee rows
+            rows_html = ""
+            for i, e in enumerate(employees):
+                bg_color = "rgba(15,23,42,.03)" if i % 2 == 1 else "transparent"
+                rows_html += f"""
+                    <tr>
+                      <td style="padding:10px 14px;border-top:1px solid rgba(15,23,42,.06);background:{bg_color};">
+                        <span style="font-size:14px;font-weight:700;color:#1e293b;">{e['name']}</span>
+                      </td>
+                      <td style="padding:10px 14px;border-top:1px solid rgba(15,23,42,.06);text-align:right;background:{bg_color};">
+                        <span style="font-size:13px;font-weight:600;color:{colors['status_color']};white-space:nowrap;">{e['shift']}</span>
+                      </td>
+                    </tr>"""
+
+            shift_sections += f"""
+              <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin-top:10px;background:{colors['bg']};border-radius:12px;overflow:hidden;{active_border}">
+                <!-- Shift Header -->
                 <tr>
-                  <td style="padding:11px 14px;border-top:1px solid rgba(15,23,42,.08);background:{bg_color};">
-                    <span style="font-size:14px;font-weight:700;color:#1e293b;display:block;">{e['name']}</span>
+                  <td colspan="2" style="padding:10px 14px;background:{colors['summary_bg']};border-bottom:1px solid {colors['summary_border']};">
+                    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
+                      <tr>
+                        <td style="padding:0;">
+                          <span style="font-size:18px;margin-right:8px;">{colors['icon']}</span>
+                          <span style="font-size:15px;font-weight:800;color:{colors['label_color']};letter-spacing:-.1px;">{display_name} {active_badge}</span>
+                        </td>
+                        <td style="text-align:right;padding:0;">
+                          <span style="display:inline-block;padding:4px 12px;border-radius:20px;background:{colors['count_bg']};color:{colors['count_color']};font-size:13px;font-weight:800;">{count}</span>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
-                  <td style="padding:11px 14px;border-top:1px solid rgba(15,23,42,.08);text-align:right;background:{bg_color};">
-                    <span style="font-size:13px;font-weight:600;color:{shift_colors['status_color']};white-space:nowrap;">{e['shift']}</span>
-                  </td>
-                </tr>"""
+                </tr>
+                <!-- Employees -->
+                {rows_html}
+              </table>"""
 
         # Department icon SVG
-        icon_svg = """<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        icon_svg = """<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
   <rect x="9" y="14" width="2" height="3"/>
   <rect x="13" y="14" width="2" height="3"/>
 </svg>"""
 
         dept_cards.append(f"""
-          <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin-top:16px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid rgba(15,23,42,.08);box-shadow:0 3px 14px rgba(15,23,42,.08);">
+          <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin-top:18px;background:#fff;border-radius:18px;overflow:hidden;border:1px solid rgba(15,23,42,.07);box-shadow:0 4px 18px rgba(15,23,42,.08);">
             <!-- Colored top gradient bar -->
             <tr>
               <td colspan="2" style="height:5px;background:linear-gradient(to right,{dept_color['grad_from']},{dept_color['grad_to']});padding:0;"></td>
@@ -957,18 +1017,18 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
               <td colspan="2" style="padding:14px 16px;border-bottom:2px solid {dept_color['border']};background:#fff;">
                 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;">
                   <tr>
-                    <td style="width:42px;padding:0;">
-                      <div style="width:40px;height:40px;border-radius:12px;background:{dept_color['light']};color:{dept_color['base']};display:flex;align-items:center;justify-content:center;">
+                    <td style="width:46px;padding:0;">
+                      <div style="width:44px;height:44px;border-radius:12px;background:{dept_color['light']};color:{dept_color['base']};display:flex;align-items:center;justify-content:center;">
                         {icon_svg}
                       </div>
                     </td>
                     <td style="padding:0 0 0 12px;">
-                      <span style="font-size:17px;font-weight:800;color:#1e293b;letter-spacing:-.2px;display:block;">{dept_name}</span>
+                      <span style="font-size:18px;font-weight:800;color:#1e293b;letter-spacing:-.2px;display:block;">{dept_name}</span>
                     </td>
                     <td style="text-align:right;padding:0;">
-                      <div style="display:inline-block;min-width:50px;padding:7px 12px;border-radius:12px;background:{dept_color['light']};border:1px solid {dept_color['border']};text-align:center;">
-                        <span style="font-size:9px;opacity:.7;display:block;text-transform:uppercase;letter-spacing:.5px;color:{dept_color['base']};margin-bottom:2px;">Total</span>
-                        <span style="font-size:16px;font-weight:900;color:{dept_color['base']};display:block;">{len(d['rows'])}</span>
+                      <div style="display:inline-block;min-width:52px;padding:8px 12px;border-radius:12px;background:{dept_color['light']};border:1px solid {dept_color['border']};text-align:center;">
+                        <span style="font-size:10px;opacity:.7;display:block;text-transform:uppercase;letter-spacing:.5px;color:{dept_color['base']};margin-bottom:1px;">Total</span>
+                        <span style="font-size:17px;font-weight:900;color:{dept_color['base']};display:block;">{dept_total}</span>
                       </div>
                     </td>
                   </tr>
@@ -976,8 +1036,12 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
               </td>
             </tr>
 
-            <!-- Employees List -->
-            {rows_html}
+            <!-- All Shifts -->
+            <tr>
+              <td colspan="2" style="padding:10px;">
+                {shift_sections}
+              </td>
+            </tr>
           </table>
         """)
 
@@ -999,11 +1063,12 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="x-apple-disable-message-reformatting">
-  <title>Duty Roster</title>
+  <title>Duty Roster - {date_str}</title>
   <style>
     @media only screen and (max-width: 600px) {{
       .mobile-padding {{ padding: 12px !important; }}
       .mobile-font {{ font-size: 13px !important; }}
+      .header-icon {{ font-size: 56px !important; }}
     }}
   </style>
 </head>
@@ -1011,26 +1076,31 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
   
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#eef1f7;">
     <tr>
-      <td align="center" style="padding:18px 14px;">
+      <td align="center" style="padding:20px 14px;">
         
         <!-- Main Container -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:640px;width:100%;margin:0 auto;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:680px;width:100%;margin:0 auto;">
           
-          <!-- Header with Gradient -->
+          <!-- Large Header with Gradient -->
           <tr>
             <td style="padding:0;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:linear-gradient(135deg, #1e40af 0%, #1976d2 50%, #0ea5e9 100%);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 8px 28px rgba(30,64,175,.25);position:relative;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:linear-gradient(135deg, #1e40af 0%, #1976d2 50%, #0ea5e9 100%);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 10px 35px rgba(30,64,175,.3);position:relative;">
                 <tr>
-                  <td style="padding:28px 20px 26px;text-align:center;position:relative;">
+                  <td style="padding:40px 24px 38px;text-align:center;position:relative;">
                     <!-- Decorative circles -->
-                    <div style="position:absolute;top:-30px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08);"></div>
-                    <div style="position:absolute;bottom:-50px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06);"></div>
+                    <div style="position:absolute;top:-40px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08);"></div>
+                    <div style="position:absolute;bottom:-60px;left:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);"></div>
                     
-                    <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-.4px;position:relative;z-index:1;">📋 Duty Roster</h1>
-                    <div style="margin-top:12px;display:inline-block;background:rgba(255,255,255,.20);padding:8px 22px;border-radius:30px;font-size:14px;font-weight:700;color:#ffffff;letter-spacing:.4px;position:relative;z-index:1;">
-                      {shift_icon} {shift_display}
+                    <!-- Large Icon -->
+                    <div class="header-icon" style="font-size:72px;margin-bottom:16px;position:relative;z-index:1;">📋</div>
+                    
+                    <h1 style="margin:0;font-size:32px;font-weight:800;color:#ffffff;letter-spacing:-.5px;position:relative;z-index:1;">Duty Roster</h1>
+                    
+                    <div style="margin-top:16px;display:inline-block;background:rgba(255,255,255,.22);padding:10px 26px;border-radius:30px;font-size:16px;font-weight:700;color:#ffffff;letter-spacing:.4px;position:relative;z-index:1;">
+                      {shift_icon} {shift_display} <span style="opacity:.8;">(Active Now)</span>
                     </div>
-                    <div style="margin-top:8px;display:inline-block;background:rgba(255,255,255,.15);padding:6px 20px;border-radius:30px;font-size:13px;font-weight:600;color:#ffffff;letter-spacing:.3px;position:relative;z-index:1;">
+                    
+                    <div style="margin-top:10px;display:inline-block;background:rgba(255,255,255,.16);padding:8px 24px;border-radius:30px;font-size:15px;font-weight:600;color:#ffffff;letter-spacing:.3px;position:relative;z-index:1;">
                       📅 {date_str}
                     </div>
                   </td>
@@ -1042,24 +1112,24 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
           <!-- Summary Stats -->
           <tr>
             <td style="padding:0 14px;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin-top:16px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin-top:18px;">
                 <tr>
                   <td style="width:50%;padding-right:6px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#fff;border:1px solid rgba(15,23,42,.10);border-radius:14px;box-shadow:0 2px 8px rgba(15,23,42,.06);">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#fff;border:1px solid rgba(15,23,42,.10);border-radius:16px;box-shadow:0 3px 12px rgba(15,23,42,.07);">
                       <tr>
-                        <td style="padding:12px;text-align:center;">
-                          <div style="font-size:24px;font-weight:900;color:#1e40af;margin-bottom:2px;">{total_now}</div>
-                          <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;">Employees</div>
+                        <td style="padding:16px;text-align:center;">
+                          <div style="font-size:28px;font-weight:900;color:#1e40af;margin-bottom:4px;">{total_employees}</div>
+                          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;">Employees</div>
                         </td>
                       </tr>
                     </table>
                   </td>
                   <td style="width:50%;padding-left:6px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#fff;border:1px solid rgba(15,23,42,.10);border-radius:14px;box-shadow:0 2px 8px rgba(15,23,42,.06);">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#fff;border:1px solid rgba(15,23,42,.10);border-radius:16px;box-shadow:0 3px 12px rgba(15,23,42,.07);">
                       <tr>
-                        <td style="padding:12px;text-align:center;">
-                          <div style="font-size:24px;font-weight:900;color:#059669;margin-bottom:2px;">{depts_now}</div>
-                          <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;">Departments</div>
+                        <td style="padding:16px;text-align:center;">
+                          <div style="font-size:28px;font-weight:900;color:#059669;margin-bottom:4px;">{depts_with_employees}</div>
+                          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;">Departments</div>
                         </td>
                       </tr>
                     </table>
@@ -1069,7 +1139,7 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
             </td>
           </tr>
 
-          <!-- Department Cards -->
+          <!-- Department Cards with ALL Shifts -->
           <tr>
             <td style="padding:0 14px;">
               {dept_html}
@@ -1078,16 +1148,16 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
 
           <!-- Call to Action Buttons -->
           <tr>
-            <td style="padding:20px 14px;text-align:center;">
+            <td style="padding:22px 14px;text-align:center;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
                 <tr>
-                  <td style="padding:0 6px 0 0;">
-                    <a href="{pages_base}/now/" style="display:inline-block;padding:14px 28px;border-radius:16px;background:linear-gradient(135deg,#1e40af,#1976d2);color:#ffffff;text-decoration:none;font-weight:800;font-size:14px;box-shadow:0 6px 20px rgba(30,64,175,.3);white-space:nowrap;">
+                  <td style="padding:0 7px 0 0;">
+                    <a href="{pages_base}/now/" style="display:inline-block;padding:15px 30px;border-radius:16px;background:linear-gradient(135deg,#1e40af,#1976d2);color:#ffffff;text-decoration:none;font-weight:800;font-size:15px;box-shadow:0 6px 22px rgba(30,64,175,.35);white-space:nowrap;">
                       🔄 Refresh Now
                     </a>
                   </td>
-                  <td style="padding:0 0 0 6px;">
-                    <a href="{pages_base}/" style="display:inline-block;padding:14px 28px;border-radius:16px;background:linear-gradient(135deg,#0ea5e9,#06b6d4);color:#ffffff;text-decoration:none;font-weight:800;font-size:14px;box-shadow:0 6px 20px rgba(14,165,233,.3);white-space:nowrap;">
+                  <td style="padding:0 0 0 7px;">
+                    <a href="{pages_base}/" style="display:inline-block;padding:15px 30px;border-radius:16px;background:linear-gradient(135deg,#0ea5e9,#06b6d4);color:#ffffff;text-decoration:none;font-weight:800;font-size:15px;box-shadow:0 6px 22px rgba(14,165,233,.35);white-space:nowrap;">
                       📋 View Full Roster
                     </a>
                   </td>
@@ -1098,13 +1168,13 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, rows_by_dept: 
 
           <!-- Footer -->
           <tr>
-            <td style="padding:0 14px 20px;">
+            <td style="padding:0 14px 22px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#fff;border-radius:0 0 20px 20px;border:1px solid rgba(15,23,42,.08);border-top:none;">
                 <tr>
-                  <td style="padding:16px;text-align:center;color:#94a3b8;font-size:12px;line-height:1.8;">
+                  <td style="padding:18px;text-align:center;color:#94a3b8;font-size:13px;line-height:1.9;">
                     Sent at <strong style="color:#64748b;">{sent_time}</strong>
                     <br>
-                    Total on duty: <strong style="color:#64748b;">{total_now} employees</strong> across <strong style="color:#64748b;">{depts_now} departments</strong>
+                    Total on duty: <strong style="color:#64748b;">{total_employees} employees</strong> across <strong style="color:#64748b;">{depts_with_employees} departments</strong>
                   </td>
                 </tr>
               </table>

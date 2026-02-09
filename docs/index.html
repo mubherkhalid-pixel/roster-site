@@ -189,7 +189,7 @@
   <div class="header">
     <h1>📋 Duty Roster</h1>
     <div class="dateTag" id="dateTag" role="button" tabindex="0" style="cursor:pointer;">📅 9 February 2026</div>
-    <input id="datePicker" type="date" value="2026-02-09" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true" />
+    <input id="datePicker" type="date" value="2026-02-09" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" />
   </div>
 
   <!-- ════ SUMMARY CHIPS ════ -->
@@ -220,14 +220,15 @@
 
         </div>
         <div class="deptTitle">Officers</div>
-        <div class="deptBadge" style="background:#2563eb12; color:#2563eb; border:1px solid #2563eb28;">
+        <div class="deptBadge" style="background:#2563eb15; color:#2563eb; border:1px solid #2563eb18;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
           <span style="font-size:17px;font-weight:900;">4</span>
         </div>
       </div>
 
       <div class="shiftStack">
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7;" open>
+
+    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7" open>
       <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
         <span class="shiftIcon">☀️</span>
         <span class="shiftLabel" style="color:#92400e;">Morning</span>
@@ -244,7 +245,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5;">
+    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
       <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
         <span class="shiftIcon">🌤️</span>
         <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
@@ -258,7 +259,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff;">
+    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff">
       <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
         <span class="shiftIcon">🛋️</span>
         <span class="shiftLabel" style="color:#3730a3;">Off Day</span>
@@ -271,93 +272,8 @@
      </div>
       </div>
     </details>
-            </div>
-    </div>
-    
-
-    <div class="deptCard">
-      <div style="height:5px; background:linear-gradient(to right, #7c3aed, #7c3aedcc);"></div>
-
-      <div class="deptHead" style="border-bottom:2px solid #7c3aed18;">
-        <div class="deptIcon" style="background:#7c3aed15; color:#7c3aed;">
-          
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
-  <rect x="9" y="14" width="2" height="3"/>
-  <rect x="13" y="14" width="2" height="3"/>
-</svg>
-
-        </div>
-        <div class="deptTitle">Supervisors</div>
-        <div class="deptBadge" style="background:#7c3aed12; color:#7c3aed; border:1px solid #7c3aed28;">
-          <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">6</span>
-        </div>
-      </div>
-
-      <div class="shiftStack">
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7;" open>
-      <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
-        <span class="shiftIcon">☀️</span>
-        <span class="shiftLabel" style="color:#92400e;">Morning</span>
-        <span class="shiftCount" style="background:#f59e0b22; color:#92400e;">2</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Saleh Al Rashdi - 82546</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (MN06)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Said Al Amri - 990737</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (MN06)</span>
-     </div>
-      </div>
-    </details>
             
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5;">
-      <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
-        <span class="shiftIcon">🌤️</span>
-        <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
-        <span class="shiftCount" style="background:#f9731622; color:#9a3412;">1</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Jay Macalino - 80250</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AN13)</span>
-     </div>
       </div>
-    </details>
-            
-    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff;">
-      <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
-        <span class="shiftIcon">🛋️</span>
-        <span class="shiftLabel" style="color:#3730a3;">Off Day</span>
-        <span class="shiftCount" style="background:#6366f122; color:#3730a3;">2</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Mohamed Al Amri - 81404</span>
-       <span class="empStatus" style="color:#3730a3;">🛌 Off Day</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Mohamed Al Kalbani - 82593</span>
-       <span class="empStatus" style="color:#3730a3;">🛌 Off Day</span>
-     </div>
-      </div>
-    </details>
-            
-    <details class="shiftCard" style="border:1px solid #0ea5e944; background:#e0f2fe;">
-      <summary class="shiftSummary" style="background:#e0f2fe; border-bottom:1px solid #0ea5e933;">
-        <span class="shiftIcon">📚</span>
-        <span class="shiftLabel" style="color:#075985;">Training</span>
-        <span class="shiftCount" style="background:#0ea5e922; color:#075985;">1</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Talal Al Balushi - 81300</span>
-       <span class="empStatus" style="color:#075985;">📚 Training (من 8 إلى 14)</span>
-     </div>
-      </div>
-    </details>
-            </div>
     </div>
     
 
@@ -374,15 +290,104 @@
 </svg>
 
         </div>
+        <div class="deptTitle">Supervisors</div>
+        <div class="deptBadge" style="background:#0891b215; color:#0891b2; border:1px solid #0891b218;">
+          <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
+          <span style="font-size:17px;font-weight:900;">6</span>
+        </div>
+      </div>
+
+      <div class="shiftStack">
+
+    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7" open>
+      <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
+        <span class="shiftIcon">☀️</span>
+        <span class="shiftLabel" style="color:#92400e;">Morning</span>
+        <span class="shiftCount" style="background:#f59e0b22; color:#92400e;">2</span>
+      </summary>
+      <div class="shiftBody">
+        <div class="empRow">
+       <span class="empName">Saleh Al Rashdi - 82546</span>
+       <span class="empStatus" style="color:#92400e;">🌅 Morning (MN06)</span>
+     </div><div class="empRow empRowAlt">
+       <span class="empName">Said Al Amri - 990737</span>
+       <span class="empStatus" style="color:#92400e;">🌅 Morning (MN06)</span>
+     </div>
+      </div>
+    </details>
+            
+    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
+      <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
+        <span class="shiftIcon">🌤️</span>
+        <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
+        <span class="shiftCount" style="background:#f9731622; color:#9a3412;">1</span>
+      </summary>
+      <div class="shiftBody">
+        <div class="empRow">
+       <span class="empName">Jay Macalino - 80250</span>
+       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AN13)</span>
+     </div>
+      </div>
+    </details>
+            
+    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff">
+      <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
+        <span class="shiftIcon">🛋️</span>
+        <span class="shiftLabel" style="color:#3730a3;">Off Day</span>
+        <span class="shiftCount" style="background:#6366f122; color:#3730a3;">2</span>
+      </summary>
+      <div class="shiftBody">
+        <div class="empRow">
+       <span class="empName">Mohamed Al Amri - 81404</span>
+       <span class="empStatus" style="color:#3730a3;">🛌 Off Day</span>
+     </div><div class="empRow empRowAlt">
+       <span class="empName">Mohamed Al Kalbani - 82593</span>
+       <span class="empStatus" style="color:#3730a3;">🛌 Off Day</span>
+     </div>
+      </div>
+    </details>
+            
+    <details class="shiftCard" style="border:1px solid #0ea5e944; background:#e0f2fe">
+      <summary class="shiftSummary" style="background:#e0f2fe; border-bottom:1px solid #0ea5e933;">
+        <span class="shiftIcon">📚</span>
+        <span class="shiftLabel" style="color:#075985;">Training</span>
+        <span class="shiftCount" style="background:#0ea5e922; color:#075985;">1</span>
+      </summary>
+      <div class="shiftBody">
+        <div class="empRow">
+       <span class="empName">Talal Al Balushi - 81300</span>
+       <span class="empStatus" style="color:#075985;">📚 Training (من 8 إلى 14)</span>
+     </div>
+      </div>
+    </details>
+            
+      </div>
+    </div>
+    
+
+    <div class="deptCard">
+      <div style="height:5px; background:linear-gradient(to right, #059669, #059669cc);"></div>
+
+      <div class="deptHead" style="border-bottom:2px solid #05966918;">
+        <div class="deptIcon" style="background:#05966915; color:#059669;">
+          
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
+  <rect x="9" y="14" width="2" height="3"/>
+  <rect x="13" y="14" width="2" height="3"/>
+</svg>
+
+        </div>
         <div class="deptTitle">Load Control</div>
-        <div class="deptBadge" style="background:#0891b212; color:#0891b2; border:1px solid #0891b228;">
+        <div class="deptBadge" style="background:#05966915; color:#059669; border:1px solid #05966918;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
           <span style="font-size:17px;font-weight:900;">15</span>
         </div>
       </div>
 
       <div class="shiftStack">
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7;" open>
+
+    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7" open>
       <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
         <span class="shiftIcon">☀️</span>
         <span class="shiftLabel" style="color:#92400e;">Morning</span>
@@ -399,7 +404,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5;">
+    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
       <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
         <span class="shiftIcon">🌤️</span>
         <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
@@ -416,7 +421,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe;">
+    <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe">
       <summary class="shiftSummary" style="background:#ede9fe; border-bottom:1px solid #8b5cf633;">
         <span class="shiftIcon">🌙</span>
         <span class="shiftLabel" style="color:#5b21b6;">Night</span>
@@ -433,7 +438,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff;">
+    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff">
       <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
         <span class="shiftIcon">🛋️</span>
         <span class="shiftLabel" style="color:#3730a3;">Off Day</span>
@@ -462,7 +467,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #10b98144; background:#d1fae5;">
+    <details class="shiftCard" style="border:1px solid #10b98144; background:#d1fae5">
       <summary class="shiftSummary" style="background:#d1fae5; border-bottom:1px solid #10b98133;">
         <span class="shiftIcon">✈️</span>
         <span class="shiftLabel" style="color:#065f46;">Annual Leave</span>
@@ -471,25 +476,26 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Habib Al Balushi - 82600</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 5 إلى 10)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Ahmed Al Kharusi - 82575</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 1 إلى 10)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div><div class="empRow">
        <span class="empName">Qasim Al Maqbali - 81409</span>
        <span class="empStatus" style="color:#065f46;">🤒 Sick Leave (من 1 إلى 28)</span>
      </div>
       </div>
     </details>
-            </div>
+            
+      </div>
     </div>
     
 
     <div class="deptCard">
-      <div style="height:5px; background:linear-gradient(to right, #059669, #059669cc);"></div>
+      <div style="height:5px; background:linear-gradient(to right, #dc2626, #dc2626cc);"></div>
 
-      <div class="deptHead" style="border-bottom:2px solid #05966918;">
-        <div class="deptIcon" style="background:#05966915; color:#059669;">
+      <div class="deptHead" style="border-bottom:2px solid #dc262618;">
+        <div class="deptIcon" style="background:#dc262615; color:#dc2626;">
           
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
@@ -499,14 +505,15 @@
 
         </div>
         <div class="deptTitle">Export Checker</div>
-        <div class="deptBadge" style="background:#05966912; color:#059669; border:1px solid #05966928;">
+        <div class="deptBadge" style="background:#dc262615; color:#dc2626; border:1px solid #dc262618;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
           <span style="font-size:17px;font-weight:900;">36</span>
         </div>
       </div>
 
       <div class="shiftStack">
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7;" open>
+
+    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7" open>
       <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
         <span class="shiftIcon">☀️</span>
         <span class="shiftLabel" style="color:#92400e;">Morning</span>
@@ -535,7 +542,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5;">
+    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
       <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
         <span class="shiftIcon">🌤️</span>
         <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
@@ -567,7 +574,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe;">
+    <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe">
       <summary class="shiftSummary" style="background:#ede9fe; border-bottom:1px solid #8b5cf633;">
         <span class="shiftIcon">🌙</span>
         <span class="shiftLabel" style="color:#5b21b6;">Night</span>
@@ -596,7 +603,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff;">
+    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff">
       <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
         <span class="shiftIcon">🛋️</span>
         <span class="shiftLabel" style="color:#3730a3;">Off Day</span>
@@ -643,7 +650,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #10b98144; background:#d1fae5;">
+    <details class="shiftCard" style="border:1px solid #10b98144; background:#d1fae5">
       <summary class="shiftSummary" style="background:#d1fae5; border-bottom:1px solid #10b98133;">
         <span class="shiftIcon">✈️</span>
         <span class="shiftLabel" style="color:#065f46;">Annual Leave</span>
@@ -652,31 +659,32 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Marhoon Al Kiyumi - 82545</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 4 إلى 25)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Dawood Al Siyabi - 82672</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 9 إلى 14)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div><div class="empRow">
        <span class="empName">Yousuf Al Balushi - 82587</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 6 إلى 11)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Ali Al Marjubi - 82577</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 1 إلى 13)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div><div class="empRow">
        <span class="empName">Khalid Al Raqadi - 8715</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 8 إلى 13)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div>
       </div>
     </details>
-            </div>
+            
+      </div>
     </div>
     
 
     <div class="deptCard">
-      <div style="height:5px; background:linear-gradient(to right, #dc2626, #dc2626cc);"></div>
+      <div style="height:5px; background:linear-gradient(to right, #7c3aed, #7c3aedcc);"></div>
 
-      <div class="deptHead" style="border-bottom:2px solid #dc262618;">
-        <div class="deptIcon" style="background:#dc262615; color:#dc2626;">
+      <div class="deptHead" style="border-bottom:2px solid #7c3aed18;">
+        <div class="deptIcon" style="background:#7c3aed15; color:#7c3aed;">
           
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M3 21h18M3 10h18M5 21V10l7-6 7 6v11"/>
@@ -686,14 +694,15 @@
 
         </div>
         <div class="deptTitle">Export Operators</div>
-        <div class="deptBadge" style="background:#dc262612; color:#dc2626; border:1px solid #dc262628;">
+        <div class="deptBadge" style="background:#7c3aed15; color:#7c3aed; border:1px solid #7c3aed18;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
           <span style="font-size:17px;font-weight:900;">19</span>
         </div>
       </div>
 
       <div class="shiftStack">
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7;" open>
+
+    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7" open>
       <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
         <span class="shiftIcon">☀️</span>
         <span class="shiftLabel" style="color:#92400e;">Morning</span>
@@ -716,7 +725,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5;">
+    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
       <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
         <span class="shiftIcon">🌤️</span>
         <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
@@ -739,7 +748,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe;">
+    <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe">
       <summary class="shiftSummary" style="background:#ede9fe; border-bottom:1px solid #8b5cf633;">
         <span class="shiftIcon">🌙</span>
         <span class="shiftLabel" style="color:#5b21b6;">Night</span>
@@ -759,7 +768,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff;">
+    <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff">
       <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
         <span class="shiftIcon">🛋️</span>
         <span class="shiftLabel" style="color:#3730a3;">Off Day</span>
@@ -785,7 +794,7 @@
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #10b98144; background:#d1fae5;">
+    <details class="shiftCard" style="border:1px solid #10b98144; background:#d1fae5">
       <summary class="shiftSummary" style="background:#d1fae5; border-bottom:1px solid #10b98133;">
         <span class="shiftIcon">✈️</span>
         <span class="shiftLabel" style="color:#065f46;">Annual Leave</span>
@@ -794,15 +803,15 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Mohana Al Subhi - 8714</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 1 إلى 10)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Issa Al Douyani - 8647</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Leave (من 4 إلى 17)</span>
+       <span class="empStatus" style="color:#065f46;">🏖️ Leave</span>
      </div>
       </div>
     </details>
             
-    <details class="shiftCard" style="border:1px solid #0ea5e944; background:#e0f2fe;">
+    <details class="shiftCard" style="border:1px solid #0ea5e944; background:#e0f2fe">
       <summary class="shiftSummary" style="background:#e0f2fe; border-bottom:1px solid #0ea5e933;">
         <span class="shiftIcon">📚</span>
         <span class="shiftLabel" style="color:#075985;">Training</span>
@@ -815,18 +824,19 @@
      </div>
       </div>
     </details>
-            </div>
+            
+      </div>
     </div>
     
 
   <!-- ════ CTA ════ -->
   <div class="btnWrap">
-    <a class="btn" href="https://khalidsaif912.github.io/roster-site/now/">📋 View Full Duty Roster</a>
+    <a class="btn" href="https://mubherkhalid-pixel.github.io/roster-site/now/">📋 View Full Duty Roster</a>
   </div>
 
   <!-- ════ FOOTER ════ -->
   <div class="footer">
-    Sent at <strong>13:01</strong>
+    Sent at <strong>13:27</strong>
      &nbsp;·&nbsp; Total: <strong>80 employees</strong>
   </div>
 
@@ -839,6 +849,16 @@
   if(!tag || !picker) return;
 
   function openPicker(){
+    // Position the (hidden) input مباشرة تحت التاريخ حتى يظهر التقويم بالمكان الصحيح
+    try{
+      var r = tag.getBoundingClientRect();
+      var wrap = tag.closest('.header') || document.body;
+      var wr = wrap.getBoundingClientRect();
+      picker.style.left = (r.left - wr.left) + 'px';
+      picker.style.top  = (r.bottom - wr.top + 6) + 'px';
+      picker.style.width = Math.max(120, r.width) + 'px';
+    }catch(e){}
+
     try{
       if (picker.showPicker) { picker.showPicker(); }
       else { picker.focus(); picker.click(); }

@@ -1112,15 +1112,15 @@ def build_pretty_email_html(active_shift_key: str, now: datetime, all_shifts_by_
             <td style="padding:0;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:linear-gradient(135deg, #1e40af 0%, #1976d2 50%, #0ea5e9 100%);border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 10px 35px rgba(30,64,175,.3);position:relative;">
                 <tr>
-                  <td style="padding:40px 24px 38px;text-align:center;position:relative;">
+                  <td style="padding:22px 20px;text-align:center;position:relative;">
                     <!-- Decorative circles -->
                     <div style="position:absolute;top:-40px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08);"></div>
                     <div style="position:absolute;bottom:-60px;left:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);"></div>
                     
                     <!-- Large Icon -->
-                    <div class="header-icon" style="font-size:72px;margin-bottom:16px;position:relative;z-index:1;">📋</div>
+                    <div class="header-icon" style="font-size:44px;margin-bottom:10px;">📋</div>
                     
-                    <h1 style="margin:0;font-size:32px;font-weight:800;color:#ffffff;letter-spacing:-.5px;position:relative;z-index:1;">Duty Roster</h1>
+                    <h1 style="margin:0;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-.5px;position:relative;z-index:1;">Duty Roster</h1>
                     
                     <div style="margin-top:16px;display:inline-block;background:rgba(255,255,255,.22);padding:10px 26px;border-radius:30px;font-size:16px;font-weight:700;color:#ffffff;letter-spacing:.4px;position:relative;z-index:1;">
                       {shift_icon} {shift_display} <span style="opacity:.8;">(Active Now)</span>

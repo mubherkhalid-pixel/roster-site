@@ -159,7 +159,7 @@ def download_excel(url: str) -> bytes:
     return r.content
 
 def infer_pages_base_url():
-    return "https://mubherkhalid-pixel.github.io/roster-site"
+    return "https://khalidsaif912.github.io/roster-site/now/"
 
 
 # =========================

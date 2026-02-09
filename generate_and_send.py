@@ -130,10 +130,6 @@ def map_shift(code: str):
     if c in ["TR"] or "TRAINING" in c:
         return ("📚 Training", "Training")
 
-    # 🔹 STAE14 = Standby محسوب مع الظهر
-    if c == "STAE14":
-        return ("🧍 Standby (Afternoon)", "Standby-Afternoon")
-
     # 🔹 باقي الستاندباي
     if c in ["ST", "STM", "STN", "STNE22", "STME06", "STMN06", "STAE14"] or "STANDBY" in c:
         return ("🧍 Standby", "Standby")

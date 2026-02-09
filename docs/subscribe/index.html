@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Subscribe — Duty Roster</title>
+  <style>
+    body{margin:0;background:#eef1f7;font-family:Segoe UI,Arial,sans-serif;color:#0f172a}
+    .wrap{max-width:640px;margin:0 auto;padding:16px 14px 28px}
+    .header{background:linear-gradient(135deg,#1e40af,#0ea5e9);color:#fff;border-radius:20px;padding:22px 16px;text-align:center;position:relative;overflow:hidden}
+    .header:before{content:'';position:absolute;top:-30px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08)}
+    .header:after{content:'';position:absolute;bottom:-50px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+    .card{margin-top:16px;background:#fff;border-radius:18px;border:1px solid rgba(15,23,42,.07);box-shadow:0 4px 18px rgba(15,23,42,.08);padding:14px 16px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .label{font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+    .input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(15,23,42,.14);font-size:14px}
+    .opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(15,23,42,.10);background:#f8fafc;flex:1;min-width:240px}
+    .btn{width:100%;margin-top:12px;padding:14px 16px;border-radius:16px;border:0;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;font-weight:900;font-size:15px;cursor:pointer}
+    .msg{margin-top:12px;padding:12px;border-radius:14px;display:none;line-height:1.7}
+    .ok{background:#d1fae5;color:#065f46;border:1px solid #10b98133}
+    .err{background:#ffedd5;color:#9a3412;border:1px solid #f9731633}
+    .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .mini{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);color:#fff;padding:8px 12px;border-radius:14px;font-weight:900;font-size:12px;cursor:pointer}
+    [dir="rtl"] .opt{flex-direction:row-reverse}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div style="position:relative;z-index:1;font-weight:900;font-size:22px" id="tTitle">📩 Subscribe</div>
+    <div style="position:relative;z-index:1;margin-top:8px;opacity:.92;line-height:1.6" id="tSub">
+      Receive Duty Roster emails. Confirm via a link sent to your inbox.
+    </div>
+    <div class="top" style="position:relative;z-index:1">
+      <div class="mini" id="btnLang">AR</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label" id="tEmailLbl">Email</div>
+    <input class="input" id="email" type="email" placeholder="name@example.com">
+
+    <div style="height:12px"></div>
+    <div class="label" id="tModeLbl">Delivery</div>
+
+    <div class="row">
+      <label class="opt">
+        <input type="radio" name="mode" value="ALL" checked>
+        <span id="tAll">All shifts — once daily</span>
+      </label>
+      <label class="opt">
+        <input type="radio" name="mode" value="CURRENT">
+        <span id="tCur">Current shift — 3× daily (each shift)</span>
+      </label>
+    </div>
+
+    <button class="btn" id="submitBtn">✅ Subscribe</button>
+
+    <div class="msg ok" id="okMsg"></div>
+    <div class="msg err" id="errMsg"></div>
+  </div>
+</div>
+
+<script>
+const WEB_APP_URL = "WEB_APP_URL_HERE"; // <-- ضع رابط Apps Script Web App هنا
+let lang = "en";
+
+const T = {
+  en: {
+    title:"📩 Subscribe",
+    sub:"Receive Duty Roster emails. Confirm via a link sent to your inbox.",
+    emailLbl:"Email",
+    modeLbl:"Delivery",
+    all:"All shifts — once daily",
+    cur:"Current shift — 3× daily (each shift)",
+    btn:"✅ Subscribe",
+    ok:"✅ Check your inbox. We sent a confirmation link to activate your subscription.",
+    errEmail:"⚠️ Please enter a valid email."
+  },
+  ar: {
+    title:"📩 الاشتراك",
+    sub:"سيصلك رابط على بريدك لتأكيد الاشتراك.",
+    emailLbl:"البريد الإلكتروني",
+    modeLbl:"طريقة الإرسال",
+    all:"كل المناوبات — مرة يوميًا",
+    cur:"المناوبة الحالية — 3 مرات يوميًا (كل مناوبة مرة)",
+    btn:"✅ اشترك",
+    ok:"✅ تم الإرسال. افحص بريدك واضغط رابط التأكيد لتفعيل الاشتراك.",
+    errEmail:"⚠️ أدخل بريدًا صحيحًا."
+  }
+};
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang==="ar") ? "rtl" : "ltr";
+  const t = T[lang];
+  tTitle.textContent = t.title;
+  tSub.textContent = t.sub;
+  tEmailLbl.textContent = t.emailLbl;
+  tModeLbl.textContent = t.modeLbl;
+  tAll.textContent = t.all;
+  tCur.textContent = t.cur;
+  submitBtn.textContent = t.btn;
+  btnLang.textContent = (lang==="ar") ? "EN" : "AR";
+}
+applyLang();
+
+btnLang.addEventListener('click', ()=>{
+  lang = (lang==="ar") ? "en" : "ar";
+  applyLang();
+});
+
+function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+submitBtn.addEventListener('click', async ()=>{
+  okMsg.style.display = 'none';
+  errMsg.style.display = 'none';
+
+  const email = (document.getElementById('email').value || '').trim().toLowerCase();
+  if(!validEmail(email)){
+    errMsg.textContent = T[lang].errEmail;
+    errMsg.style.display = 'block';
+    return;
+  }
+  const mode = (document.querySelector('input[name="mode"]:checked')||{}).value || 'ALL';
+
+  const res = await fetch(WEB_APP_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ email, mode, lang })
+  });
+
+  const data = await res.json().catch(()=>({ok:false}));
+  if(data && data.ok){
+    okMsg.textContent = T[lang].ok;
+    okMsg.style.display = 'block';
+  } else {
+    errMsg.textContent = "⚠️ Error. Try again.";
+    errMsg.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>

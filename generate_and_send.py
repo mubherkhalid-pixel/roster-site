@@ -729,6 +729,10 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
     <a class="btn" href="{cta_url}">📋 View Full Duty Roster</a>
   </div>
 
+<div class="btnWrap">
+  <a href="./subscribe/" class="btn">📩 Subscribe</a>
+</div>
+
   <!-- ════ FOOTER ════ -->
   <div class="footer">
     Sent at <strong>{sent_time}</strong>

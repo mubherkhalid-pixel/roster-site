@@ -1,152 +1,28 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <title>Subscribe — Duty Roster</title>
-
-  <!-- favicon -->
-  <link rel="icon" href="/roster-site/favicon.ico">
-
-  <!-- CSP يسمح بالإرسال إلى Google Apps Script -->
-  <meta http-equiv="Content-Security-Policy"
-        content="
-          default-src 'self';
-          img-src 'self' data:;
-          style-src 'self' 'unsafe-inline';
-          script-src 'self' 'unsafe-inline';
-          form-action 'self' https://script.google.com https://script.googleusercontent.com;
-          frame-src https://script.google.com https://script.googleusercontent.com;
-        ">
-
-  <style>
-    body{margin:0;background:#eef1f7;font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;color:#0f172a;}
-    *{box-sizing:border-box;}
-    .wrap{max-width:680px;margin:0 auto;padding:16px 14px 28px;}
-    .header{background:linear-gradient(135deg,#1e40af,#1976d2,#0ea5e9);color:#fff;padding:24px 18px;border-radius:20px;text-align:center;}
-    .header h1{margin:0;font-size:24px;font-weight:900;}
-    .header p{margin:10px 0 0;font-size:14px;opacity:.9}
-    .topBar{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
-    .miniBtn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);padding:8px 12px;border-radius:14px;color:#fff;font-size:12px;font-weight:800;cursor:pointer}
-    .card{margin-top:16px;background:#fff;border-radius:18px;box-shadow:0 4px 18px rgba(15,23,42,.08);overflow:hidden}
-    .cardBody{padding:16px}
-    .label{font-size:12px;font-weight:900;color:#64748b;text-transform:uppercase;margin-bottom:6px}
-    .input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(15,23,42,.2);font-size:14px}
-    .opt{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:800;font-size:14px}
-    .btn{width:100%;margin-top:16px;padding:14px;border-radius:16px;border:0;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;font-weight:900;font-size:15px;cursor:pointer}
-    .msg{margin-top:12px;padding:10px;border-radius:12px;background:#f1f5f9;font-size:13px;font-weight:800}
-    .footer{text-align:center;margin-top:18px;font-size:12px;color:#94a3b8}
-    [dir="rtl"]{text-align:right}
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subscribe Test</title>
 </head>
+<body style="font-family:Arial;padding:20px;">
+  <h2>Subscribe Test</h2>
 
-<body>
-<div class="wrap">
+  <form method="POST"
+        action="https://script.google.com/macros/s/AKfycbzqegHgSLRw97CaKyLEVZc01_tD1d8DPTFWBE6vchU9ic14KUMUbEtZ8d-HMK52XVqI/exec"
+        target="_blank"
+        style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
 
-  <div class="header">
-    <h1 id="tTitle">📩 Subscribe</h1>
-    <p id="tSub">You will receive a confirmation email to activate your subscription.</p>
-    <div class="topBar">
-      <a class="miniBtn" href="../" id="tBack">⬅️ Back</a>
-      <div class="miniBtn" id="langBtn">AR</div>
-    </div>
-  </div>
+    <input type="email" name="email" placeholder="name@example.com" required>
 
-  <div class="card">
-    <div class="cardBody">
+    <label><input type="radio" name="mode" value="ALL" checked> ALL</label>
+    <label><input type="radio" name="mode" value="CURRENT"> CURRENT</label>
 
-      <!-- iframe مخفي لمنع فتح تبويب جديد -->
-      <iframe name="hidden_iframe" style="display:none;"></iframe>
+    <input type="hidden" name="lang" value="en">
 
-
-
-        <div class="label" id="tEmail">Email</div>
-        <input class="input" type="email" name="email" required placeholder="name@example.com">
-
-        <input type="hidden" name="lang" id="langField" value="en">
-
-        <div class="label" style="margin-top:12px" id="tMode">Delivery</div>
-
-        <label class="opt">
-          <input type="radio" name="mode" value="ALL" checked>
-          <span id="tAll">All shifts — once daily</span>
-        </label>
-
-        <label class="opt">
-          <input type="radio" name="mode" value="CURRENT">
-          <span id="tCur">Current shift — 3× daily</span>
-        </label>
-
-        <button class="btn" type="submit" id="tSubmit">✅ Subscribe</button>
-
-        <div class="msg" id="tMsg">
-          After submitting, check your email and click the confirmation link.
-        </div>
-      </form>
-
-    </div>
-  </div>
-
-  <div class="footer" id="tFoot">Duty Roster · Subscribe</div>
-</div>
-
-<script>
-  let lang = 'en';
-  const T = {
-    en:{
-      title:'📩 Subscribe',
-      sub:'You will receive a confirmation email to activate your subscription.',
-      back:'⬅️ Back',
-      email:'Email',
-      mode:'Delivery',
-      all:'All shifts — once daily',
-      cur:'Current shift — 3× daily',
-      submit:'✅ Subscribe',
-      msg:'After submitting, check your email and click the confirmation link.',
-      foot:'Duty Roster · Subscribe',
-      btn:'AR'
-    },
-    ar:{
-      title:'📩 الاشتراك',
-      sub:'سيصلك بريد إلكتروني يحتوي رابط تأكيد لتفعيل الاشتراك.',
-      back:'⬅️ رجوع',
-      email:'البريد الإلكتروني',
-      mode:'طريقة الإرسال',
-      all:'كل المناوبات — مرة يوميًا',
-      cur:'المناوبة الحالية — 3 مرات يوميًا',
-      submit:'✅ اشترك',
-      msg:'بعد الإرسال افحص بريدك واضغط رابط التأكيد.',
-      foot:'Duty Roster · الاشتراك',
-      btn:'EN'
-    }
-  };
-
-  function applyLang(){
-    const t=T[lang];
-    document.documentElement.lang=lang;
-    document.documentElement.dir=(lang==='ar')?'rtl':'ltr';
-    tTitle.textContent=t.title;
-    tSub.textContent=t.sub;
-    tBack.textContent=t.back;
-    tEmail.textContent=t.email;
-    tMode.textContent=t.mode;
-    tAll.textContent=t.all;
-    tCur.textContent=t.cur;
-    tSubmit.textContent=t.submit;
-    tMsg.textContent=t.msg;
-    tFoot.textContent=t.foot;
-    langBtn.textContent=t.btn;
-    langField.value=lang;
-  }
-
-  langBtn.onclick=()=>{
-    lang=(lang==='en')?'ar':'en';
-    applyLang();
-  };
-
-  applyLang();
-</script>
-
+    <button type="submit" style="padding:10px;font-weight:bold;cursor:pointer;">
+      Subscribe
+    </button>
+  </form>
 </body>
 </html>

@@ -512,9 +512,12 @@ def dept_card_html(dept_name: str, dept_color: dict, buckets: dict, open_group: 
     </div>
     """
 
-
 def page_shell_html(date_label: str, iso_date: str, employees_total: int, departments_total: int,
                      dept_cards_html: str, cta_url: str, sent_time: str) -> str:
+
+    # ⬅️ أضف هذا السطر
+    pages_base = (PAGES_BASE_URL or "").rstrip("/")
+
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -523,7 +526,6 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
   <meta name="x-apple-disable-message-reformatting">
   <title>Duty Roster</title>
   <style>
-
     /* ═══════ RESET ═══════ */
     body {{
       margin:0; padding:0;

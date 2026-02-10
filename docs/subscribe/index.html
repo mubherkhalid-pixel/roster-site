@@ -5,132 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="x-apple-disable-message-reformatting">
   <title>Subscribe — Duty Roster</title>
-
   <style>
-    body{
-      margin:0; padding:0; background:#eef1f7;
-      font-family:'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-      color:#0f172a; -webkit-font-smoothing:antialiased;
-    }
-    *{ box-sizing:border-box; }
-    .wrap{ max-width:680px; margin:0 auto; padding:16px 14px 28px; }
+    body{margin:0;background:#eef1f7;font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;color:#0f172a;-webkit-font-smoothing:antialiased;}
+    *{box-sizing:border-box;}
+    .wrap{max-width:680px;margin:0 auto;padding:16px 14px 28px;}
+    .header{background:linear-gradient(135deg,#1e40af 0%,#1976d2 50%,#0ea5e9 100%);color:#fff;padding:24px 18px 18px;border-radius:20px;text-align:center;box-shadow:0 8px 28px rgba(30,64,175,.25);position:relative;overflow:hidden;}
+    .header:before{content:'';position:absolute;top:-30px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.08);}
+    .header:after{content:'';position:absolute;bottom:-50px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06);}
+    .header h1{margin:0;font-size:24px;font-weight:900;letter-spacing:-.3px;position:relative;z-index:1;}
+    .header p{margin:10px 0 0;font-size:14px;opacity:.92;line-height:1.6;position:relative;z-index:1;}
+    .topBar{margin-top:12px;display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;position:relative;z-index:1;}
+    .miniBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12px;font-weight:900;text-decoration:none;cursor:pointer;user-select:none;}
+    .card{margin-top:16px;background:#fff;border-radius:18px;border:1px solid rgba(15,23,42,.07);box-shadow:0 4px 18px rgba(15,23,42,.08);overflow:hidden;}
+    .cardHead{padding:14px 16px;border-bottom:1px solid rgba(15,23,42,.06);display:flex;justify-content:space-between;align-items:center;}
+    .cardTitle{font-size:16px;font-weight:900;letter-spacing:-.2px;}
+    .badge{background:#f1f5f9;border:1px solid rgba(15,23,42,.08);color:#475569;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;}
+    .cardBody{padding:14px 16px;}
+    .label{font-size:12px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+    .input{width:100%;padding:12px 12px;border-radius:12px;border:1px solid rgba(15,23,42,.14);font-size:14px;outline:none;}
+    .help{margin-top:10px;font-size:12px;color:#64748b;line-height:1.7;}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
+    .opt{flex:1;min-width:260px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(15,23,42,.10);background:#f8fafc;font-size:13px;font-weight:900;cursor:pointer;user-select:none;}
+    .opt input{margin:0;}
+    .btn{width:100%;margin-top:14px;padding:14px 16px;border:0;border-radius:16px;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 6px 20px rgba(30,64,175,.3);}
+    .footer{margin-top:18px;text-align:center;font-size:12px;color:#94a3b8;padding:12px 0;line-height:1.9;}
 
-    .header{
-      background:linear-gradient(135deg, #1e40af 0%, #1976d2 50%, #0ea5e9 100%);
-      color:#fff; padding:24px 18px 20px; border-radius:20px; text-align:center;
-      box-shadow:0 8px 28px rgba(30,64,175,.25);
-      position:relative; overflow:hidden;
-    }
-    .header::before{
-      content:''; position:absolute; top:-30px; right:-40px;
-      width:140px; height:140px; border-radius:50%;
-      background:rgba(255,255,255,.08);
-    }
-    .header::after{
-      content:''; position:absolute; bottom:-50px; left:-30px;
-      width:160px; height:160px; border-radius:50%;
-      background:rgba(255,255,255,.06);
-    }
-    .header h1{ margin:0; font-size:24px; font-weight:900; letter-spacing:-.3px; position:relative; z-index:1; }
-    .header p{ margin:10px 0 0; font-size:14px; opacity:.92; line-height:1.6; position:relative; z-index:1; }
-
-    .topBar{
-      margin-top:12px;
-      display:flex; gap:10px; justify-content:space-between; align-items:center;
-      flex-wrap:wrap; position:relative; z-index:1;
-    }
-    .miniBtn{
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      padding:8px 12px; border-radius:14px;
-      background:rgba(255,255,255,.18);
-      border:1px solid rgba(255,255,255,.25);
-      color:#fff; font-size:12px; font-weight:900; text-decoration:none;
-      cursor:pointer; user-select:none;
-    }
-
-    .card{
-      margin-top:16px; background:#fff; border-radius:18px;
-      border:1px solid rgba(15,23,42,.07);
-      box-shadow:0 4px 18px rgba(15,23,42,.08);
-      overflow:hidden;
-    }
-    .cardHead{
-      padding:14px 16px; border-bottom:1px solid rgba(15,23,42,.06);
-      display:flex; justify-content:space-between; align-items:center;
-    }
-    .cardTitle{ font-size:16px; font-weight:900; letter-spacing:-.2px; }
-    .badge{
-      background:#f1f5f9; border:1px solid rgba(15,23,42,.08);
-      color:#475569; padding:6px 10px; border-radius:999px;
-      font-size:12px; font-weight:900;
-    }
-    .cardBody{ padding:14px 16px; }
-
-    .label{
-      font-size:12px; font-weight:900; color:#64748b;
-      text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;
-    }
-    .input{
-      width:100%; padding:12px 12px; border-radius:12px;
-      border:1px solid rgba(15,23,42,.14);
-      font-size:14px; outline:none;
-    }
-    .help{
-      margin-top:8px; font-size:12px; color:#64748b; line-height:1.7;
-    }
-
-    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    .opt{
-      flex:1; min-width:260px;
-      display:flex; align-items:center; gap:10px;
-      padding:10px 12px; border-radius:14px;
-      border:1px solid rgba(15,23,42,.10);
-      background:#f8fafc;
-      font-size:13px; font-weight:900;
-      cursor:pointer; user-select:none;
-    }
-    .opt input{ margin:0; }
-
-    .btn{
-      width:100%;
-      margin-top:14px;
-      padding:14px 16px;
-      border:0;
-      border-radius:16px;
-      background:linear-gradient(135deg, #1e40af, #1976d2);
-      color:#fff;
-      font-weight:900;
-      font-size:15px;
-      cursor:pointer;
-      box-shadow:0 6px 20px rgba(30,64,175,.3);
-    }
-
-    .footer{
-      margin-top:18px; text-align:center; font-size:12px; color:#94a3b8;
-      padding:12px 0; line-height:1.9;
-    }
-
-    /* RTL tweaks */
-    [dir="rtl"] .cardHead{ flex-direction:row-reverse; }
-    [dir="rtl"] .opt{ flex-direction:row-reverse; }
-    [dir="rtl"] .topBar{ flex-direction:row-reverse; }
+    [dir="rtl"] .cardHead{flex-direction:row-reverse;}
+    [dir="rtl"] .opt{flex-direction:row-reverse;}
+    [dir="rtl"] .topBar{flex-direction:row-reverse;}
 
     @media (max-width:520px){
-      .wrap{ padding:12px 10px 22px; }
-      .header h1{ font-size:21px; }
-      .miniBtn{ width:100%; }
-      .topBar{ gap:8px; }
+      .wrap{padding:12px 10px 22px;}
+      .header h1{font-size:21px;}
+      .miniBtn{width:100%;}
+      .topBar{gap:8px;}
     }
   </style>
 </head>
-
 <body>
   <div class="wrap">
-
     <div class="header">
       <h1 id="tTitle">📩 Subscribe</h1>
       <p id="tSub">We will send you a confirmation link by email to activate your subscription.</p>
-
       <div class="topBar">
         <a class="miniBtn" href="../" id="tBack">⬅️ Back</a>
         <div class="miniBtn" id="langBtn">AR</div>
@@ -142,33 +58,24 @@
         <div class="cardTitle" id="tCardTitle">Subscription</div>
         <div class="badge" id="tBadge">Simple</div>
       </div>
-
       <div class="cardBody">
 
-        <!-- ✅ مهم: ضع رابط Web App هنا -->
-        <script>
-          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxkucdwj4rx578-qHWggGPp8KrRT1a37-x2hgPXND4HuyFQ3xBIN-_fMkGFToRA-TUD/exec"; // مثال: https://script.google.com/macros/s/XXXX/exec
-        </script>
-
-        <!-- ✅ Form submit (بدون fetch) لتجنب CORS -->
         <form method="POST" target="_blank" id="subForm">
           <div class="label" id="tEmailLbl">Email</div>
-          <input class="input" type="email" name="email" required placeholder="name@example.com" />
+          <input class="input" type="email" name="email" required placeholder="name@example.com">
 
-          <!-- اللغة تُرسل للـ Apps Script -->
-          <input type="hidden" name="lang" id="langField" value="en" />
+          <input type="hidden" name="lang" id="langField" value="en">
 
           <div style="height:12px"></div>
           <div class="label" id="tModeLbl">Delivery</div>
 
           <div class="row">
             <label class="opt">
-              <input type="radio" name="mode" value="ALL" checked />
+              <input type="radio" name="mode" value="ALL" checked>
               <span id="tAll">All shifts — once daily</span>
             </label>
-
             <label class="opt">
-              <input type="radio" name="mode" value="CURRENT" />
+              <input type="radio" name="mode" value="CURRENT">
               <span id="tCur">Current shift — 3× daily (each shift once)</span>
             </label>
           </div>
@@ -187,68 +94,67 @@
   </div>
 
   <script>
-    // Bind form action to WEB_APP_URL
-    const form = document.getElementById('subForm');
-    form.action = WEB_APP_URL;
+    // ✅ ضع رابط Web App هنا
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxkucdwj4rx578-qHWggGPp8KrRT1a37-x2hgPXND4HuyFQ3xBIN-_fMkGFToRA-TUD/exec";
+
+    // bind action
+    document.getElementById('subForm').action = WEB_APP_URL;
 
     let lang = "en";
-
     const T = {
       en: {
-        title: "📩 Subscribe",
-        sub: "We will send you a confirmation link by email to activate your subscription.",
-        back: "⬅️ Back",
-        cardTitle: "Subscription",
-        badge: "Simple",
-        emailLbl: "Email",
-        modeLbl: "Delivery",
-        all: "All shifts — once daily",
-        cur: "Current shift — 3× daily (each shift once)",
-        submit: "✅ Subscribe",
-        help: "After you click Subscribe, a new tab will open. Check your email and click the confirmation link.",
-        foot: "Duty Roster · Subscribe",
-        langBtn: "AR"
+        title:"📩 Subscribe",
+        sub:"We will send you a confirmation link by email to activate your subscription.",
+        back:"⬅️ Back",
+        cardTitle:"Subscription",
+        badge:"Simple",
+        emailLbl:"Email",
+        modeLbl:"Delivery",
+        all:"All shifts — once daily",
+        cur:"Current shift — 3× daily (each shift once)",
+        submit:"✅ Subscribe",
+        help:"After you click Subscribe, a new tab will open. Check your email and click the confirmation link.",
+        foot:"Duty Roster · Subscribe",
+        langBtn:"AR"
       },
       ar: {
-        title: "📩 الاشتراك",
-        sub: "سيصلك بريد إلكتروني يحتوي رابطًا لتأكيد الاشتراك وتفعيله.",
-        back: "⬅️ رجوع",
-        cardTitle: "الاشتراك",
-        badge: "بسيط",
-        emailLbl: "البريد الإلكتروني",
-        modeLbl: "طريقة الإرسال",
-        all: "كل المناوبات — مرة يوميًا",
-        cur: "المناوبة الحالية — 3 مرات يوميًا (كل مناوبة مرة)",
-        submit: "✅ اشترك",
-        help: "بعد الضغط على اشترك سيفتح تبويب جديد. افحص بريدك واضغط رابط التأكيد.",
-        foot: "Duty Roster · الاشتراك",
-        langBtn: "EN"
+        title:"📩 الاشتراك",
+        sub:"سيصلك بريد إلكتروني يحتوي رابطًا لتأكيد الاشتراك وتفعيله.",
+        back:"⬅️ رجوع",
+        cardTitle:"الاشتراك",
+        badge:"بسيط",
+        emailLbl:"البريد الإلكتروني",
+        modeLbl:"طريقة الإرسال",
+        all:"كل المناوبات — مرة يوميًا",
+        cur:"المناوبة الحالية — 3 مرات يوميًا (كل مناوبة مرة)",
+        submit:"✅ اشترك",
+        help:"بعد الضغط على اشترك سيفتح تبويب جديد. افحص بريدك واضغط رابط التأكيد.",
+        foot:"Duty Roster · الاشتراك",
+        langBtn:"EN"
       }
     };
 
-    function applyLang() {
+    function applyLang(){
       const t = T[lang];
       document.documentElement.lang = lang;
       document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
-
-      document.getElementById('tTitle').textContent = t.title;
-      document.getElementById('tSub').textContent = t.sub;
-      document.getElementById('tBack').textContent = t.back;
-      document.getElementById('tCardTitle').textContent = t.cardTitle;
-      document.getElementById('tBadge').textContent = t.badge;
-      document.getElementById('tEmailLbl').textContent = t.emailLbl;
-      document.getElementById('tModeLbl').textContent = t.modeLbl;
-      document.getElementById('tAll').textContent = t.all;
-      document.getElementById('tCur').textContent = t.cur;
-      document.getElementById('tSubmit').textContent = t.submit;
-      document.getElementById('tHelp').textContent = t.help;
-      document.getElementById('tFoot').textContent = t.foot;
-      document.getElementById('langBtn').textContent = t.langBtn;
-
-      document.getElementById('langField').value = lang; // ✅ يرسل للـ Apps Script
+      tTitle.textContent = t.title;
+      tSub.textContent = t.sub;
+      tBack.textContent = t.back;
+      tCardTitle.textContent = t.cardTitle;
+      tBadge.textContent = t.badge;
+      tEmailLbl.textContent = t.emailLbl;
+      tModeLbl.textContent = t.modeLbl;
+      tAll.textContent = t.all;
+      tCur.textContent = t.cur;
+      tSubmit.textContent = t.submit;
+      tHelp.textContent = t.help;
+      tFoot.textContent = t.foot;
+      langBtn.textContent = t.langBtn;
+      langField.value = lang;
     }
 
-    document.getElementById('langBtn').addEventListener('click', () => {
+    langBtn.addEventListener('click', ()=>{
       lang = (lang === "ar") ? "en" : "ar";
       applyLang();
     });

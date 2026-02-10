@@ -516,7 +516,7 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
                      dept_cards_html: str, cta_url: str, sent_time: str) -> str:
 
     # ⬅️ أضف هذا السطر
-    pages_base = (PAGES_BASE_URL or "").rstrip("/")
+    pages_base = infer_pages_base_url().rstrip("/")
 
     return f"""<!doctype html>
 <html lang="en">

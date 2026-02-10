@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="x-apple-disable-message-reformatting">
   <title>Subscribe — Duty Roster</title>
-   <!-- favicon -->
+
+  <!-- favicon -->
   <link rel="icon" href="/roster-site/favicon.ico">
+
   <style>
     body{margin:0;background:#eef1f7;font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;color:#0f172a;-webkit-font-smoothing:antialiased;}
     *{box-sizing:border-box;}
@@ -30,7 +32,23 @@
     .opt{flex:1;min-width:260px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid rgba(15,23,42,.10);background:#f8fafc;font-size:13px;font-weight:900;cursor:pointer;user-select:none;}
     .opt input{margin:0;}
     .btn{width:100%;margin-top:14px;padding:14px 16px;border:0;border-radius:16px;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 6px 20px rgba(30,64,175,.3);}
+    .btn[disabled]{opacity:.7;cursor:not-allowed;}
     .footer{margin-top:18px;text-align:center;font-size:12px;color:#94a3b8;padding:12px 0;line-height:1.9;}
+
+    .msg{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.10);
+      background:#f8fafc;
+      font-size:13px;
+      font-weight:800;
+      color:#0f172a;
+      display:none;
+      line-height:1.6;
+    }
+    .msg.ok{border-color:rgba(5,150,105,.25); background:rgba(5,150,105,.08); color:#065f46;}
+    .msg.err{border-color:rgba(220,38,38,.25); background:rgba(220,38,38,.06); color:#991b1b;}
 
     [dir="rtl"] .cardHead{flex-direction:row-reverse;}
     [dir="rtl"] .opt{flex-direction:row-reverse;}
@@ -60,11 +78,19 @@
         <div class="cardTitle" id="tCardTitle">Subscription</div>
         <div class="badge" id="tBadge">Simple</div>
       </div>
-      <div class="cardBody">
 
-        <form method="POST" target="_blank" id="subForm">
+      <div class="cardBody">
+        <!-- ✅ رابط Web App -->
+        <script>
+          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxkucdwj4rx578-qHWggGPp8KrRT1a37-x2hgPXND4HuyFQ3xBIN-_fMkGFToRA-TUD/exec";
+        </script>
+
+        <!-- iframe مخفي عشان ما يفتح تبويب جديد -->
+        <iframe name="hidden_iframe" style="display:none;"></iframe>
+
+        <form method="POST" target="hidden_iframe" id="subForm">
           <div class="label" id="tEmailLbl">Email</div>
-          <input class="input" type="email" name="email" required placeholder="name@example.com">
+          <input class="input" type="email" name="email" required placeholder="name@example.com" autocomplete="email">
 
           <input type="hidden" name="lang" id="langField" value="en">
 
@@ -82,13 +108,14 @@
             </label>
           </div>
 
-          <button class="btn" type="submit" id="tSubmit">✅ Subscribe</button>
+          <button class="btn" type="submit" id="submitBtn">✅ Subscribe</button>
 
           <div class="help" id="tHelp">
-            After you click Subscribe, a new tab will open. Check your email and click the confirmation link.
+            After you click Subscribe, we will send a confirmation link to your email. Please confirm to activate.
           </div>
-        </form>
 
+          <div class="msg" id="msgBox"></div>
+        </form>
       </div>
     </div>
 
@@ -96,11 +123,24 @@
   </div>
 
   <script>
-    // ✅ ضع رابط Web App هنا
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxkucdwj4rx578-qHWggGPp8KrRT1a37-x2hgPXND4HuyFQ3xBIN-_fMkGFToRA-TUD/exec";
-
     // bind action
-    document.getElementById('subForm').action = WEB_APP_URL;
+    const form = document.getElementById('subForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const msgBox = document.getElementById('msgBox');
+
+    function showMsg(type, text){
+      msgBox.className = 'msg ' + (type || '');
+      msgBox.textContent = text;
+      msgBox.style.display = 'block';
+    }
+
+    // حماية بسيطة: إذا الرابط غلط
+    if (!WEB_APP_URL || !WEB_APP_URL.startsWith('https://script.google.com/macros/s/')) {
+      showMsg('err', 'WEB_APP_URL is not set correctly.');
+      submitBtn.disabled = true;
+    }
+
+    form.action = WEB_APP_URL;
 
     let lang = "en";
     const T = {
@@ -115,9 +155,11 @@
         all:"All shifts — once daily",
         cur:"Current shift — 3× daily (each shift once)",
         submit:"✅ Subscribe",
-        help:"After you click Subscribe, a new tab will open. Check your email and click the confirmation link.",
+        help:"After you click Subscribe, we will send a confirmation link to your email. Please confirm to activate.",
         foot:"Duty Roster · Subscribe",
-        langBtn:"AR"
+        langBtn:"AR",
+        ok:"✅ Request sent! Check your email and click the confirmation link.",
+        err:"❌ Could not submit. Please try again."
       },
       ar: {
         title:"📩 الاشتراك",
@@ -130,9 +172,11 @@
         all:"كل المناوبات — مرة يوميًا",
         cur:"المناوبة الحالية — 3 مرات يوميًا (كل مناوبة مرة)",
         submit:"✅ اشترك",
-        help:"بعد الضغط على اشترك سيفتح تبويب جديد. افحص بريدك واضغط رابط التأكيد.",
+        help:"بعد الضغط على اشترك سنرسل رابط تأكيد إلى بريدك. اضغط الرابط لتفعيل الاشتراك.",
         foot:"Duty Roster · الاشتراك",
-        langBtn:"EN"
+        langBtn:"EN",
+        ok:"✅ تم إرسال الطلب! افحص بريدك واضغط رابط التأكيد.",
+        err:"❌ تعذر الإرسال. حاول مرة أخرى."
       }
     };
 
@@ -149,7 +193,7 @@
       tModeLbl.textContent = t.modeLbl;
       tAll.textContent = t.all;
       tCur.textContent = t.cur;
-      tSubmit.textContent = t.submit;
+      submitBtn.textContent = t.submit;
       tHelp.textContent = t.help;
       tFoot.textContent = t.foot;
       langBtn.textContent = t.langBtn;
@@ -159,6 +203,13 @@
     langBtn.addEventListener('click', ()=>{
       lang = (lang === "ar") ? "en" : "ar";
       applyLang();
+    });
+
+    // رسالة نجاح محلية + تعطيل زر مؤقتًا
+    form.addEventListener('submit', () => {
+      submitBtn.disabled = true;
+      showMsg('ok', T[lang].ok);
+      setTimeout(()=>{ submitBtn.disabled = false; }, 2500);
     });
 
     applyLang();

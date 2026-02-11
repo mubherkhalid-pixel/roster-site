@@ -5,116 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>الاشتراك في Duty Roster</title>
   <style>
-    /* التنسيقات الأساسية المستوحاة من Duty Roster */
     body {
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f4f7f9;
       margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      color: #333;
     }
-
-    .container {
-      width: 100%;
-      max-width: 420px;
-      margin: 20px;
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    /* الهيدر بتدرج أزرق مثل الصورة */
-    .app-header {
+    .container { width: 100%; max-width: 400px; margin: 20px; }
+    
+    /* الهيدر الأزرق المتدرج */
+    .header {
       background: linear-gradient(135deg, #4a90e2 0%, #2b78d2 100%);
       color: white;
-      padding: 35px 20px;
+      padding: 30px;
       border-radius: 20px 20px 0 0;
       text-align: center;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
-
-    .app-header h1 {
-      margin: 0;
-      font-size: 26px;
-      letter-spacing: 1px;
-    }
-
-    .app-header p {
-      margin: 10px 0 0;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    /* بطاقة الفورم */
-    .form-card {
+    
+    /* الكارد */
+    .card {
       background: white;
-      padding: 35px;
+      padding: 30px;
       border-radius: 0 0 20px 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-      position: relative;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
 
-    .form-group {
-      margin-bottom: 25px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: 600;
-      font-size: 15px;
-      color: #555;
-    }
-
-    /* حقل الإدخال */
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+    
     input[type="email"] {
       width: 100%;
-      padding: 14px 16px;
-      border: 2px solid #edf2f7;
+      padding: 12px 15px;
+      border: 2px solid #eef2f6;
       border-radius: 12px;
       font-size: 16px;
       box-sizing: border-box;
-      transition: all 0.3s ease;
-      background-color: #fdfdfd;
+      transition: 0.3s;
     }
+    input[type="email"]:focus { outline: none; border-color: #4a90e2; }
 
-    input[type="email"]:focus {
-      outline: none;
-      border-color: #4a90e2;
-      background-color: white;
-      box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
-    }
-
-    /* تصميم خيارات ALL / CURRENT */
-    .options-row {
+    .radio-group {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       background: #f8fafc;
-      padding: 5px;
+      padding: 10px;
       border-radius: 12px;
     }
+    .radio-item { flex: 1; text-align: center; font-size: 14px; cursor: pointer; }
 
-    .option-item {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px;
-      cursor: pointer;
-      border-radius: 10px;
-      transition: background 0.3s;
-    }
-
-    .option-item:hover {
-      background: #edf2f7;
-    }
-
-    /* زر الاشتراك */
-    .btn-submit {
+    button {
       width: 100%;
-      padding: 16px;
+      padding: 15px;
       background: #1a73e8;
       color: white;
       border: none;
@@ -122,117 +67,42 @@
       font-size: 17px;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(26, 115, 232, 0.3);
-      margin-top: 10px;
+      box-shadow: 0 4px 10px rgba(26, 115, 232, 0.2);
+      transition: 0.3s;
     }
-
-    .btn-submit:hover {
-      background: #1557b0;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(26, 115, 232, 0.4);
-    }
-
-    .btn-submit:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* رسالة النجاح داخل الكارد */
-    .success-msg {
-      text-align: center;
-      display: none; /* مخفي افتراضياً */
-    }
-
-    .success-icon {
-      font-size: 50px;
-      margin-bottom: 20px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    button:hover { background: #1557b0; transform: translateY(-2px); }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="app-header">
-      <h1>📋 Duty Roster</h1>
-      <p id="sub-text">انضم إلينا للحصول على التحديثات</p>
-    </div>
-
-    <div class="form-card">
-      <form id="subscribeForm" method="POST" action="https://script.google.com/macros/s/AKfycbw8yomI7dN38o7O0-caVHZ8Hd28vGLZZyfyrNhvoAUmrQnoT7qm05SJydBx5miG1M9Jyg/exec">
-        
-        <div class="form-group">
-          <label>البريد الإلكتروني</label>
-          <input type="email" name="email" placeholder="name@example.com" required>
-        </div>
-
-        <div class="form-group">
-          <label>وضع الاشتراك</label>
-          <div class="options-row">
-            <label class="option-item">
-              <input type="radio" name="mode" value="ALL" checked> الكل
-            </label>
-            <label class="option-item">
-              <input type="radio" name="mode" value="CURRENT"> الحالي
-            </label>
-          </div>
-        </div>
-
-        <input type="hidden" name="lang" value="ar">
-
-        <button type="submit" class="btn-submit" id="submitBtn">إرسال طلب الاشتراك</button>
-      </form>
-
-      <div id="successContent" class="success-msg">
-        <div class="success-icon">📧</div>
-        <h3 style="color: #1a73e8; margin-top: 0;">تفقد بريدك الإلكتروني!</h3>
-        <p style="line-height: 1.6; color: #666;">لقد أرسلنا لك رابط التأكيد. يرجى الضغط عليه لتفعيل اشتراكك بنجاح.</p>
-        <p style="font-size: 12px; color: #aaa; margin-top: 20px;">تأكد من فحص مجلد Spam إذا لم تجدها.</p>
-      </div>
-    </div>
+<div class="container">
+  <div class="header">
+    <h1 style="margin:0; font-size: 24px;">📋 Duty Roster</h1>
+    <p style="margin: 10px 0 0; font-size: 14px; opacity: 0.9;">اشترك لتصلك التحديثات اليومية</p>
   </div>
 
-  <script>
-    const form = document.getElementById('subscribeForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const successContent = document.getElementById('successContent');
-    const subText = document.getElementById('sub-text');
-
-    form.addEventListener('submit', function(e) {
-      // نمنع الفورم من فتح صفحة جديدة
-      e.preventDefault();
+  <div class="card">
+    <form method="POST" action="رابط_السكريبت_الخاص_بك_هنا" target="_blank">
       
-      // نغير شكل الزر
-      submitBtn.disabled = true;
-      submitBtn.innerText = 'جاري الإرسال...';
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" name="email" placeholder="example@mail.com" required>
+      </div>
 
-      // نرسل البيانات في الخلفية (AJAX)
-      const formData = new FormData(form);
-      
-      fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        mode: 'no-cors' // مطلوب للتعامل مع Google Apps Script
-      })
-      .then(() => {
-        // نخفي الفورم ونظهر رسالة النجاح
-        form.style.display = 'none';
-        subText.innerText = 'خطوة واحدة متبقية';
-        successContent.style.display = 'block';
-      })
-      .catch(err => {
-        alert('حدث خطأ، يرجى المحاولة مرة أخرى.');
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'إرسال طلب الاشتراك';
-      });
-    });
-  </script>
+      <div class="form-group">
+        <label>نطاق التحديثات</label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="mode" value="ALL" checked> الكل</label>
+          <label class="radio-item"><input type="radio" name="mode" value="CURRENT"> الحالي</label>
+        </div>
+      </div>
+
+      <input type="hidden" name="lang" value="ar">
+
+      <button type="submit">تأكيد الاشتراك</button>
+    </form>
+  </div>
+</div>
 
 </body>
 </html>

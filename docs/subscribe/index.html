@@ -1,28 +1,162 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Subscribe Test</title>
+  <title>الاشتراك في Duty Roster</title>
+  <style>
+    /* التنسيقات العامة المستوحاة من الموقع */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f4f8; /* لون الخلفية الفاتح */
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 450px;
+      padding: 20px;
+    }
+
+    /* الهيدر الأزرق مثل واجهة الموقع */
+    .header-banner {
+      background: linear-gradient(135deg, #4a90e2 0%, #2b78d2 100%);
+      color: white;
+      padding: 30px 20px;
+      border-radius: 15px 15px 0 0;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .header-banner h1 {
+      margin: 0;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* البطاقة البيضاء (Card) */
+    .form-card {
+      background: white;
+      padding: 30px;
+      border-radius: 0 0 15px 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 600;
+    }
+
+    /* تنسيق حقل الإيميل */
+    input[type="email"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1e8ed;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    input[type="email"]:focus {
+      outline: none;
+      border-color: #4a90e2;
+    }
+
+    /* تنسيق خيارات الـ Radio */
+    .radio-group {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      gap: 15px;
+      justify-content: space-around;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    /* زر الاشتراك الاحترافي */
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 4px 6px rgba(26, 115, 232, 0.2);
+    }
+
+    button:hover {
+      background: #1557b0;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+  </style>
 </head>
-<body style="font-family:Arial;padding:20px;">
-  <h2>Subscribe Test</h2>
+<body>
 
-  <form method="POST"
-        action="https://script.google.com/macros/s/AKfycbw8yomI7dN38o7O0-caVHZ8Hd28vGLZZyfyrNhvoAUmrQnoT7qm05SJydBx5miG1M9Jyg/exec"
-        target="_blank"
-        style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
+  <div class="container">
+    <div class="header-banner">
+      <h1>📋 Duty Roster</h1>
+      <p style="margin-top:10px; font-size: 0.9em; opacity: 0.9;">اشترك لتلقي التحديثات اليومية</p>
+    </div>
 
-    <input type="email" name="email" placeholder="name@example.com" required>
+    <div class="form-card">
+      <form method="POST"
+            action="https://script.google.com/macros/s/AKfycbw8yomI7dN38o7O0-caVHZ8Hd28vGLZZyfyrNhvoAUmrQnoT7qm05SJydBx5miG1M9Jyg/exec"
+            target="_blank">
 
-    <label><input type="radio" name="mode" value="ALL" checked> ALL</label>
-    <label><input type="radio" name="mode" value="CURRENT"> CURRENT</label>
+        <div class="form-group">
+          <label for="email">البريد الإلكتروني</label>
+          <input type="email" id="email" name="email" placeholder="example@mail.com" required>
+        </div>
 
-    <input type="hidden" name="lang" value="en">
+        <div class="form-group">
+          <label>وضع الاشتراك</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="mode" value="ALL" checked> الكل
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="mode" value="CURRENT"> الحالي فقط
+            </label>
+          </div>
+        </div>
 
-    <button type="submit" style="padding:10px;font-weight:bold;cursor:pointer;">
-      Subscribe
-    </button>
-  </form>
+        <input type="hidden" name="lang" value="ar">
+
+        <button type="submit">
+          تأكيد الاشتراك
+        </button>
+      </form>
+    </div>
+  </div>
+
 </body>
 </html>

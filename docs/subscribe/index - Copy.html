@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subscribe Test</title>
+</head>
+<body style="font-family:Arial;padding:20px;">
+  <h2>Subscribe Test</h2>
+
+  <form method="POST"
+        action="https://script.google.com/macros/s/AKfycbw8yomI7dN38o7O0-caVHZ8Hd28vGLZZyfyrNhvoAUmrQnoT7qm05SJydBx5miG1M9Jyg/exec"
+        target="_blank"
+        style="display:flex;flex-direction:column;gap:10px;max-width:420px;">
+
+    <input type="email" name="email" placeholder="name@example.com" required>
+
+    <label><input type="radio" name="mode" value="ALL" checked> ALL</label>
+    <label><input type="radio" name="mode" value="CURRENT"> CURRENT</label>
+
+    <input type="hidden" name="lang" value="en">
+
+    <button type="submit" style="padding:10px;font-weight:bold;cursor:pointer;">
+      Subscribe
+    </button>
+  </form>
+</body>
+</html>

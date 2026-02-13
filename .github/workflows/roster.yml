@@ -29,6 +29,7 @@ jobs:
       - name: Generate page + send email
         env:
           EXCEL_URL: ${{ secrets.EXCEL_URL }}
+          SOURCE_NAME_URL: ${{ secrets.SOURCE_NAME_URL }}   # ← أضِف هذا
           PAGES_BASE_URL: ${{ secrets.PAGES_BASE_URL }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}

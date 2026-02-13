@@ -541,7 +541,7 @@ def dept_card_html(dept_name: str, dept_color: dict, buckets: dict, open_group: 
     """
 
 def page_shell_html(date_label: str, iso_date: str, employees_total: int, departments_total: int,
-                     dept_cards_html: str, cta_url: str, sent_time: str, source_name: str = \"\") -> str:
+                     dept_cards_html: str, cta_url: str, sent_time: str, source_name: str = "") -> str:
 
     # ⬅️ أضف هذا السطر
     pages_base = infer_pages_base_url().rstrip("/")
@@ -824,7 +824,7 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
 </html>"""
 
 
-def generate_date_pages_for_month(wb, year: int, month: int, pages_base: str, source_name: str = \"\"):
+def generate_date_pages_for_month(wb, year: int, month: int, pages_base: str, source_name: str = ""):
     """
     Generate static pages for each day of the given month.
     Used by the date picker to navigate to different dates.

@@ -294,7 +294,6 @@ def range_suffix_for_day(day: int, daynum_to_raw: dict, code_key: str):
         return ""
 
     up_key = code_key.upper()
-    start = end = day
 
     # تحديد الأكواد المقبولة لهذا النوع من الإجازة/التدريب
     acceptable_codes = []
@@ -313,29 +312,35 @@ def range_suffix_for_day(day: int, daynum_to_raw: dict, code_key: str):
 
     def is_same_type(val: str) -> bool:
         """تحقق إذا كان الكود من نفس النوع"""
+        if not val:
+            return False
         val_upper = val.upper()
         for code in acceptable_codes:
             if code in val_upper or val_upper == code:
                 return True
         return False
 
-    # backward - البحث للخلف
-    for d in reversed(sorted_days):
-        if d >= day:
-            continue
-        val = norm(daynum_to_raw.get(d, ""))
+    # إيجاد بداية ونهاية النطاق المتصل
+    start = day
+    end = day
+    
+    # البحث للخلف لإيجاد بداية النطاق
+    current = day - 1
+    while current in sorted_days:
+        val = norm(daynum_to_raw.get(current, ""))
         if is_same_type(val):
-            start = d
+            start = current
+            current -= 1
         else:
             break
-
-    # forward - البحث للأمام
-    for d in sorted_days:
-        if d <= day:
-            continue
-        val = norm(daynum_to_raw.get(d, ""))
+    
+    # البحث للأمام لإيجاد نهاية النطاق
+    current = day + 1
+    while current in sorted_days:
+        val = norm(daynum_to_raw.get(current, ""))
         if is_same_type(val):
-            end = d
+            end = current
+            current += 1
         else:
             break
 
@@ -409,7 +414,7 @@ SHIFT_COLORS = {
         "status_color": "#3730a3",
         "icon": "🛋️",
     },
-    "Leave": {
+    "Annual Leave": {
         "border": "#10b98144",
         "bg": "#d1fae5",
         "summary_bg": "#d1fae5",

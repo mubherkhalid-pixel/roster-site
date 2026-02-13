@@ -1411,19 +1411,15 @@ def main():
             label, grp = map_shift(raw)
 
             up = norm(raw).upper()
-            # إضافة نطاق التواريخ FROM TO للإجازات السنوية
-            if grp == "Annual Leave":
+            if grp == "Leave":
                 if up == "AL" or "ANNUAL LEAVE" in up or up == "LV":
                     suf = range_suffix_for_day(today_day, daynum_to_raw, "AL")
                     if suf:
                         label = f"{label} {suf}"
-            # إضافة نطاق التواريخ FROM TO للإجازات المرضية
-            elif grp == "Sick Leave":
-                if up == "SL" or "SICK LEAVE" in up:
+                elif up == "SL" or "SICK LEAVE" in up:
                     suf = range_suffix_for_day(today_day, daynum_to_raw, "SL")
                     if suf:
                         label = f"{label} {suf}"
-            # إضافة نطاق التواريخ FROM TO للتدريب
             elif grp == "Training":
                 if up == "TR" or "TRAINING" in up:
                     suf = range_suffix_for_day(today_day, daynum_to_raw, "TR")

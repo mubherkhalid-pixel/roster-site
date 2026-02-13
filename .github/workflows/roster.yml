@@ -2,7 +2,7 @@ name: Roster Site + Email
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "*/10 * * * *"  # فحص كل 10 دقائق
+    - cron: "*/10 * * * *"
 
 permissions:
   contents: write
@@ -47,67 +47,63 @@ jobs:
                   source_url = os.getenv('SOURCE_NAME_URL')
                   
                   if not source_url:
-                      print("❌ خطأ: SOURCE_NAME_URL غير موجود في Secrets")
+                      print("SOURCE_NAME_URL not found")
                       sys.exit(1)
                   
-                  print(f"🔗 جاري التحقق من: {source_url}")
+                  print(f"Checking: {source_url}")
                   response = requests.get(source_url, timeout=15)
                   response.raise_for_status()
                   
                   current_filename = response.text.strip()
                   
                   if not current_filename:
-                      print("❌ خطأ: ملف source_name.txt فارغ")
+                      print("source_name.txt is empty")
                       sys.exit(1)
                   
-                  print(f"📄 اسم الملف الحالي: {current_filename}")
+                  print(f"Current file: {current_filename}")
                   
                   cache_file = "last_filename.txt"
                   changed = True
-                  old_filename = "لا يوجد"
+                  old_filename = "none"
                   
                   if Path(cache_file).exists():
                       with open(cache_file, 'r', encoding='utf-8') as f:
                           old_filename = f.read().strip()
                       
                       if old_filename:
-                          print(f"📄 اسم الملف السابق: {old_filename}")
+                          print(f"Previous file: {old_filename}")
                           
                           if old_filename == current_filename:
-                              print("✅ لا توجد تغييرات - نفس الملف")
+                              print("No changes detected")
                               changed = False
                           else:
-                              print(f"🔄 تم اكتشاف تغيير في الملف!")
-                              print(f"   📌 القديم: {old_filename}")
-                              print(f"   📌 الجديد: {current_filename}")
+                              print(f"Change detected: {old_filename} -> {current_filename}")
                   else:
-                      print("🆕 أول تشغيل - سيتم معالجة الملف")
+                      print("First run")
                   
                   with open(cache_file, 'w', encoding='utf-8') as f:
                       f.write(current_filename)
                   
-                  print(f"💾 تم حفظ اسم الملف في {cache_file}")
+                  print(f"Saved filename to {cache_file}")
                   
-                  # تحديد الوقت الحالي بتوقيت مسقط (UTC+4)
+                  # Muscat time (UTC+4)
                   muscat_tz = timezone(timedelta(hours=4))
                   now = datetime.now(muscat_tz)
                   current_hour = now.hour
                   current_minute = now.minute
                   
-                  print(f"🕐 الوقت الحالي بتوقيت مسقط: {now.strftime('%H:%M')}")
+                  print(f"Muscat time: {now.strftime('%H:%M')}")
                   
-                  # تحديد أوقات الإيميلات المجدولة (6:00, 15:00, 21:00)
+                  # Scheduled email times (6:00, 15:00, 21:00)
                   scheduled_hours = [6, 15, 21]
                   is_scheduled_time = False
                   
-                  # التحقق إذا كان الوقت الحالي في نطاق 10 دقائق من الأوقات المجدولة
                   for scheduled_hour in scheduled_hours:
                       if current_hour == scheduled_hour and current_minute < 10:
                           is_scheduled_time = True
-                          print(f"📧 وقت إيميل مجدول: {scheduled_hour}:00")
+                          print(f"Scheduled email time: {scheduled_hour}:00")
                           break
                   
-                  # تحديد إذا كان يجب المعالجة والإرسال
                   should_process = changed or is_scheduled_time
                   
                   with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
@@ -117,21 +113,21 @@ jobs:
                       f.write(f"filename={current_filename}\n")
                       f.write(f"old_filename={old_filename}\n")
                   
-                  print(f"\n{'='*60}")
-                  print(f"📊 النتيجة النهائية:")
-                  print(f"   - تغيير في الملف: {changed}")
-                  print(f"   - وقت إيميل مجدول: {is_scheduled_time}")
-                  print(f"   - يجب المعالجة: {should_process}")
-                  print(f"{'='*60}\n")
+                  print("=" * 60)
+                  print(f"Results:")
+                  print(f"  File changed: {changed}")
+                  print(f"  Scheduled time: {is_scheduled_time}")
+                  print(f"  Should process: {should_process}")
+                  print("=" * 60)
                   
               except requests.exceptions.Timeout:
-                  print("❌ انتهت مهلة الاتصال - الرابط بطيء جداً")
+                  print("Connection timeout")
                   sys.exit(1)
               except requests.exceptions.RequestException as e:
-                  print(f"❌ خطأ في تحميل الرابط: {e}")
+                  print(f"Request error: {e}")
                   sys.exit(1)
               except Exception as e:
-                  print(f"❌ خطأ غير متوقع: {e}")
+                  print(f"Unexpected error: {e}")
                   import traceback
                   traceback.print_exc()
                   sys.exit(1)
@@ -142,15 +138,15 @@ jobs:
       
       - name: Display change info
         run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📊 تقرير الفحص:"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✓ هل تغير الملف؟ ${{ steps.check_changes.outputs.changed }}"
-          echo "✓ وقت إيميل مجدول؟ ${{ steps.check_changes.outputs.is_scheduled_email }}"
-          echo "✓ يجب المعالجة؟ ${{ steps.check_changes.outputs.should_process }}"
-          echo "✓ الملف الحالي: ${{ steps.check_changes.outputs.filename }}"
-          echo "✓ الملف السابق: ${{ steps.check_changes.outputs.old_filename }}"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "========================================"
+          echo "Check Report:"
+          echo "========================================"
+          echo "File changed: ${{ steps.check_changes.outputs.changed }}"
+          echo "Scheduled email: ${{ steps.check_changes.outputs.is_scheduled_email }}"
+          echo "Should process: ${{ steps.check_changes.outputs.should_process }}"
+          echo "Current file: ${{ steps.check_changes.outputs.filename }}"
+          echo "Previous file: ${{ steps.check_changes.outputs.old_filename }}"
+          echo "========================================"
       
       - name: Generate page + send email
         if: steps.check_changes.outputs.should_process == 'true'
@@ -168,12 +164,12 @@ jobs:
           SUBSCRIBE_TOKEN: ${{ secrets.SUBSCRIBE_TOKEN }}
         run: |
           if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
-            echo "🔄 بدء معالجة الملف (تغيير مكتشف): ${{ steps.check_changes.outputs.filename }}"
+            echo "Processing file (change detected): ${{ steps.check_changes.outputs.filename }}"
           else
-            echo "📧 بدء معالجة الملف (إيميل مجدول): ${{ steps.check_changes.outputs.filename }}"
+            echo "Processing file (scheduled email): ${{ steps.check_changes.outputs.filename }}"
           fi
           python generate_and_send.py
-          echo "✅ اكتملت المعالجة وإرسال الإيميل بنجاح"
+          echo "Processing and email completed successfully"
       
       - name: Commit updated docs
         if: steps.check_changes.outputs.should_process == 'true'
@@ -182,111 +178,23 @@ jobs:
           git config user.email "github-actions@github.com"
           git add docs last_filename.txt
           if git diff --staged --quiet; then
-            echo "⚠️ لا توجد تغييرات للحفظ"
+            echo "No changes to commit"
           else
             if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
-              git commit -m "📝 Update roster: ${{ steps.check_changes.outputs.filename }}"
+              git commit -m "Update roster: ${{ steps.check_changes.outputs.filename }}"
             else
-              git commit -m "📧 Scheduled email update"
+              git commit -m "Scheduled email update"
             fi
             git push
-            echo "✅ تم رفع التحديثات إلى GitHub"
+            echo "Updates pushed to GitHub"
           fi
       
       - name: Skip - No action needed
         if: steps.check_changes.outputs.should_process == 'false'
         run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "✅ لا حاجة لإجراء (لا تغيير ولا وقت مجدول)"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📄 الملف الحالي: ${{ steps.check_changes.outputs.filename }}"
-          echo "⏭️  تم تخطي المعالجة والإيميل"
-          echo "💾 تم توفير الوقت والموارد"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-```
-
----
-
-## 📊 كيف يعمل؟
-
-### 🕐 **الأوقات المجدولة (بتوقيت مسقط UTC+4):**
-```
-06:00 - 06:10 → إيميل مجدول ✉️
-15:00 - 15:10 → إيميل مجدول ✉️
-21:00 - 21:10 → إيميل مجدول ✉️
-```
-
-### 🔄 **باقي الأوقات:**
-```
-فحص كل 10 دقائق
-إيميل فقط إذا تغير الملف
-```
-
----
-
-## 📅 مثال يوم كامل:
-```
-🕐 00:00 → فحص ✅ (لا تغيير، لا إيميل)
-🕐 00:10 → فحص ✅ (لا تغيير، لا إيميل)
-...
-🕐 06:00 → فحص + إيميل مجدول ✉️ (حتى بدون تغيير!)
-🕐 06:10 → فحص ✅ (لا تغيير، لا إيميل)
-🕐 06:20 → فحص ✅ (لا تغيير، لا إيميل)
-...
-🕐 09:30 → فحص ✅ (لا تغيير، لا إيميل)
-🕐 09:40 → فحص + تغيير مكتشف! → إيميل ✉️
-🕐 09:50 → فحص ✅ (لا تغيير، لا إيميل)
-...
-🕐 15:00 → فحص + إيميل مجدول ✉️ (حتى بدون تغيير!)
-🕐 15:10 → فحص ✅ (لا تغيير، لا إيميل)
-...
-🕐 21:00 → فحص + إيميل مجدول ✉️ (حتى بدون تغيير!)
-🕐 21:10 → فحص ✅ (لا تغيير، لا إيميل)
-...
-
-📊 إجمالي اليوم:
-   - 144 فحص
-   - 3 إيميلات مجدولة (6ص، 3م، 9م)
-   - + إيميلات عند التغيير
-```
-
----
-
-## 🎯 السيناريوهات المختلفة:
-
-### السيناريو 1: يوم بدون تغييرات
-```
-📧 الإيميلات: 3 (في 6ص، 3م، 9م فقط)
-```
-
-### السيناريو 2: يوم بتغيير واحد (الساعة 10 صباحاً)
-```
-📧 الإيميلات: 4
-   - 06:00 (مجدول)
-   - 10:00 (تغيير)
-   - 15:00 (مجدول)
-   - 21:00 (مجدول)
-```
-
-### السيناريو 3: يوم بتغييرين (10ص، 4م)
-```
-📧 الإيميلات: 5
-   - 06:00 (مجدول)
-   - 10:00 (تغيير)
-   - 15:00 (مجدول) ← قد يكون نفس وقت التغيير
-   - 16:00 (تغيير)
-   - 21:00 (مجدول)
-```
-
----
-
-## 📈 الاستهلاك المتوقع:
-```
-فحوصات يومية: 144 × 3 ثواني = 7 دقائق
-إيميلات مجدولة: 3 × 1.5 دقيقة = 4.5 دقيقة
-إيميلات التغيير: ~2 × 1.5 دقيقة = 3 دقيقة
-
-إجمالي يومي: ~14.5 دقيقة
-إجمالي شهري: ~435 دقيقة
-
-✅ ضمن الحد المجاني (2,000 دقيقة) بأمان!
+          echo "========================================"
+          echo "No action needed (no change, no scheduled time)"
+          echo "========================================"
+          echo "Current file: ${{ steps.check_changes.outputs.filename }}"
+          echo "Skipping processing and email"
+          echo "========================================"

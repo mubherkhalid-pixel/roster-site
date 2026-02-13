@@ -165,14 +165,18 @@ def download_excel(url: str) -> bytes:
     return r.content
 
 
+
+SOURCE_NAME_URL = os.environ.get("SOURCE_NAME_URL", "").strip()
+SOURCE_NAME_FALLBACK = os.environ.get("SOURCE_NAME_FALLBACK", "latest.xlsx").strip()
+
 def download_text(url: str) -> str:
-    \"\"\"Download a small text file (e.g., source_name.txt).\"\"\"
+    """Download a small text file (e.g., source_name.txt)."""
     r = requests.get(url, timeout=30)
     r.raise_for_status()
     return r.text.strip()
 
 def get_source_name() -> str:
-    \"\"\"Return the original roster file name for display on the website.\"\"\"
+    """Return the original roster file name for display on the website."""
     if SOURCE_NAME_URL:
         try:
             name = download_text(SOURCE_NAME_URL)

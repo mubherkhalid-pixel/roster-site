@@ -3,8 +3,7 @@ name: Roster Site + Email
 on:
   workflow_dispatch: {}
   schedule:
-    # 06:00 صباحًا بتوقيت مسقط = 02:00 UTC
-    - cron: "0 2 * * *"
+    - cron: "*/10 * * * *"
 
 permissions:
   contents: write

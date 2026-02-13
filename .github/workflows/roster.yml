@@ -1,10 +1,8 @@
 name: Roster Site + Email
-
 on:
   workflow_dispatch: {}
   schedule:
-    # 06:00 صباحًا بتوقيت مسقط = 02:00 UTC
-    - cron: "0 2 * * *"
+    - cron: "*/10 * * * *"
 
 permissions:
   contents: write
@@ -15,21 +13,146 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
+      
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
+      
+      - name: Check if Excel file changed
+        id: check_changes
+        env:
+          SOURCE_NAME_URL: ${{ secrets.SOURCE_NAME_URL }}
+        run: |
+          python << 'EOF'
+          import os
+          import requests
+          from pathlib import Path
+          import sys
+          from datetime import datetime, timezone, timedelta
+          
+          def main():
+              try:
+                  source_url = os.getenv('SOURCE_NAME_URL')
+                  
+                  if not source_url:
+                      print("SOURCE_NAME_URL not found")
+                      sys.exit(1)
+                  
+                  print(f"Checking: {source_url}")
+                  response = requests.get(source_url, timeout=15)
+                  response.raise_for_status()
+                  
+                  current_filename = response.text.strip()
+                  
+                  if not current_filename:
+                      print("source_name.txt is empty")
+                      sys.exit(1)
+                  
+                  print(f"Current file: {current_filename}")
+                  
+                  cache_file = "last_filename.txt"
+                  changed = True
+                  old_filename = "none"
+                  
+                  if Path(cache_file).exists():
+                      with open(cache_file, 'r', encoding='utf-8') as f:
+                          old_filename = f.read().strip()
+                      
+                      if old_filename:
+                          print(f"Previous file: {old_filename}")
+                          
+                          if old_filename == current_filename:
+                              print("No changes detected")
+                              changed = False
+                          else:
+                              print(f"Change detected: {old_filename} -> {current_filename}")
+                  else:
+                      print("First run")
+                  
+                  with open(cache_file, 'w', encoding='utf-8') as f:
+                      f.write(current_filename)
+                  
+                  print(f"Saved filename to {cache_file}")
+                  
+                  # Muscat time (UTC+4)
+                  muscat_tz = timezone(timedelta(hours=4))
+                  now = datetime.now(muscat_tz)
+                  current_hour = now.hour
+                  current_minute = now.minute
+                  
+                  print(f"Muscat time: {now.strftime('%H:%M')}")
+                  
+                  # Scheduled email times (6:00, 15:00, 21:00)
+                  scheduled_hours = [6, 15, 21]
+                  is_scheduled_time = False
+                  
+                  for scheduled_hour in scheduled_hours:
+                      if current_hour == scheduled_hour and current_minute < 10:
+                          is_scheduled_time = True
+                          print(f"Scheduled email time: {scheduled_hour}:00")
+                          break
+                  
+                  should_process = changed or is_scheduled_time
+                  
+                  with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                      f.write(f"changed={str(changed).lower()}\n")
+                      f.write(f"should_process={str(should_process).lower()}\n")
+                      f.write(f"is_scheduled_email={str(is_scheduled_time).lower()}\n")
+                      f.write(f"filename={current_filename}\n")
+                      f.write(f"old_filename={old_filename}\n")
+                  
+                  print("=" * 60)
+                  print(f"Results:")
+                  print(f"  File changed: {changed}")
+                  print(f"  Scheduled time: {is_scheduled_time}")
+                  print(f"  Should process: {should_process}")
+                  print("=" * 60)
+                  
+              except requests.exceptions.Timeout:
+                  print("Connection timeout")
+                  sys.exit(1)
+              except requests.exceptions.RequestException as e:
+                  print(f"Request error: {e}")
+                  sys.exit(1)
+              except Exception as e:
+                  print(f"Unexpected error: {e}")
+                  import traceback
+                  traceback.print_exc()
+                  sys.exit(1)
+          
+          if __name__ == "__main__":
+              main()
+          EOF
+      
+      - name: Display change info
+        run: |
+          echo "========================================"
+          echo "Check Report:"
+          echo "========================================"
+          echo "File changed: ${{ steps.check_changes.outputs.changed }}"
+          echo "Scheduled email: ${{ steps.check_changes.outputs.is_scheduled_email }}"
+          echo "Should process: ${{ steps.check_changes.outputs.should_process }}"
+          echo "Current file: ${{ steps.check_changes.outputs.filename }}"
+          echo "Previous file: ${{ steps.check_changes.outputs.old_filename }}"
+          echo "========================================"
+      
       - name: Generate page + send email
+        if: steps.check_changes.outputs.should_process == 'true'
         env:
           EXCEL_URL: ${{ secrets.EXCEL_URL }}
-          SOURCE_NAME_URL: ${{ secrets.SOURCE_NAME_URL }}   # ← أضِف هذا
+          SOURCE_NAME_URL: ${{ secrets.SOURCE_NAME_URL }}
           PAGES_BASE_URL: ${{ secrets.PAGES_BASE_URL }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
@@ -40,12 +163,38 @@ jobs:
           SUBSCRIBE_URL: ${{ secrets.SUBSCRIBE_URL }}
           SUBSCRIBE_TOKEN: ${{ secrets.SUBSCRIBE_TOKEN }}
         run: |
+          if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
+            echo "Processing file (change detected): ${{ steps.check_changes.outputs.filename }}"
+          else
+            echo "Processing file (scheduled email): ${{ steps.check_changes.outputs.filename }}"
+          fi
           python generate_and_send.py
-
+          echo "Processing and email completed successfully"
+      
       - name: Commit updated docs
+        if: steps.check_changes.outputs.should_process == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add docs
-          git commit -m "Update roster pages" || echo "No changes to commit"
-          git push
+          git add docs last_filename.txt
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
+              git commit -m "Update roster: ${{ steps.check_changes.outputs.filename }}"
+            else
+              git commit -m "Scheduled email update"
+            fi
+            git push
+            echo "Updates pushed to GitHub"
+          fi
+      
+      - name: Skip - No action needed
+        if: steps.check_changes.outputs.should_process == 'false'
+        run: |
+          echo "========================================"
+          echo "No action needed (no change, no scheduled time)"
+          echo "========================================"
+          echo "Current file: ${{ steps.check_changes.outputs.filename }}"
+          echo "Skipping processing and email"
+          echo "========================================"

@@ -99,7 +99,7 @@ jobs:
                   is_scheduled_time = False
                   
                   for scheduled_hour in scheduled_hours:
-                      if current_hour == scheduled_hour and current_minute < 10:
+                      if current_hour == scheduled_hour and current_minute < 20:
                           is_scheduled_time = True
                           print(f"Scheduled email time: {scheduled_hour}:00")
                           break

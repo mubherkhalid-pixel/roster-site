@@ -852,7 +852,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">01FEB2026 / 00:00</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026 _ RAMADAN Version 4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026-_RAMADAN Version 4.xlsx</strong>
   </div>
 
 </div>
@@ -875,11 +875,20 @@
                      String(today.getMonth() + 1).padStart(2, '0') + '-' + 
                      String(today.getDate()).padStart(2, '0');
       
-      // إذا التاريخ في الصفحة مختلف عن اليوم، ارجع للصفحة الرئيسية
+      // إذا التاريخ في الصفحة مختلف عن اليوم
       if(pageDate !== todayStr){
-        var base = computeBasePath();
-        window.location.href = base + '/';
-        return true;
+        // تحقق من sessionStorage - إذا كان موجود، يعني هذا تحديث (F5)
+        var isPageLoad = sessionStorage.getItem('pageLoaded');
+        if(isPageLoad){
+          // تحديث الصفحة → امسح العلامة وارجع لتاريخ اليوم
+          sessionStorage.removeItem('pageLoaded');
+          var base = computeBasePath();
+          window.location.href = base + '/';
+          return true;
+        } else {
+          // أول تحميل بعد الضغط على التاريخ → ضع علامة
+          sessionStorage.setItem('pageLoaded', 'true');
+        }
       }
     }
     return false;
@@ -923,6 +932,8 @@
 
   picker.addEventListener('change', function(){
     if(!picker.value) return;
+    // عند اختيار تاريخ جديد، امسح العلامة حتى يتم وضعها من جديد
+    sessionStorage.removeItem('pageLoaded');
     var base = computeBasePath();
     var target = base + '/date/' + picker.value + '/';
     window.location.href = target;

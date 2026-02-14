@@ -839,9 +839,9 @@
 
   <!-- ════ FOOTER ════ -->
   <div class="footer">
-    <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">14FEB2026 / 21:13</strong>
+    <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">14FEB2026 / 23:13</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026-RAMADAN Version 4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version_4.xlsx</strong>
   </div>
 
 </div>
@@ -912,11 +912,17 @@
 
   function computeBasePath(){
     var p = window.location.pathname || '/';
-    // Strip "/now/" and anything after it
-    p = p.replace(/\/now\/.*$/,'/');
+    // تحقق إذا كنا في صفحة /now/
+    var isNowPage = p.includes('/now');
     // Strip "/date/YYYY-MM-DD/" and anything after it
     p = p.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/');
-    return p.replace(/\/+$/,''); // no trailing slash
+    // Strip "/now/" temporarily to clean the path
+    p = p.replace(/\/now\/.*$/,'/');
+    // Clean up extra slashes
+    p = p.replace(/\/+$/,'');
+    // Add /now back if we were on the now page
+    if(isNowPage) p = p + '/now';
+    return p;
   }
 
   picker.addEventListener('change', function(){

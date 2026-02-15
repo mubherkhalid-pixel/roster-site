@@ -902,7 +902,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">28FEB2026 / 00:00</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version--4.xlsx</strong>
   </div>
 
 </div>
@@ -1055,12 +1055,17 @@
     // Hide all cards first
     allShiftCards.forEach(function(card){ card.style.display = 'none'; });
     
-    // Show only selected shift cards
+    var totalEmployees = 0;
+    
+    // Show only selected shift cards and count employees
     if(shiftGroups[selectedShift]){
       shiftGroups[selectedShift].forEach(function(card){
         card.style.display = '';
         // Auto-open the selected shift
         card.setAttribute('open', '');
+        // Count employees in this card
+        var count = card.querySelector('.shiftCount');
+        if(count) totalEmployees += parseInt(count.textContent) || 0;
       });
     }
     
@@ -1070,9 +1075,18 @@
       if(shiftGroups[type]){
         shiftGroups[type].forEach(function(card){
           card.style.display = '';
+          // Count employees
+          var count = card.querySelector('.shiftCount');
+          if(count) totalEmployees += parseInt(count.textContent) || 0;
         });
       }
     });
+    
+    // Update employee count in summary
+    var employeeChip = document.querySelector('.summaryChip .chipVal');
+    if(employeeChip){
+      employeeChip.textContent = totalEmployees;
+    }
     
     // Update button states
     filterBtns.forEach(function(btn){

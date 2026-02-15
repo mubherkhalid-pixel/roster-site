@@ -1603,7 +1603,7 @@ def get_subscriber_emails():
     """
     يقرأ قائمة الإيميلات من Google Apps Script
     """
-    subscriber_url = os.environ.get('SUBSCRIBER_URL', '').strip()
+    subscriber_url = os.environ.get('SUBSCRIBE_URL', '').strip()
     
     if not subscriber_url:
         return os.environ.get('MAIL_TO', '').strip()

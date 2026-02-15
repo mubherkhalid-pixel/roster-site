@@ -54,7 +54,14 @@
     }
 
     /* ═══════ SUMMARY BAR ═══════ */
-    .summaryBar { display:flex; justify-content:center; gap:12px; margin-top:14px; }
+    .summaryBar { 
+      display:flex; 
+      justify-content:center; 
+      align-items:stretch;
+      gap:12px; 
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
     .summaryChip {
       background:#fff;
       border:1px solid rgba(15,23,42,.1);
@@ -62,62 +69,70 @@
       padding:10px 20px;
       text-align:center;
       box-shadow:0 2px 8px rgba(15,23,42,.06);
+      transition:all .25s ease;
     }
     .summaryChip .chipVal { font-size:22px; font-weight:900; color:#1e40af; }
-    .summaryChip .chipLabel { font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.6px; margin-top:2px; }
+    .summaryChip .chipLabel { 
+      font-size:11px; 
+      font-weight:600; 
+      color:#64748b; 
+      text-transform:uppercase; 
+      letter-spacing:.6px; 
+      margin-top:2px;
+    }
 
-    /* ═══════ SHIFT FILTER BUTTONS (COMPACT) ═══════ */
-    .shiftFilterBtn {
-      width:52px;
-      height:52px;
-      padding:0;
+    /* ═══════ SHIFT FILTER BUTTONS AS CHIPS ═══════ */
+    button.summaryChip.shiftFilterBtn {
       border:2px solid transparent;
-      border-radius:50%;
-      font-size:14px;
-      font-weight:700;
-      cursor:pointer;
-      transition:all .3s cubic-bezier(.4,0,.2,1);
-      background:#fff;
-      box-shadow:0 2px 8px rgba(15,23,42,.06);
-      display:flex;
-      align-items:center;
-      justify-content:center;
       position:relative;
       overflow:hidden;
     }
-    .shiftFilterBtn:hover {
-      transform:translateY(-2px) scale(1.05);
-      box-shadow:0 6px 18px rgba(15,23,42,.12);
+    button.summaryChip.shiftFilterBtn:hover {
+      transform:translateY(-3px);
+      box-shadow:0 8px 20px rgba(15,23,42,.12);
     }
-    .shiftFilterBtn.active {
+    button.summaryChip.shiftFilterBtn.active {
       border-color:currentColor;
-      box-shadow:0 4px 14px rgba(15,23,42,.15);
-      transform:scale(1.1);
+      box-shadow:0 6px 16px rgba(15,23,42,.18);
     }
-    .shiftFilterBtn.active::before {
+    button.summaryChip.shiftFilterBtn.active::before {
       content:'';
       position:absolute;
       top:0;left:0;right:0;bottom:0;
       background:currentColor;
-      opacity:.08;
-      border-radius:50%;
+      opacity:.06;
     }
-    .shiftFilterBtn .emoji { 
-      font-size:22px;
-      position:relative;
-      z-index:1;
-    }
-    .shiftFilterBtn .label { display:none; }
     
     /* ألوان الورديات */
-    .shiftFilterBtn.morning { color:#f59e0b; }
-    .shiftFilterBtn.afternoon { color:#f97316; }
-    .shiftFilterBtn.night { color:#8b5cf6; }
+    button.shiftFilterBtn.morning {
+      color:#f59e0b;
+    }
+    button.shiftFilterBtn.morning .chipVal { color:#f59e0b; }
+    button.shiftFilterBtn.morning .chipLabel { color:#92400e; }
     
-    @media (max-width:480px){
-      .summaryBar { flex-wrap:wrap; }
-      .shiftFilterBtn { width:46px; height:46px; }
-      .shiftFilterBtn .emoji { font-size:20px; }
+    button.shiftFilterBtn.afternoon {
+      color:#f97316;
+    }
+    button.shiftFilterBtn.afternoon .chipVal { color:#f97316; }
+    button.shiftFilterBtn.afternoon .chipLabel { color:#9a3412; }
+    
+    button.shiftFilterBtn.night {
+      color:#8b5cf6;
+    }
+    button.shiftFilterBtn.night .chipVal { color:#8b5cf6; }
+    button.shiftFilterBtn.night .chipLabel { color:#5b21b6; }
+    
+    button.shiftFilterBtn.all {
+      color:#1e40af;
+    }
+    button.shiftFilterBtn.all .chipVal { color:#1e40af; }
+    button.shiftFilterBtn.all .chipLabel { color:#1e40af; }
+    
+    @media (max-width:600px){
+      .summaryBar { gap:8px; }
+      .summaryChip { padding:8px 14px; min-width:70px; }
+      .summaryChip .chipVal { font-size:19px; }
+      .summaryChip .chipLabel { font-size:10px; }
     }
 
 
@@ -897,7 +912,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">12FEB2026 / 00:00</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version-4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN-Version-4.xlsx</strong>
   </div>
 
 </div>
@@ -1035,9 +1050,10 @@
     return 'Morning';
   }
   
-  // Set active shift on load - default to All
+  // Set active shift on load - default to current shift
+  var currentShift = getCurrentShift();
   filterBtns.forEach(function(btn){
-    if(btn.dataset.shift === 'All'){
+    if(btn.dataset.shift === currentShift){
       btn.classList.add('active');
     } else {
       btn.classList.remove('active');
@@ -1108,8 +1124,8 @@
     });
   });
   
-  // Auto-filter on page load - show all shifts by default
-  filterShifts('All');
+  // Auto-filter on page load - show current shift
+  filterShifts(currentShift);
 })();
 </script>
 

@@ -65,27 +65,14 @@
     }
     .summaryChip .chipVal { font-size:22px; font-weight:900; color:#1e40af; }
     .summaryChip .chipLabel { font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.6px; margin-top:2px; }
-    
-    /* Current Shift button as chip */
-    a.summaryChip:hover {
-      transform:translateY(-2px);
-      box-shadow:0 6px 20px rgba(30,64,175,.25);
-    }
 
-    /* ═══════ SHIFT FILTER BUTTONS ═══════ */
-    .shiftFilterBar {
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      margin-top:18px;
-      padding:0 14px;
-    }
+    /* ═══════ SHIFT FILTER BUTTONS (COMPACT) ═══════ */
     .shiftFilterBtn {
-      flex:1;
-      max-width:160px;
-      padding:12px 18px;
+      width:52px;
+      height:52px;
+      padding:0;
       border:2px solid transparent;
-      border-radius:16px;
+      border-radius:50%;
       font-size:14px;
       font-weight:700;
       cursor:pointer;
@@ -95,18 +82,17 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:6px;
       position:relative;
       overflow:hidden;
     }
     .shiftFilterBtn:hover {
-      transform:translateY(-2px);
+      transform:translateY(-2px) scale(1.05);
       box-shadow:0 6px 18px rgba(15,23,42,.12);
     }
     .shiftFilterBtn.active {
       border-color:currentColor;
       box-shadow:0 4px 14px rgba(15,23,42,.15);
-      transform:translateY(0);
+      transform:scale(1.1);
     }
     .shiftFilterBtn.active::before {
       content:'';
@@ -114,9 +100,14 @@
       top:0;left:0;right:0;bottom:0;
       background:currentColor;
       opacity:.08;
+      border-radius:50%;
     }
-    .shiftFilterBtn .emoji { font-size:18px; }
-    .shiftFilterBtn .label { position:relative; z-index:1; }
+    .shiftFilterBtn .emoji { 
+      font-size:22px;
+      position:relative;
+      z-index:1;
+    }
+    .shiftFilterBtn .label { display:none; }
     
     /* ألوان الورديات */
     .shiftFilterBtn.morning { color:#f59e0b; }
@@ -124,9 +115,9 @@
     .shiftFilterBtn.night { color:#8b5cf6; }
     
     @media (max-width:480px){
-      .shiftFilterBar { gap:6px; }
-      .shiftFilterBtn { padding:10px 12px; font-size:13px; }
-      .shiftFilterBtn .emoji { font-size:16px; }
+      .summaryBar { flex-wrap:wrap; }
+      .shiftFilterBtn { width:46px; height:46px; }
+      .shiftFilterBtn .emoji { font-size:20px; }
     }
 
 
@@ -266,15 +257,7 @@
       <div class="chipLabel">Departments</div>
     </div>
     
-    <a href="https://khalidsaif912.github.io/roster-site/now/" class="summaryChip" style="text-decoration:none;background:linear-gradient(135deg,#1e40af,#1976d2);color:#fff;cursor:pointer;transition:transform .2s;">
-      <div class="chipVal" style="color:#fff;">🔄</div>
-      <div class="chipLabel" style="color:rgba(255,255,255,.9);">Current Shift</div>
-    </a>
-    
   </div>
-
-  <!-- ════ SHIFT FILTER (NOW PAGE ONLY) ════ -->
-  
 
   <!-- ════ DEPARTMENT CARDS ════ -->
   
@@ -914,7 +897,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">28FEB2026 / 00:00</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version-4.xlsx</strong>
   </div>
 
 </div>

@@ -54,17 +54,96 @@
     }
 
     /* ═══════ SUMMARY BAR ═══════ */
-    .summaryBar { display:flex; justify-content:center; gap:12px; margin-top:14px; }
+    .summaryBar { 
+      display:flex; 
+      justify-content:center; 
+      align-items:stretch;
+      gap:12px; 
+      margin-top:14px;
+      flex-wrap:nowrap; /* منع الانتقال لصف ثاني */
+    }
     .summaryChip {
       background:#fff;
       border:1px solid rgba(15,23,42,.1);
       border-radius:14px;
-      padding:10px 20px;
+      padding:10px 16px; /* تقليل padding قليلاً */
       text-align:center;
       box-shadow:0 2px 8px rgba(15,23,42,.06);
+      transition:all .25s ease;
+      min-width:90px; /* حد أدنى للعرض */
     }
     .summaryChip .chipVal { font-size:22px; font-weight:900; color:#1e40af; }
-    .summaryChip .chipLabel { font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.6px; margin-top:2px; }
+    .summaryChip .chipLabel { 
+      font-size:10px; /* خط أصغر قليلاً */
+      font-weight:600; 
+      color:#64748b; 
+      text-transform:uppercase; 
+      letter-spacing:.5px; 
+      margin-top:2px;
+      white-space:nowrap; /* منع الكسر */
+    }
+
+    /* ═══════ SHIFT FILTER BUTTONS AS CHIPS ═══════ */
+    button.summaryChip.shiftFilterBtn {
+      border:2px solid transparent;
+      position:relative;
+      overflow:hidden;
+      padding:10px 14px; /* padding أصغر للأزرار */
+    }
+    button.summaryChip.shiftFilterBtn:hover {
+      transform:translateY(-3px);
+      box-shadow:0 8px 20px rgba(15,23,42,.12);
+    }
+    button.summaryChip.shiftFilterBtn.active {
+      border-color:currentColor;
+      box-shadow:0 6px 16px rgba(15,23,42,.18);
+    }
+    button.summaryChip.shiftFilterBtn.active::before {
+      content:'';
+      position:absolute;
+      top:0;left:0;right:0;bottom:0;
+      background:currentColor;
+      opacity:.06;
+    }
+    
+    /* ألوان الورديات */
+    button.shiftFilterBtn.morning {
+      color:#f59e0b;
+    }
+    button.shiftFilterBtn.morning .chipVal { color:#f59e0b; }
+    button.shiftFilterBtn.morning .chipLabel { color:#92400e; }
+    
+    button.shiftFilterBtn.afternoon {
+      color:#f97316;
+    }
+    button.shiftFilterBtn.afternoon .chipVal { color:#f97316; }
+    button.shiftFilterBtn.afternoon .chipLabel { color:#9a3412; }
+    
+    button.shiftFilterBtn.night {
+      color:#8b5cf6;
+    }
+    button.shiftFilterBtn.night .chipVal { color:#8b5cf6; }
+    button.shiftFilterBtn.night .chipLabel { color:#5b21b6; }
+    
+    button.shiftFilterBtn.all {
+      color:#1e40af;
+    }
+    button.shiftFilterBtn.all .chipVal { color:#1e40af; }
+    button.shiftFilterBtn.all .chipLabel { color:#1e40af; }
+    
+    /* للشاشات المتوسطة */
+    @media (max-width:900px){
+      .summaryBar { flex-wrap:wrap; } /* السماح بالانتقال للصف الثاني */
+    }
+    
+    /* للموبايل */
+    @media (max-width:600px){
+      .summaryBar { gap:8px; }
+      .summaryChip { padding:8px 12px; min-width:70px; }
+      .summaryChip .chipVal { font-size:19px; }
+      .summaryChip .chipLabel { font-size:9px; }
+    }
+
 
     /* ═══════ DEPARTMENT CARD ═══════ */
     .deptCard {
@@ -201,6 +280,7 @@
       <div class="chipVal" style="color:#059669;">5</div>
       <div class="chipLabel">Departments</div>
     </div>
+    
   </div>
 
   <!-- ════ DEPARTMENT CARDS ════ -->
@@ -256,7 +336,7 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Salim Al Masroori - 8926</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 7)</span>
      </div>
       </div>
     </details>
@@ -458,10 +538,10 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Habib Al Balushi - 82600</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 5 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 10)</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Ahmed Al Kharusi - 82575</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 10)</span>
      </div>
       </div>
     </details>
@@ -475,7 +555,7 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Qasim Al Maqbali - 81409</span>
-       <span class="empStatus" style="color:#991b1b;">🤒 Sick Leave</span>
+       <span class="empStatus" style="color:#991b1b;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 28)</span>
      </div>
       </div>
     </details>
@@ -660,28 +740,28 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Khalifa Al Maqbali - 82673</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 6)</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Ammar Al Hashmi - 82659</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 5 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 8)</span>
      </div><div class="empRow">
        <span class="empName">Marhoon Al Kiyumi - 82545</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 4 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 9)</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Khalil Al Hinai - 82671</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 3 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 8)</span>
      </div><div class="empRow">
        <span class="empName">Raad Al Farsi - 82578</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 5 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 7)</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Ali Al Marjubi - 82577</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 13)</span>
      </div><div class="empRow">
        <span class="empName">Ghaith Al Habsi - 82439</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 2 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 7)</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Mohamed Al Subhi - 82592 (Support)</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 6)</span>
      </div>
       </div>
     </details>
@@ -813,13 +893,13 @@
       <div class="shiftBody">
         <div class="empRow">
        <span class="empName">Mohana Al Subhi - 8714</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 10)</span>
      </div><div class="empRow empRowAlt">
        <span class="empName">Issa Al Douyani - 8647</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 4 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 17)</span>
      </div><div class="empRow">
        <span class="empName">Ahmed Al Sabii - 82653</span>
-       <span class="empStatus" style="color:#065f46;">🏖️ Annual Leave</span>
+       <span class="empStatus" style="color:#065f46;">(<span style='font-size:0.75em;opacity:0.8;'>FROM</span> 1 <span style='font-size:0.75em;opacity:0.8;'>TO</span> 5)</span>
      </div>
       </div>
     </details>
@@ -839,9 +919,9 @@
 
   <!-- ════ FOOTER ════ -->
   <div class="footer">
-    Sent at <strong>00:00</strong>
-     &nbsp;·&nbsp; Total: <strong>80 employees</strong>
-    <br>Source file: <strong>Export New Roster February 2026 _- RAMADAN Version 4.xlsx</strong>
+    <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">05FEB2026 / 00:00</strong>
+    <br>Total: <strong>80 employees</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026 -RAMADAN-Version-4.xlsx</strong>
   </div>
 
 </div>
@@ -851,6 +931,52 @@
   var tag = document.getElementById('dateTag');
   var picker = document.getElementById('datePicker');
   if(!tag || !picker) return;
+
+  // التحقق إذا كان المستخدم في صفحة تاريخ قديم
+  function checkAndRedirectToToday(){
+    var path = window.location.pathname || '/';
+    // تحقق إذا كنا في صفحة /now/
+    var isNowPage = path.includes('/now');
+    
+    // إذا كان في صفحة /date/YYYY-MM-DD/
+    var dateMatch = path.match(/\/date\/(\d{4})-(\d{2})-(\d{2})\//);
+    if(dateMatch){
+      var pageDate = dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3];
+      
+      // الحصول على التاريخ في توقيت مسقط (UTC+4)
+      var now = new Date();
+      var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+      var todayStr = muscatTime.getFullYear() + '-' + 
+                     String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(muscatTime.getDate()).padStart(2, '0');
+      
+      // إذا التاريخ في الصفحة مختلف عن اليوم
+      if(pageDate !== todayStr){
+        // تحقق من sessionStorage - إذا كان موجود، يعني هذا تحديث (F5)
+        var isPageLoad = sessionStorage.getItem('pageLoaded');
+        if(isPageLoad){
+          // تحديث الصفحة → امسح العلامة وارجع لتاريخ اليوم
+          sessionStorage.removeItem('pageLoaded');
+          // احصل على المسار الأساسي
+          var basePath = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+          // ارجع للصفحة الرئيسية (مع أو بدون /now/)
+          if(isNowPage){
+            window.location.href = basePath + '/now/';
+          } else {
+            window.location.href = basePath + '/';
+          }
+          return true;
+        } else {
+          // أول تحميل بعد الضغط على التاريخ → ضع علامة
+          sessionStorage.setItem('pageLoaded', 'true');
+        }
+      }
+    }
+    return false;
+  }
+
+  // عند تحميل الصفحة، تحقق من التاريخ
+  if(checkAndRedirectToToday()) return;
 
   function openPicker(){
     // Position the (hidden) input مباشرة تحت التاريخ حتى يظهر التقويم بالمكان الصحيح
@@ -876,21 +1002,139 @@
     if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); }
   });
 
-  function computeBasePath(){
-    var p = window.location.pathname || '/';
-    // Strip "/now/" and anything after it
-    p = p.replace(/\/now\/.*$/,'/');
-    // Strip "/date/YYYY-MM-DD/" and anything after it
-    p = p.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/');
-    return p.replace(/\/+$/,''); // no trailing slash
-  }
-
   picker.addEventListener('change', function(){
     if(!picker.value) return;
-    var base = computeBasePath();
+    // عند اختيار تاريخ جديد، امسح العلامة حتى يتم وضعها من جديد
+    sessionStorage.removeItem('pageLoaded');
+    
+    var path = window.location.pathname || '/';
+    var isNowPage = path.includes('/now');
+    
+    // احصل على المسار الأساسي
+    var base = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+    
+    // بناء المسار الجديد: /date/YYYY-MM-DD/ أو /date/YYYY-MM-DD/now/
     var target = base + '/date/' + picker.value + '/';
+    if(isNowPage){
+      target = target + 'now/';
+    }
+    
     window.location.href = target;
   });
+})();
+
+// ═══════════════════════════════════════════════════
+// Shift Filter (NOW PAGE ONLY)
+// ═══════════════════════════════════════════════════
+(function(){
+  var filterBtns = document.querySelectorAll('.shiftFilterBtn');
+  if(!filterBtns.length) return; // Not a /now/ page
+  
+  var allShiftCards = document.querySelectorAll('.shiftCard');
+  
+  // Group shift cards by shift type
+  var shiftGroups = {};
+  allShiftCards.forEach(function(card){
+    var summary = card.querySelector('.shiftSummary');
+    if(!summary) return;
+    
+    var label = summary.querySelector('.shiftLabel');
+    if(!label) return;
+    
+    var shiftType = label.textContent.trim();
+    if(!shiftGroups[shiftType]) shiftGroups[shiftType] = [];
+    shiftGroups[shiftType].push(card);
+  });
+  
+  // Determine current shift based on time
+  function getCurrentShift(){
+    var now = new Date();
+    var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+    var hour = muscatTime.getHours();
+    var minute = muscatTime.getMinutes();
+    var t = hour * 60 + minute;
+    
+    if(t >= 21 * 60 || t < 5 * 60) return 'Night';
+    if(t >= 14 * 60) return 'Afternoon';
+    return 'Morning';
+  }
+  
+  // Set active shift on load - default to current shift
+  var currentShift = getCurrentShift();
+  filterBtns.forEach(function(btn){
+    if(btn.dataset.shift === currentShift){
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  
+  // Filter function
+  function filterShifts(selectedShift){
+    var totalEmployees = 0;
+    
+    if(selectedShift === 'All'){
+      // Show all shifts
+      allShiftCards.forEach(function(card){
+        card.style.display = '';
+        var count = card.querySelector('.shiftCount');
+        if(count) totalEmployees += parseInt(count.textContent) || 0;
+      });
+    } else {
+      // Hide all cards first
+      allShiftCards.forEach(function(card){ card.style.display = 'none'; });
+      
+      // Show only selected shift cards and count employees
+      if(shiftGroups[selectedShift]){
+        shiftGroups[selectedShift].forEach(function(card){
+          card.style.display = '';
+          // Auto-open the selected shift
+          card.setAttribute('open', '');
+          // Count employees in this card
+          var count = card.querySelector('.shiftCount');
+          if(count) totalEmployees += parseInt(count.textContent) || 0;
+        });
+      }
+      
+      // Also show Off Day, Leave, Training, Standby in all shifts
+      var alwaysShow = ['Off Day', 'Annual Leave', 'Sick Leave', 'Training', 'Standby', 'Other'];
+      alwaysShow.forEach(function(type){
+        if(shiftGroups[type]){
+          shiftGroups[type].forEach(function(card){
+            card.style.display = '';
+            // Count employees
+            var count = card.querySelector('.shiftCount');
+            if(count) totalEmployees += parseInt(count.textContent) || 0;
+          });
+        }
+      });
+    }
+    
+    // Update employee count in summary
+    var employeeChip = document.querySelector('.summaryChip .chipVal');
+    if(employeeChip){
+      employeeChip.textContent = totalEmployees;
+    }
+    
+    // Update button states
+    filterBtns.forEach(function(btn){
+      if(btn.dataset.shift === selectedShift){
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+  
+  // Add click handlers
+  filterBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      filterShifts(this.dataset.shift);
+    });
+  });
+  
+  // Auto-filter on page load - show current shift
+  filterShifts(currentShift);
 })();
 </script>
 

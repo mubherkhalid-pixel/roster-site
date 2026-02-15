@@ -1,0 +1,622 @@
+{
+  "total": 77,
+  "employees": [
+    {
+      "id": "990465",
+      "name": "Abdulfatah Al Shukeili",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82645",
+      "name": "Abdullah Al Shukeili",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82616",
+      "name": "Ahmed Al Hashmi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82283",
+      "name": "Ahmed Al Mawali",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81393",
+      "name": "Ali Al Farsi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82574",
+      "name": "Ali Al Mamari",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82577",
+      "name": "Ali Al Marjubi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "990752",
+      "name": "Ali Yousuf Al Balushi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82659",
+      "name": "Ammar Al Hashmi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82672",
+      "name": "Dawood Al Siyabi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8930",
+      "name": "Fahim Al Hashni",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82439",
+      "name": "Ghaith Al Habsi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "80695",
+      "name": "Hosni Al Sulti",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8715",
+      "name": "Khalid Al Raqadi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82673",
+      "name": "Khalifa Al Maqbali",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82671",
+      "name": "Khalil Al Hinai",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82545",
+      "name": "Marhoon Al Kiyumi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "80270",
+      "name": "Marlon Esmilla",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82547",
+      "name": "Mazin Al Hajri",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82674",
+      "name": "Mohamed Al Mamari",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82666",
+      "name": "Mohamed Al Maskari",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82661",
+      "name": "Mohamed Al Maskari",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82658",
+      "name": "Mohamed Al Mazroie",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82578",
+      "name": "Raad Al Farsi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82615",
+      "name": "Rashid Al Farsi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82555",
+      "name": "Riyadh Al Jabri",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82424",
+      "name": "Riyadh Al Sulti",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82649",
+      "name": "Saif Al Mahrizi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "80482",
+      "name": "Waleed Al Hadabi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8611",
+      "name": "Waleed Al Siyabi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82464",
+      "name": "Wissam Al Kharusi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82587",
+      "name": "Yousuf Al Balushi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8646",
+      "name": "Yousuf Al Jaradi",
+      "department": "Export Checker",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8941",
+      "name": "Adil Al Oraimi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82415",
+      "name": "Ahmed Al Balushi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82653",
+      "name": "Ahmed Al Sabii",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82468",
+      "name": "Badar Al Fulaiti",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81307",
+      "name": "Badar Al Hamadani",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82656",
+      "name": "Faisal Al Balushi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82588",
+      "name": "Ghassan Al Tarsi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8647",
+      "name": "Issa Al Douyani",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82565",
+      "name": "Jamal Al Hadi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82467",
+      "name": "Khamis Al Hinai",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81223",
+      "name": "Mazin Al Siyabi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81224",
+      "name": "Mohamed Al Amri",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8762",
+      "name": "Mohamed Al Falahi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8714",
+      "name": "Mohana Al Subhi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82534",
+      "name": "Muadh Al Qasimi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8744",
+      "name": "Said Al Fahkri",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8542",
+      "name": "Salim Al Harassi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8722",
+      "name": "Salim Sulieman",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82429",
+      "name": "Zakariya Al Balushi",
+      "department": "Export Operators",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82575",
+      "name": "Ahmed Al Kharusi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82548",
+      "name": "Ahmed Al Muqaini",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82445",
+      "name": "Al Muthana Al Shamfari",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81348",
+      "name": "Assad Al Omairi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82657",
+      "name": "Bushra Al Wahiebi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82600",
+      "name": "Habib Al Balushi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82596",
+      "name": "Hamed Al Fulaiti",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81258",
+      "name": "Jaafar Al Balushi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82437",
+      "name": "Marwan Al Difai",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81402",
+      "name": "Mohamed Al Siyabi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82114",
+      "name": "Mubarak Al Nofli",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82441",
+      "name": "Mudathir Al Hajri",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82551",
+      "name": "Omar Al Obaidi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81409",
+      "name": "Qasim Al Maqbali",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82550",
+      "name": "Saleh Al Aufi",
+      "department": "Load Control",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81392",
+      "name": "Adil Al Balushi",
+      "department": "Officers",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8899",
+      "name": "Rajaram",
+      "department": "Officers",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "80235",
+      "name": "Rodolfo Magcaling",
+      "department": "Officers",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "8926",
+      "name": "Salim Al Masroori",
+      "department": "Officers",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "80250",
+      "name": "Jay Macalino",
+      "department": "Supervisors",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81404",
+      "name": "Mohamed Al Amri",
+      "department": "Supervisors",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82593",
+      "name": "Mohamed Al Kalbani",
+      "department": "Supervisors",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "990737",
+      "name": "Said Al Amri",
+      "department": "Supervisors",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "82546",
+      "name": "Saleh Al Rashdi",
+      "department": "Supervisors",
+      "months": [
+        "2026-02"
+      ]
+    },
+    {
+      "id": "81300",
+      "name": "Talal Al Balushi",
+      "department": "Supervisors",
+      "months": [
+        "2026-02"
+      ]
+    }
+  ],
+  "last_updated": "2026-02-15T22:51:57.646829+04:00"
+}

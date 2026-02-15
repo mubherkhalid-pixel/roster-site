@@ -171,6 +171,17 @@ jobs:
           python generate_and_send.py
           echo "Processing and email completed successfully"
       
+        name: Generate employee schedules
+        if: steps.check_changes.outputs.should_process == 'true'
+        env:
+          EXCEL_URL: ${{ secrets.EXCEL_URL }}
+        run: |
+          echo "Generating employee schedules..."
+          python generate_employee_schedules.py
+          echo "Employee schedules generated successfully"
+
+
+
       - name: Commit updated docs
         if: steps.check_changes.outputs.should_process == 'true'
         run: |

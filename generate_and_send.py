@@ -1633,23 +1633,25 @@ def get_subscriber_emails():
 def send_email(subject: str, html: str):
     if not (SMTP_HOST and SMTP_USER and SMTP_PASS and MAIL_FROM):
         return
-    
-    # الحصول على قائمة المشتركين
+
     recipient_list = get_subscriber_emails()
-    
-    if not recipient_list:
+    recipients = [x.strip() for x in recipient_list.split(",") if x.strip()]
+
+    if not recipients:
         print("⚠️ No recipients found, skipping email")
         return
-    
+
     msg = MIMEText(html, "html", "utf-8")
     msg["Subject"] = subject
     msg["From"] = MAIL_FROM
-    msg["To"] = recipient_list
+    msg["To"] = MAIL_TO or MAIL_FROM  # ✅ لا تعرض قائمة المشتركين
 
     with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as s:
         s.starttls()
         s.login(SMTP_USER, SMTP_PASS)
-        s.sendmail(MAIL_FROM, [x.strip() for x in recipient_list.split(",") if x.strip()], msg.as_string())
+        s.sendmail(MAIL_FROM, recipients, msg.as_string())
+
+    print(f"✅ Sent to {len(recipients)} subscribers")
 
 
 # =========================

@@ -66,6 +66,64 @@
     .summaryChip .chipVal { font-size:22px; font-weight:900; color:#1e40af; }
     .summaryChip .chipLabel { font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:.6px; margin-top:2px; }
 
+    /* ═══════ SHIFT FILTER BUTTONS ═══════ */
+    .shiftFilterBar {
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      margin-top:18px;
+      padding:0 14px;
+    }
+    .shiftFilterBtn {
+      flex:1;
+      max-width:160px;
+      padding:12px 18px;
+      border:2px solid transparent;
+      border-radius:16px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      background:#fff;
+      box-shadow:0 2px 8px rgba(15,23,42,.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      position:relative;
+      overflow:hidden;
+    }
+    .shiftFilterBtn:hover {
+      transform:translateY(-2px);
+      box-shadow:0 6px 18px rgba(15,23,42,.12);
+    }
+    .shiftFilterBtn.active {
+      border-color:currentColor;
+      box-shadow:0 4px 14px rgba(15,23,42,.15);
+      transform:translateY(0);
+    }
+    .shiftFilterBtn.active::before {
+      content:'';
+      position:absolute;
+      top:0;left:0;right:0;bottom:0;
+      background:currentColor;
+      opacity:.08;
+    }
+    .shiftFilterBtn .emoji { font-size:18px; }
+    .shiftFilterBtn .label { position:relative; z-index:1; }
+    
+    /* ألوان الورديات */
+    .shiftFilterBtn.morning { color:#f59e0b; }
+    .shiftFilterBtn.afternoon { color:#f97316; }
+    .shiftFilterBtn.night { color:#8b5cf6; }
+    
+    @media (max-width:480px){
+      .shiftFilterBar { gap:6px; }
+      .shiftFilterBtn { padding:10px 12px; font-size:13px; }
+      .shiftFilterBtn .emoji { font-size:16px; }
+    }
+
+
     /* ═══════ DEPARTMENT CARD ═══════ */
     .deptCard {
       margin-top:18px;
@@ -202,6 +260,9 @@
       <div class="chipLabel">Departments</div>
     </div>
   </div>
+
+  <!-- ════ SHIFT FILTER (NOW PAGE ONLY) ════ -->
+  
 
   <!-- ════ DEPARTMENT CARDS ════ -->
   
@@ -841,7 +902,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">21FEB2026 / 00:00</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version4v.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026_RAMADAN Version4.xlsx</strong>
   </div>
 
 </div>
@@ -941,6 +1002,97 @@
     
     window.location.href = target;
   });
+})();
+
+// ═══════════════════════════════════════════════════
+// Shift Filter (NOW PAGE ONLY)
+// ═══════════════════════════════════════════════════
+(function(){
+  var filterBtns = document.querySelectorAll('.shiftFilterBtn');
+  if(!filterBtns.length) return; // Not a /now/ page
+  
+  var allShiftCards = document.querySelectorAll('.shiftCard');
+  
+  // Group shift cards by shift type
+  var shiftGroups = {};
+  allShiftCards.forEach(function(card){
+    var summary = card.querySelector('.shiftSummary');
+    if(!summary) return;
+    
+    var label = summary.querySelector('.shiftLabel');
+    if(!label) return;
+    
+    var shiftType = label.textContent.trim();
+    if(!shiftGroups[shiftType]) shiftGroups[shiftType] = [];
+    shiftGroups[shiftType].push(card);
+  });
+  
+  // Determine current shift based on time
+  function getCurrentShift(){
+    var now = new Date();
+    var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+    var hour = muscatTime.getHours();
+    var minute = muscatTime.getMinutes();
+    var t = hour * 60 + minute;
+    
+    if(t >= 21 * 60 || t < 5 * 60) return 'Night';
+    if(t >= 14 * 60) return 'Afternoon';
+    return 'Morning';
+  }
+  
+  // Set active shift on load
+  var currentShift = getCurrentShift();
+  filterBtns.forEach(function(btn){
+    if(btn.dataset.shift === currentShift){
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  
+  // Filter function
+  function filterShifts(selectedShift){
+    // Hide all cards first
+    allShiftCards.forEach(function(card){ card.style.display = 'none'; });
+    
+    // Show only selected shift cards
+    if(shiftGroups[selectedShift]){
+      shiftGroups[selectedShift].forEach(function(card){
+        card.style.display = '';
+        // Auto-open the selected shift
+        card.setAttribute('open', '');
+      });
+    }
+    
+    // Also show Off Day, Leave, Training, Standby in all shifts
+    var alwaysShow = ['Off Day', 'Annual Leave', 'Sick Leave', 'Training', 'Standby', 'Other'];
+    alwaysShow.forEach(function(type){
+      if(shiftGroups[type]){
+        shiftGroups[type].forEach(function(card){
+          card.style.display = '';
+        });
+      }
+    });
+    
+    // Update button states
+    filterBtns.forEach(function(btn){
+      if(btn.dataset.shift === selectedShift){
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+  
+  // Add click handlers
+  filterBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      filterShifts(this.dataset.shift);
+    });
+  });
+  
+  // Auto-filter on page load
+  filterShifts(currentShift);
 })();
 </script>
 

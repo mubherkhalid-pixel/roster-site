@@ -34,7 +34,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Check if Excel file changed
+      - name: Check if Excel file changed (and scheduled slot due)
         id: check_changes
         env:
           SOURCE_NAME_URL: ${{ secrets.SOURCE_NAME_URL }}
@@ -47,11 +47,9 @@ jobs:
           from datetime import datetime, timezone, timedelta
 
           def write_output(k, v, fh):
-              # Safe for simple boolean-like outputs
               fh.write(f"{k}={v}\n")
 
           def write_output_multiline(k, v, fh):
-              # Safe for any text (spaces/special chars/newlines)
               fh.write(f"{k}<<EOF\n")
               fh.write(f"{v}\n")
               fh.write("EOF\n")
@@ -74,12 +72,13 @@ jobs:
 
                   print(f"Current file: {current_filename}")
 
-                  cache_file = "last_filename.txt"
+                  # 1) Detect file change
+                  cache_file = Path("last_filename.txt")
                   changed = True
                   old_filename = "none"
 
-                  if Path(cache_file).exists():
-                      old_filename = Path(cache_file).read_text(encoding="utf-8").strip() or "none"
+                  if cache_file.exists():
+                      old_filename = cache_file.read_text(encoding="utf-8").strip() or "none"
                       print(f"Previous file: {old_filename}")
 
                       if old_filename == current_filename:
@@ -90,27 +89,45 @@ jobs:
                   else:
                       print("First run")
 
-                  Path(cache_file).write_text(current_filename, encoding="utf-8")
+                  cache_file.write_text(current_filename, encoding="utf-8")
                   print(f"Saved filename to {cache_file}")
 
-                  # Muscat time (UTC+4)
+                  # 2) Scheduled email logic (Muscat time) WITHOUT narrow window
                   muscat_tz = timezone(timedelta(hours=4))
                   now = datetime.now(muscat_tz)
-                  current_hour = now.hour
-                  current_minute = now.minute
+                  print(f"Muscat time: {now.strftime('%Y-%m-%d %H:%M')}")
 
-                  print(f"Muscat time: {now.strftime('%H:%M')}")
-
-                  # Scheduled email times (6:00, 15:00, 21:00)
                   scheduled_hours = [6, 15, 21]
-                  is_scheduled_time = any(
-                      (current_hour == h and current_minute < 20) for h in scheduled_hours
-                  )
 
-                  if is_scheduled_time:
-                      print("Within scheduled email window")
+                  # Determine latest scheduled hour <= now.hour
+                  slot_hour = None
+                  for h in reversed(scheduled_hours):
+                      if now.hour >= h:
+                          slot_hour = h
+                          break
 
-                  should_process = changed or is_scheduled_time
+                  slot_id = ""  # empty means no slot (before 06:00)
+                  slot_file = Path("last_scheduled_slot.txt")
+                  last_slot = slot_file.read_text(encoding="utf-8").strip() if slot_file.exists() else ""
+
+                  is_scheduled_due = False
+                  if slot_hour is not None:
+                      slot_id = f"{now.date().isoformat()}-{slot_hour:02d}"
+                      if slot_id != last_slot:
+                          is_scheduled_due = True
+
+                  print(f"Last scheduled slot: {last_slot or '(none)'}")
+                  print(f"Current slot_id: {slot_id or '(none)'}")
+                  print(f"Scheduled due: {is_scheduled_due}")
+
+                  # 3) SINGLE SEND RULE:
+                  # - If changed -> send now (covers slot if within slot)
+                  # - Else -> send only if scheduled_due
+                  should_process = bool(changed or is_scheduled_due)
+
+                  # We will "mark slot as sent" after success if we have a slot_id AND we sent.
+                  # BUT we should only mark if the send happened and we're in/after a slot.
+                  should_mark_slot_after_send = bool(should_process and slot_id)
 
                   out_path = os.environ.get("GITHUB_OUTPUT")
                   if not out_path:
@@ -120,17 +137,21 @@ jobs:
                   with open(out_path, "a", encoding="utf-8") as f:
                       write_output("changed", str(changed).lower(), f)
                       write_output("should_process", str(should_process).lower(), f)
-                      write_output("is_scheduled_email", str(is_scheduled_time).lower(), f)
+                      write_output("is_scheduled_email", str(is_scheduled_due).lower(), f)
+                      write_output("should_mark_slot", str(should_mark_slot_after_send).lower(), f)
 
-                      # IMPORTANT: use multiline outputs for filenames (may contain spaces/special chars)
                       write_output_multiline("filename", current_filename, f)
                       write_output_multiline("old_filename", old_filename, f)
+                      write_output_multiline("scheduled_slot_id", slot_id, f)
+                      write_output_multiline("last_scheduled_slot_id", last_slot, f)
 
                   print("=" * 60)
                   print("Results:")
                   print(f"  File changed: {changed}")
-                  print(f"  Scheduled time: {is_scheduled_time}")
+                  print(f"  Scheduled due: {is_scheduled_due}")
+                  print(f"  Slot ID: {slot_id}")
                   print(f"  Should process: {should_process}")
+                  print(f"  Should mark slot: {should_mark_slot_after_send}")
                   print("=" * 60)
 
               except requests.exceptions.Timeout:
@@ -155,10 +176,13 @@ jobs:
           echo "Check Report:"
           echo "========================================"
           echo "File changed: ${{ steps.check_changes.outputs.changed }}"
-          echo "Scheduled email: ${{ steps.check_changes.outputs.is_scheduled_email }}"
+          echo "Scheduled due: ${{ steps.check_changes.outputs.is_scheduled_email }}"
           echo "Should process: ${{ steps.check_changes.outputs.should_process }}"
+          echo "Should mark slot: ${{ steps.check_changes.outputs.should_mark_slot }}"
           echo "Current file: ${{ steps.check_changes.outputs.filename }}"
           echo "Previous file: ${{ steps.check_changes.outputs.old_filename }}"
+          echo "Slot ID: ${{ steps.check_changes.outputs.scheduled_slot_id }}"
+          echo "Last Slot ID: ${{ steps.check_changes.outputs.last_scheduled_slot_id }}"
           echo "========================================"
 
       - name: Generate page + send email
@@ -175,13 +199,30 @@ jobs:
           MAIL_TO: ${{ secrets.MAIL_TO }}
           SUBSCRIBE_URL: ${{ secrets.SUBSCRIBE_URL }}
           SUBSCRIBE_TOKEN: ${{ secrets.SUBSCRIBE_TOKEN }}
+
+          IS_SCHEDULED_EMAIL: ${{ steps.check_changes.outputs.is_scheduled_email }}
+          SCHEDULED_SLOT_ID: ${{ steps.check_changes.outputs.scheduled_slot_id }}
+          SHOULD_MARK_SLOT: ${{ steps.check_changes.outputs.should_mark_slot }}
         run: |
           if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
             echo "Processing file (change detected): ${{ steps.check_changes.outputs.filename }}"
           else
             echo "Processing file (scheduled email): ${{ steps.check_changes.outputs.filename }}"
           fi
+
+          # Run your script (must succeed)
           python generate_and_send.py
+
+          # SINGLE SEND RULE:
+          # If we sent successfully AND we are in/after a slot, mark that slot as sent.
+          # This ensures:
+          # - Change-triggered send during 06/15/21 "covers" the scheduled send (no second email)
+          # - Scheduled send only happens once per slot
+          if [ "${SHOULD_MARK_SLOT}" == "true" ] && [ -n "${SCHEDULED_SLOT_ID}" ]; then
+            echo "Marking slot as sent: ${SCHEDULED_SLOT_ID}"
+            echo "${SCHEDULED_SLOT_ID}" > last_scheduled_slot.txt
+          fi
+
           echo "Processing and email completed successfully"
 
       - name: Generate employee schedules
@@ -198,14 +239,16 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add docs last_filename.txt
+
+          git add docs last_filename.txt last_scheduled_slot.txt
+
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
               git commit -m "Update roster: ${{ steps.check_changes.outputs.filename }}"
             else
-              git commit -m "Scheduled email update"
+              git commit -m "Scheduled email update (${{ steps.check_changes.outputs.scheduled_slot_id }})"
             fi
             git push
             echo "Updates pushed to GitHub"
@@ -215,7 +258,7 @@ jobs:
         if: steps.check_changes.outputs.should_process == 'false'
         run: |
           echo "========================================"
-          echo "No action needed (no change, no scheduled time)"
+          echo "No action needed (no change, no scheduled due)"
           echo "========================================"
           echo "Current file: ${{ steps.check_changes.outputs.filename }}"
           echo "Skipping processing and email"

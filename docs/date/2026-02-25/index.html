@@ -888,7 +888,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">25FEB2026 / 00:00</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster February-2026-RAMADAN-Version4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February_2026_RAMADAN_Version_4.xlsx</strong>
   </div>
 
 </div>
@@ -902,31 +902,23 @@
   // التحقق إذا كان المستخدم في صفحة تاريخ قديم
   function checkAndRedirectToToday(){
     var path = window.location.pathname || '/';
-    // تحقق إذا كنا في صفحة /now/
     var isNowPage = path.includes('/now');
     
-    // إذا كان في صفحة /date/YYYY-MM-DD/
     var dateMatch = path.match(/\/date\/(\d{4})-(\d{2})-(\d{2})\//);
     if(dateMatch){
       var pageDate = dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3];
       
-      // الحصول على التاريخ في توقيت مسقط (UTC+4)
       var now = new Date();
       var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
       var todayStr = muscatTime.getFullYear() + '-' + 
                      String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' + 
                      String(muscatTime.getDate()).padStart(2, '0');
       
-      // إذا التاريخ في الصفحة مختلف عن اليوم
       if(pageDate !== todayStr){
-        // تحقق من sessionStorage - إذا كان موجود، يعني هذا تحديث (F5)
         var isPageLoad = sessionStorage.getItem('pageLoaded');
         if(isPageLoad){
-          // تحديث الصفحة → امسح العلامة وارجع لتاريخ اليوم
           sessionStorage.removeItem('pageLoaded');
-          // احصل على المسار الأساسي
           var basePath = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
-          // ارجع للصفحة الرئيسية (مع أو بدون /now/)
           if(isNowPage){
             window.location.href = basePath + '/now/';
           } else {
@@ -934,7 +926,6 @@
           }
           return true;
         } else {
-          // أول تحميل بعد الضغط على التاريخ → ضع علامة
           sessionStorage.setItem('pageLoaded', 'true');
         }
       }
@@ -942,11 +933,17 @@
     return false;
   }
 
-  // عند تحميل الصفحة، تحقق من التاريخ
   if(checkAndRedirectToToday()) return;
 
-  function openPicker(){
-    // Position the (hidden) input مباشرة تحت التاريخ حتى يظهر التقويم بالمكان الصحيح
+  // دالة محسّنة لفتح Date Picker - تعمل على iOS
+  function openPicker(e){
+    // منع السلوك الافتراضي
+    if(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // إعداد موضع الـ picker
     try{
       var r = tag.getBoundingClientRect();
       var wrap = tag.closest('.header') || document.body;
@@ -954,33 +951,58 @@
       picker.style.left = (r.left - wr.left) + 'px';
       picker.style.top  = (r.bottom - wr.top + 6) + 'px';
       picker.style.width = Math.max(120, r.width) + 'px';
-    }catch(e){}
+    }catch(ex){}
 
-    try{
-      if (picker.showPicker) { picker.showPicker(); }
-      else { picker.focus(); picker.click(); }
-    }catch(e){
-      picker.focus(); picker.click();
-    }
+    // طرق متعددة لفتح التقويم - تعمل على كل المتصفحات
+    setTimeout(function(){
+      try{
+        // الطريقة 1: showPicker (Chrome, Safari الحديث)
+        if(picker.showPicker) {
+          picker.showPicker();
+          return;
+        }
+      }catch(e1){}
+      
+      try{
+        // الطريقة 2: focus + click (iOS Safari)
+        picker.focus();
+        setTimeout(function(){
+          picker.click();
+        }, 50);
+      }catch(e2){}
+    }, 10);
   }
 
-  tag.addEventListener('click', openPicker);
+  // ربط الأحداث بطريقة محسّنة لـ iOS
+  tag.style.cursor = 'pointer';
+  tag.style.webkitTapHighlightColor = 'rgba(0,0,0,0)'; // إزالة تأثير النقر في iOS
+  tag.style.userSelect = 'none';
+  tag.style.webkitUserSelect = 'none';
+  
+  // أحداث الماوس واللمس
+  tag.addEventListener('click', openPicker, false);
+  tag.addEventListener('touchend', function(e){
+    e.preventDefault();
+    openPicker(e);
+  }, false);
+  
   tag.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPicker(); }
+    if(e.key === 'Enter' || e.key === ' ') { 
+      e.preventDefault(); 
+      openPicker(e); 
+    }
   });
 
+  // عند تغيير التاريخ
   picker.addEventListener('change', function(){
     if(!picker.value) return;
-    // عند اختيار تاريخ جديد، امسح العلامة حتى يتم وضعها من جديد
     sessionStorage.removeItem('pageLoaded');
     
     var path = window.location.pathname || '/';
     var isNowPage = path.includes('/now');
     
-    // احصل على المسار الأساسي
     var base = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
     
-    // بناء المسار الجديد: /date/YYYY-MM-DD/ أو /date/YYYY-MM-DD/now/
     var target = base + '/date/' + picker.value + '/';
     if(isNowPage){
       target = target + 'now/';
@@ -988,6 +1010,11 @@
     
     window.location.href = target;
   });
+  
+  // منع التمرير عند النقر على التاريخ (iOS)
+  tag.addEventListener('touchstart', function(e){
+    e.stopPropagation();
+  }, { passive: true });
 })();
 
 // ═══════════════════════════════════════════════════

@@ -158,7 +158,7 @@ def current_shift_key(now: datetime) -> str:
     t = now.hour * 60 + now.minute
     if t >= 21 * 60 or t < 5 * 60:
         return "Night"
-    if t >= 14 * 60:
+    if t >= 13 * 60:
         return "Afternoon"
     return "Morning"
 

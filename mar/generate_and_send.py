@@ -775,16 +775,15 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
       background:rgba(255,255,255,.25);
       transform:translateY(-1px);
     }}
-    /* الـ input مخفي تماماً - لا يُرى ولا يُضغط عليه */
     #datePicker {{
-      position:fixed;
-      top:-9999px;
-      left:-9999px;
-      width:1px;
-      height:1px;
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
       opacity:0;
-      pointer-events:none;
-      font-size:16px;
+      cursor:pointer;
+      font-size:16px; /* منع zoom في iOS */
       border:none;
     }}
 
@@ -1002,8 +1001,8 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
   <div class="header">
     <h1>📋 Duty Roster</h1>
     <div class="datePickerWrapper">
-      <button class="dateTag" id="dateTag" onclick="openDatePicker()" type="button">📅 {date_label}</button>
-      <input id="datePicker" type="date" value="{iso_date}" {min_attr} {max_attr} tabindex="-1" aria-hidden="true" />
+      <label for="datePicker" class="dateTag">📅 {date_label}</label>
+      <input id="datePicker" type="date" value="{iso_date}" {min_attr} {max_attr} />
     </div>
   </div>
 
@@ -1065,56 +1064,26 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
   var picker = document.getElementById('datePicker');
   if(!picker) return;
 
-  // ═══════════════════════════════════════════════════
-  // فتح الـ date picker - يعمل على Desktop + iOS + Android
-  // ═══════════════════════════════════════════════════
-  window.openDatePicker = function() {{
-    picker.style.position = 'fixed';
-    picker.style.top = '0';
-    picker.style.left = '0';
-    picker.style.opacity = '0';
-    picker.style.width = '1px';
-    picker.style.height = '1px';
-    picker.style.pointerEvents = 'auto';
-
-    // showPicker() - يعمل في Chrome/Edge/Safari الحديث
-    if (typeof picker.showPicker === 'function') {{
-      try {{
-        picker.showPicker();
-        return;
-      }} catch(e) {{}}
-    }}
-
-    // Fallback: focus + click للمتصفحات القديمة
-    picker.focus();
-    picker.click();
-  }};
-
-  // ═══════════════════════════════════════════════════
-  // التحقق من التاريخ وإعادة التوجيه للـ today
-  // ═══════════════════════════════════════════════════
-  function checkAndRedirectToToday() {{
+  // التحقق من التاريخ وإعادة التوجيه
+  function checkAndRedirectToToday(){{
     var path = window.location.pathname || '/';
     var isNowPage = path.includes('/now');
-
+    
     var dateMatch = path.match(/\/date\/(\\d{{4}})-(\\d{{2}})-(\\d{{2}})\//);
-    if (dateMatch) {{
+    if(dateMatch){{
       var pageDate = dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3];
-
+      
       var now = new Date();
       var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
-      var todayStr = muscatTime.getFullYear() + '-' +
-        String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' +
-        String(muscatTime.getDate()).padStart(2, '0');
-
-      if (pageDate !== todayStr) {{
+      var todayStr = muscatTime.getFullYear() + '-' + 
+                     String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(muscatTime.getDate()).padStart(2, '0');
+      
+      if(pageDate !== todayStr){{
         var isPageLoad = sessionStorage.getItem('pageLoaded');
-        if (isPageLoad) {{
+        if(isPageLoad){{
           sessionStorage.removeItem('pageLoaded');
-          var basePath = path
-            .replace(/\/date\/\\d{{4}}-\\d{{2}}-\\d{{2}}\\/.*$/, '/')
-            .replace(/\/now\/.*$/, '/')
-            .replace(/\/+$/, '');
+          var basePath = path.replace(/\/date\/\\d{{4}}-\\d{{2}}-\\d{{2}}\\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
           window.location.href = isNowPage ? basePath + '/now/' : basePath + '/';
           return true;
         }} else {{
@@ -1125,29 +1094,23 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
     return false;
   }}
 
-  if (checkAndRedirectToToday()) return;
+  if(checkAndRedirectToToday()) return;
 
-  // ═══════════════════════════════════════════════════
-  // عند تغيير التاريخ → انتقل للصفحة المناسبة
-  // ═══════════════════════════════════════════════════
-  picker.addEventListener('change', function() {{
-    if (!picker.value) return;
-
+  // عند تغيير التاريخ - بسيط جداً
+  picker.addEventListener('change', function(){{
+    if(!picker.value) return;
+    
     sessionStorage.removeItem('pageLoaded');
-
+    
     var path = window.location.pathname || '/';
     var isNowPage = path.includes('/now');
-    var base = path
-      .replace(/\/date\/\\d{{4}}-\\d{{2}}-\\d{{2}}\\/.*$/, '/')
-      .replace(/\/now\/.*$/, '/')
-      .replace(/\/+$/, '');
-
+    var base = path.replace(/\/date\/\\d{{4}}-\\d{{2}}-\\d{{2}}\\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+    
     var target = base + '/date/' + picker.value + '/';
-    if (isNowPage) target += 'now/';
-
+    if(isNowPage) target += 'now/';
+    
     window.location.href = target;
   }});
-
 }})();
 
 // ═══════════════════════════════════════════════════
@@ -1394,8 +1357,8 @@ def generate_date_pages_for_month(wb, year: int, month: int, pages_base: str, so
                 dept_cards_html="\n".join(dept_cards_all),
                 cta_url=now_url,
                 sent_time=sent_time,
-                source_name=source_name,
-                last_updated=last_updated,
+                source_name=cached_source_name(curr_key) or source_name,
+        last_updated=last_updated,
                 is_now_page=False,
                 min_date=min_date,
                 max_date=max_date,
@@ -1410,8 +1373,8 @@ def generate_date_pages_for_month(wb, year: int, month: int, pages_base: str, so
                 dept_cards_html="\n".join(dept_cards_now),
                 cta_url=full_url,
                 sent_time=sent_time,
-                source_name=source_name,
-                last_updated=last_updated,
+                source_name=cached_source_name(curr_key) or source_name,
+        last_updated=last_updated,
                 is_now_page=True,
                 min_date=min_date,
                 max_date=max_date,

@@ -4,294 +4,388 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My Schedule - Duty Roster</title>
-  
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
+    :root{
+      --bg1:#f6f8ff;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+
+      --brand1:#1e73ff;
+      --brand2:#00b3ff;
+      --brand3:#2b59ff;
+
+      --shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+      --shadow2: 0 8px 20px rgba(30, 115, 255, 0.18);
+      --radius: 18px;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: radial-gradient(1200px 500px at 50% 0%, rgba(30,115,255,.18), transparent 60%),
+                  radial-gradient(900px 450px at 20% 20%, rgba(0,179,255,.14), transparent 60%),
+                  linear-gradient(180deg, var(--bg1), #ffffff 65%);
       min-height: 100vh;
-      padding: 20px;
+      padding: 16px;
+      color: var(--text);
     }
-    
+
     .container {
-      max-width: 1200px;
+      max-width: 1100px;
       margin: 0 auto;
     }
-    
-    /* Header */
-    .header {
-      background: white;
-      border-radius: 20px 20px 0 0;
-      padding: 30px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+
+    /* Top hero like main page */
+    .hero {
+      border-radius: 26px;
+      padding: 22px 18px;
+      background: linear-gradient(135deg, var(--brand1), var(--brand2));
+      box-shadow: var(--shadow2);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 14px;
     }
-    
-    .header h1 {
-      color: #1e293b;
-      font-size: 32px;
-      margin-bottom: 10px;
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:-60px -80px auto auto;
+      width:260px;
+      height:260px;
+      border-radius:50%;
+      background: rgba(255,255,255,0.14);
+      filter: blur(0px);
     }
-    
-    .header p {
-      color: #64748b;
-      font-size: 16px;
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:auto auto -80px -60px;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background: rgba(255,255,255,0.10);
     }
-    
-    /* Search Box */
+
+    .hero-inner{
+      position:relative;
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .brand {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .brand .logo{
+      width:46px; height:46px;
+      border-radius:14px;
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.25);
+      display:flex; align-items:center; justify-content:center;
+      font-size: 22px;
+    }
+    .brand h1{
+      color:#fff;
+      font-size: 22px;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+    .brand p{
+      color: rgba(255,255,255,0.88);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border: 0;
+      cursor:pointer;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+      user-select:none;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-ghost{
+      background: rgba(255,255,255,0.20);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.28);
+    }
+    .btn-ghost:hover{
+      box-shadow: 0 10px 24px rgba(2,6,23,0.14);
+    }
+
+    .btn-primary{
+      background: #fff;
+      color: #0f172a;
+      box-shadow: 0 12px 28px rgba(2,6,23,0.14);
+    }
+    .btn-primary:hover{
+      transform: translateY(-2px);
+    }
+
+    /* Card shell */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      overflow:hidden;
+    }
+
+    .card-header {
+      padding: 18px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .card-header .title{
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .card-header .subtitle{
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Search area */
     .search-box {
-      background: white;
-      padding: 25px 30px;
-      border-bottom: 1px solid #e5e7eb;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff, #fbfcff);
     }
-    
+
     .search-form {
       display: flex;
-      gap: 15px;
-      max-width: 600px;
+      gap: 10px;
+      max-width: 640px;
       margin: 0 auto;
     }
-    
+
     .search-input {
       flex: 1;
-      padding: 15px 20px;
-      border: 2px solid #e5e7eb;
-      border-radius: 12px;
-      font-size: 16px;
-      transition: all 0.3s;
+      padding: 14px 16px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      font-size: 15px;
+      transition: all 0.25s;
       direction: ltr;
       text-align: left;
+      background:#fff;
     }
-    
+
     .search-input:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+      border-color: rgba(30,115,255,0.7);
+      box-shadow: 0 0 0 4px rgba(30,115,255,0.12);
     }
-    
+
     .search-btn {
-      padding: 15px 40px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--brand3), var(--brand2));
       color: white;
       border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 900;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.25s;
     }
-    
+
     .search-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102,126,234,0.3);
+      box-shadow: 0 10px 24px rgba(30,115,255,0.28);
     }
-    
-    /* Tabs */
-    .tabs {
-      background: white;
-      padding: 0 30px;
-      display: flex;
-      gap: 10px;
-      border-bottom: 2px solid #e5e7eb;
-    }
-    
-    .tab {
-      padding: 15px 25px;
-      background: none;
-      border: none;
-      color: #64748b;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s;
-      position: relative;
-      top: 2px;
-    }
-    
-    .tab.active {
-      color: #667eea;
-      border-bottom-color: #667eea;
-    }
-    
-    .tab:hover:not(.active) {
-      color: #1e293b;
-    }
-    
-    /* Content Area */
+
+    /* Content area */
     .content {
-      background: white;
-      padding: 30px;
-      border-radius: 0 0 20px 20px;
-      min-height: 400px;
+      padding: 18px;
+      min-height: 380px;
     }
-    
+
     .loading {
       text-align: center;
       padding: 60px 20px;
-      color: #64748b;
+      color: var(--muted);
     }
-    
+
     .loading-spinner {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       border: 4px solid #e5e7eb;
-      border-top-color: #667eea;
+      border-top-color: var(--brand1);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
+      margin: 0 auto 18px;
     }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
+      padding: 55px 20px;
     }
-    
-    .empty-state-icon {
-      font-size: 64px;
-      margin-bottom: 20px;
-    }
-    
-    .empty-state h3 {
-      color: #1e293b;
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-    
-    .empty-state p {
-      color: #64748b;
-      font-size: 16px;
-    }
-    
+
+    .empty-state-icon { font-size: 56px; margin-bottom: 14px; }
+    .empty-state h3 { font-size: 20px; margin-bottom: 8px; }
+    .empty-state p { color: var(--muted); font-weight: 600; }
+
     /* Employee Info */
     .employee-info {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, var(--brand3), var(--brand2));
       color: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 25px;
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      box-shadow: 0 10px 24px rgba(30,115,255,0.22);
     }
-    
+
     .employee-details h2 {
-      font-size: 24px;
-      margin-bottom: 5px;
+      font-size: 18px;
+      margin-bottom: 4px;
+      font-weight: 900;
     }
-    
+
     .employee-details p {
-      opacity: 0.9;
-      font-size: 14px;
+      opacity: 0.92;
+      font-size: 13px;
+      font-weight: 700;
     }
-    
+
     .month-nav {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       align-items: center;
     }
-    
+
     .month-nav button {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
       color: white;
       font-size: 18px;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.2s;
     }
-    
-    .month-nav button:hover {
-      background: rgba(255,255,255,0.3);
-    }
-    
+
+    .month-nav button:hover { background: rgba(255,255,255,0.26); }
     .month-nav span {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 900;
       min-width: 150px;
       text-align: center;
     }
-    
+
     /* Calendar */
     .calendar {
       background: white;
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border);
     }
-    
+
     .calendar-header {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       background: #f8fafc;
-      border-bottom: 2px solid #e5e7eb;
+      border-bottom: 2px solid var(--border);
     }
-    
+
     .calendar-header div {
-      padding: 15px;
+      padding: 12px 6px;
       text-align: center;
-      font-weight: 700;
+      font-weight: 900;
       color: #475569;
-      font-size: 14px;
+      font-size: 12px;
     }
-    
+
     .calendar-body {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
     }
-    
+
     .calendar-day {
       aspect-ratio: 1;
-      border: 1px solid #e5e7eb;
-      padding: 10px;
-      position: relative;
-      transition: all 0.3s;
+      border: 1px solid var(--border);
+      padding: 8px;
+      transition: all 0.2s;
+      background:#fff;
     }
-    
-    .calendar-day:hover {
-      background: #f8fafc;
-    }
-    
+
+    .calendar-day:hover { background: #f8fafc; }
+    .calendar-day.empty { background: #fafafa; }
+    .calendar-day.today { box-shadow: inset 0 0 0 2px rgba(30,115,255,0.8); }
+
     .day-number {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #0f172a;
+      margin-bottom: 3px;
     }
-    
+
     .day-shift {
       text-align: center;
-      font-size: 24px;
-      margin: 10px 0;
+      font-size: 20px;
+      margin: 6px 0;
     }
-    
+
     .day-label {
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 900;
       text-align: center;
-      padding: 4px;
-      border-radius: 6px;
+      padding: 4px 6px;
+      border-radius: 10px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    
+
     .day-code {
       font-size: 10px;
       text-align: center;
       color: #64748b;
       margin-top: 4px;
-      font-weight: 600;
+      font-weight: 800;
     }
-    
+
     /* Shift Colors */
     .shift-morning { background: #fef3c7; color: #92400e; }
     .shift-afternoon { background: #fed7aa; color: #9a3412; }
@@ -301,175 +395,165 @@
     .shift-training { background: #dbeafe; color: #1e40af; }
     .shift-standby { background: #fce7f3; color: #9f1239; }
     .shift-other { background: #f3f4f6; color: #6b7280; }
-    
-    .calendar-day.empty {
-      background: #fafafa;
-    }
-    
-    .calendar-day.today {
-      box-shadow: inset 0 0 0 2px #667eea;
-    }
-    
+
     /* Statistics */
     .statistics {
-      margin-top: 30px;
+      margin-top: 16px;
       background: #f8fafc;
-      padding: 25px;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
     }
-    
+
     .statistics h3 {
-      color: #1e293b;
-      font-size: 20px;
-      margin-bottom: 20px;
+      font-size: 16px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       gap: 10px;
+      font-weight: 900;
     }
-    
+
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
     }
-    
+
     .stat-card {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-      transition: all 0.3s;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
     }
-    
+
     .stat-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 22px rgba(2,6,23,0.08);
     }
-    
+
     .stat-label {
-      font-size: 13px;
-      color: #64748b;
-      margin-bottom: 8px;
-      font-weight: 600;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 800;
     }
-    
+
     .stat-value {
-      font-size: 28px;
-      font-weight: 900;
-      color: #1e293b;
+      font-size: 22px;
+      font-weight: 1000;
+      color: #0f172a;
     }
-    
-    .stat-icon {
-      font-size: 20px;
-      margin-left: 8px;
-    }
-    
+
     /* Actions */
     .actions {
       display: flex;
-      gap: 15px;
-      margin-top: 25px;
+      gap: 10px;
+      margin-top: 14px;
       flex-wrap: wrap;
     }
-    
+
     .action-btn {
       flex: 1;
-      min-width: 200px;
-      padding: 15px 25px;
-      border: 2px solid #e5e7eb;
+      min-width: 190px;
+      padding: 12px 14px;
+      border: 2px solid var(--border);
       background: white;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 900;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
     }
-    
+
     .action-btn:hover {
-      border-color: #667eea;
-      color: #667eea;
+      border-color: rgba(30,115,255,0.55);
+      color: var(--brand1);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+      box-shadow: 0 10px 22px rgba(30,115,255,0.14);
     }
-    
+
     .action-btn-primary {
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, var(--brand3), var(--brand2));
       color: white;
       border-color: transparent;
     }
-    
+
     .action-btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102,126,234,0.3);
       border-color: transparent;
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(30,115,255,0.26);
     }
-    
+
     /* Responsive */
     @media (max-width: 768px) {
-      .search-form {
-        flex-direction: column;
-      }
-      
-      .calendar-day {
-        padding: 5px;
-      }
-      
-      .day-shift {
-        font-size: 18px;
-        margin: 5px 0;
-      }
-      
-      .day-label {
-        font-size: 9px;
-      }
-      
-      .employee-info {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-      }
-      
-      .month-nav {
-        width: 100%;
-        justify-content: center;
-      }
+      body{ padding: 12px; }
+      .search-form { flex-direction: column; }
+      .calendar-day { padding: 5px; }
+      .day-shift { font-size: 16px; margin: 4px 0; }
+      .day-label { font-size: 9px; }
+      .month-nav span { min-width: 130px; }
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <h1>🗓️ جدولي الشخصي</h1>
-      <p>اعرض مناوباتك الشهرية بإدخال رقمك الوظيفي</p>
+
+    <!-- HERO TOP (similar vibe to main page) -->
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="brand">
+          <div class="logo">📅</div>
+          <div>
+            <h1>Duty Roster</h1>
+            <p>صفحة الجدول الشخصي</p>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <button class="btn btn-ghost" onclick="goBackToRoster()">⬅ العودة للروستر</button>
+          <a class="btn btn-primary" href="#search">🔍 ابحث الآن</a>
+        </div>
+      </div>
     </div>
-    
-    <!-- Search Box -->
-    <div class="search-box">
-      <form class="search-form" id="searchForm">
-        <input 
-          type="text" 
-          class="search-input" 
-          id="employeeId" 
-          placeholder="أدخل رقمك الوظيفي (مثال: 12345)"
-          pattern="[0-9]+"
-          required
-        >
-        <button type="submit" class="search-btn">📅 عرض المناوبات</button>
-      </form>
-    </div>
-    
-    <!-- Content Area -->
-    <div class="content" id="contentArea">
-      <div class="empty-state">
-        <div class="empty-state-icon">🔍</div>
-        <h3>ابحث عن جدولك</h3>
-        <p>أدخل رقمك الوظيفي أعلاه لعرض مناوباتك الشهرية</p>
+
+    <div class="card">
+      <!-- Header -->
+      <div class="card-header">
+        <div>
+          <div class="title">🗓️ جدولي الشخصي</div>
+          <div class="subtitle">اعرض مناوباتك الشهرية بإدخال رقمك الوظيفي</div>
+        </div>
+      </div>
+
+      <!-- Search Box -->
+      <div class="search-box" id="search">
+        <form class="search-form" id="searchForm">
+          <input
+            type="text"
+            class="search-input"
+            id="employeeId"
+            placeholder="أدخل رقمك الوظيفي (مثال: 12345)"
+            pattern="[0-9]+"
+            required
+          >
+          <button type="submit" class="search-btn">📅 عرض المناوبات</button>
+        </form>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content" id="contentArea">
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <h3>ابحث عن جدولك</h3>
+          <p>أدخل رقمك الوظيفي أعلاه لعرض مناوباتك الشهرية</p>
+        </div>
       </div>
     </div>
   </div>
@@ -478,20 +562,29 @@
     let currentData = null;
     let currentMonth = null;
     let availableMonths = [];
-    
+
+    // ✅ Back button logic (smart)
+    function goBackToRoster(){
+      // If user has history, go back. Otherwise go to site home.
+      const base = location.pathname.includes("/roster-site/") ? "/roster-site/" : "/";
+      if (document.referrer && document.referrer.includes(location.host)) {
+        history.back();
+      } else {
+        location.href = base; // عدّلها إذا صفحتك الرئيسية داخل /now/
+      }
+    }
+
     // Submit form
     document.getElementById('searchForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const empId = document.getElementById('employeeId').value.trim();
-      if (empId) {
-        await loadEmployeeSchedule(empId);
-      }
+      if (empId) await loadEmployeeSchedule(empId);
     });
-    
+
     // Load employee schedule
     async function loadEmployeeSchedule(empId) {
       const contentArea = document.getElementById('contentArea');
-      
+
       // Show loading
       contentArea.innerHTML = `
         <div class="loading">
@@ -499,65 +592,58 @@
           <p>جاري تحميل البيانات...</p>
         </div>
       `;
-      
+
       try {
+        // إذا كانت الصفحة داخل docs/my-schedule/ فـ ../schedules صحيح
         const response = await fetch(`../schedules/${empId}.json`);
-        
-        if (!response.ok) {
-          throw new Error('Not found');
-        }
-        
+
+        if (!response.ok) throw new Error('Not found');
+
         const data = await response.json();
         currentData = data;
+
         availableMonths = Object.keys(data.schedules).sort().reverse();
-        
-        if (availableMonths.length === 0) {
-          throw new Error('No schedules');
-        }
-        
-        // Set current month (latest available)
+        if (availableMonths.length === 0) throw new Error('No schedules');
+
         currentMonth = availableMonths[0];
-        
         renderSchedule();
-        
+
       } catch (error) {
         contentArea.innerHTML = `
           <div class="empty-state">
             <div class="empty-state-icon">❌</div>
             <h3>لم يتم العثور على بيانات</h3>
             <p>الرقم الوظيفي ${empId} غير موجود في النظام</p>
-            <p style="margin-top:10px;font-size:14px;color:#94a3b8;">تأكد من الرقم وحاول مرة أخرى</p>
+            <p style="margin-top:10px;font-size:13px;color:#94a3b8;font-weight:700;">تأكد من الرقم وحاول مرة أخرى</p>
           </div>
         `;
       }
     }
-    
+
     // Render schedule
     function renderSchedule() {
       const schedule = currentData.schedules[currentMonth];
       const [year, month] = currentMonth.split('-').map(Number);
-      
-      // Month names
+
       const monthNames = [
         'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
         'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
       ];
-      
       const monthName = monthNames[month - 1];
+
       const currentMonthIndex = availableMonths.indexOf(currentMonth);
       const hasNext = currentMonthIndex > 0;
       const hasPrev = currentMonthIndex < availableMonths.length - 1;
-      
+
       // Build calendar
       const firstDay = new Date(year, month - 1, 1);
       const lastDay = new Date(year, month, 0);
       const startDayOfWeek = (firstDay.getDay() + 1) % 7; // Adjust for Sunday = 0
       const daysInMonth = lastDay.getDate();
-      
+
       let calendarHTML = '';
       let dayCounter = 1;
-      
-      // Create 6 weeks
+
       for (let week = 0; week < 6; week++) {
         for (let day = 0; day < 7; day++) {
           if ((week === 0 && day < startDayOfWeek) || dayCounter > daysInMonth) {
@@ -565,7 +651,7 @@
           } else {
             const dayData = schedule.find(s => s.day === dayCounter);
             const isToday = isCurrentDay(year, month, dayCounter);
-            
+
             if (dayData) {
               const shiftClass = getShiftClass(dayData.shift_group);
               calendarHTML += `
@@ -573,7 +659,7 @@
                   <div class="day-number">${dayCounter}</div>
                   <div class="day-shift">${getShiftIcon(dayData.shift_group)}</div>
                   <div class="day-label ${shiftClass}">${getShiftName(dayData.shift_group)}</div>
-                  <div class="day-code">${dayData.shift_code}</div>
+                  <div class="day-code">${dayData.shift_code || ''}</div>
                 </div>
               `;
             } else {
@@ -590,99 +676,64 @@
         }
         if (dayCounter > daysInMonth) break;
       }
-      
-      // Calculate statistics
+
       const stats = calculateStatistics(schedule);
-      
-      // Render
+
       document.getElementById('contentArea').innerHTML = `
-        <!-- Employee Info -->
         <div class="employee-info">
           <div class="employee-details">
-            <h2>${currentData.name}</h2>
-            <p>📋 ${currentData.department} • 🆔 ${currentData.id}</p>
+            <h2>${escapeHtml(currentData.name)}</h2>
+            <p>📋 ${escapeHtml(currentData.department)} • 🆔 ${escapeHtml(currentData.id)}</p>
           </div>
+
           <div class="month-nav">
-            <button onclick="changeMonth(-1)" ${!hasPrev ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>→</button>
+            <button onclick="changeMonth(-1)" ${!hasPrev ? 'disabled style="opacity:0.35;cursor:not-allowed"' : ''}>→</button>
             <span>${monthName} ${year}</span>
-            <button onclick="changeMonth(1)" ${!hasNext ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>←</button>
+            <button onclick="changeMonth(1)" ${!hasNext ? 'disabled style="opacity:0.35;cursor:not-allowed"' : ''}>←</button>
           </div>
         </div>
-        
-        <!-- Calendar -->
+
         <div class="calendar">
           <div class="calendar-header">
-            <div>السبت</div>
-            <div>الجمعة</div>
-            <div>الخميس</div>
-            <div>الأربعاء</div>
-            <div>الثلاثاء</div>
-            <div>الاثنين</div>
-            <div>الأحد</div>
+            <div>السبت</div><div>الجمعة</div><div>الخميس</div><div>الأربعاء</div><div>الثلاثاء</div><div>الاثنين</div><div>الأحد</div>
           </div>
           <div class="calendar-body">
             ${calendarHTML}
           </div>
         </div>
-        
-        <!-- Statistics -->
+
         <div class="statistics">
           <h3>📊 الإحصائيات</h3>
           <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-label">أيام العمل</div>
-              <div class="stat-value">${stats.workDays}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">أيام الإجازة</div>
-              <div class="stat-value">${stats.offDays}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">الصباحية</div>
-              <div class="stat-value">${stats.morning}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">المسائية</div>
-              <div class="stat-value">${stats.afternoon}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">الليلية</div>
-              <div class="stat-value">${stats.night}</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">الإجازات السنوية</div>
-              <div class="stat-value">${stats.leaves}</div>
-            </div>
+            <div class="stat-card"><div class="stat-label">أيام العمل</div><div class="stat-value">${stats.workDays}</div></div>
+            <div class="stat-card"><div class="stat-label">أيام الإجازة</div><div class="stat-value">${stats.offDays}</div></div>
+            <div class="stat-card"><div class="stat-label">الصباحية</div><div class="stat-value">${stats.morning}</div></div>
+            <div class="stat-card"><div class="stat-label">المسائية</div><div class="stat-value">${stats.afternoon}</div></div>
+            <div class="stat-card"><div class="stat-label">الليلية</div><div class="stat-value">${stats.night}</div></div>
+            <div class="stat-card"><div class="stat-label">الإجازات السنوية</div><div class="stat-value">${stats.leaves}</div></div>
           </div>
         </div>
-        
-        <!-- Actions -->
+
         <div class="actions">
-          <button class="action-btn action-btn-primary" onclick="downloadPDF()">
-            📥 تحميل PDF
-          </button>
-          <button class="action-btn" onclick="shareSchedule()">
-            🔗 مشاركة الجدول
-          </button>
-          <button class="action-btn" onclick="printSchedule()">
-            🖨️ طباعة
-          </button>
+          <button class="action-btn action-btn-primary" onclick="downloadPDF()">📥 تحميل PDF</button>
+          <button class="action-btn" onclick="shareSchedule()">🔗 مشاركة الجدول</button>
+          <button class="action-btn" onclick="printSchedule()">🖨️ طباعة</button>
+          <button class="action-btn" onclick="goBackToRoster()">⬅ العودة للروستر</button>
         </div>
       `;
     }
-    
+
     // Change month
     function changeMonth(direction) {
       const currentIndex = availableMonths.indexOf(currentMonth);
       const newIndex = currentIndex - direction;
-      
+
       if (newIndex >= 0 && newIndex < availableMonths.length) {
         currentMonth = availableMonths[newIndex];
         renderSchedule();
       }
     }
-    
-    // Helper functions
+
     function getShiftIcon(group) {
       const icons = {
         'Morning': '☀️',
@@ -697,7 +748,7 @@
       };
       return icons[group] || '❓';
     }
-    
+
     function getShiftName(group) {
       const names = {
         'Morning': 'صباحية',
@@ -712,7 +763,7 @@
       };
       return names[group] || 'أخرى';
     }
-    
+
     function getShiftClass(group) {
       const classes = {
         'Morning': 'shift-morning',
@@ -727,24 +778,17 @@
       };
       return classes[group] || 'shift-other';
     }
-    
+
     function isCurrentDay(year, month, day) {
       const today = new Date();
-      return today.getFullYear() === year && 
-             today.getMonth() + 1 === month && 
+      return today.getFullYear() === year &&
+             today.getMonth() + 1 === month &&
              today.getDate() === day;
     }
-    
+
     function calculateStatistics(schedule) {
-      const stats = {
-        workDays: 0,
-        offDays: 0,
-        morning: 0,
-        afternoon: 0,
-        night: 0,
-        leaves: 0
-      };
-      
+      const stats = { workDays:0, offDays:0, morning:0, afternoon:0, night:0, leaves:0 };
+
       schedule.forEach(day => {
         if (day.shift_group === 'Morning') stats.morning++;
         else if (day.shift_group === 'Afternoon') stats.afternoon++;
@@ -752,37 +796,43 @@
         else if (day.shift_group === 'Off Day') stats.offDays++;
         else if (day.shift_group === 'Annual Leave' || day.shift_group === 'Sick Leave') stats.leaves++;
       });
-      
+
       stats.workDays = stats.morning + stats.afternoon + stats.night;
-      
       return stats;
     }
-    
-    // Action functions (placeholders)
-    function downloadPDF() {
-      alert('قريباً: سيتم تحميل الجدول كـ PDF');
+
+    // Safe text
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
     }
-    
+
+    // Action functions (placeholders)
+    function downloadPDF() { alert('قريباً: سيتم تحميل الجدول كـ PDF'); }
+
     function shareSchedule() {
       const empId = currentData.id;
-      const url = `${window.location.origin}/roster-site/my-schedule/?emp=${empId}`;
-      
+      const base = location.pathname.includes("/roster-site/") ? "/roster-site/" : "/";
+      const url = `${window.location.origin}${base}my-schedule/?emp=${encodeURIComponent(empId)}`;
+
       if (navigator.share) {
         navigator.share({
           title: 'جدولي - Duty Roster',
           text: `جدول مناوبات ${currentData.name}`,
-          url: url
+          url
         });
       } else {
         navigator.clipboard.writeText(url);
         alert('تم نسخ الرابط! يمكنك مشاركته الآن');
       }
     }
-    
-    function printSchedule() {
-      window.print();
-    }
-    
+
+    function printSchedule() { window.print(); }
+
     // Auto-load if emp parameter exists
     const urlParams = new URLSearchParams(window.location.search);
     const empParam = urlParams.get('emp');

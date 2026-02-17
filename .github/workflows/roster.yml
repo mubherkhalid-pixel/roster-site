@@ -94,30 +94,45 @@ jobs:
                   
                   print(f"Muscat time: {now.strftime('%H:%M')}")
                   
-                  # Scheduled email times (6:00, 15:00, 21:00)
-                  scheduled_hours = [6, 15, 21]
-                  is_scheduled_time = False
+                  # Mandatory update times (always update site + send email for shift times)
+                  # 05:00 - Send Morning email + update
+                  # 06:00 - Update only
+                  # 13:00 (1 PM) - Send Afternoon email + update  
+                  # 14:00 (2 PM) - Update only
+                  # 20:00 (8 PM) - Send Night email + update
+                  # 21:00 (9 PM) - Update only
+                  # 00:00 (midnight) - Daily update (new day)
                   
-                  for scheduled_hour in scheduled_hours:
-                      if current_hour == scheduled_hour and current_minute < 20:
-                          is_scheduled_time = True
-                          print(f"Scheduled email time: {scheduled_hour}:00")
-                          break
+                  mandatory_update_hours = [0, 5, 6, 13, 14, 20, 21]
+                  email_hours = [5, 13, 20]
                   
-                  should_process = changed or is_scheduled_time
+                  is_mandatory_update = (current_hour in mandatory_update_hours) and (current_minute < 20)
+                  is_email_time = (current_hour in email_hours) and (current_minute < 20)
+                  
+                  should_process = changed or is_mandatory_update
+                  should_send_email = changed or is_email_time
+                  
+                  print(f"File changed: {changed}")
+                  print(f"Mandatory update time: {is_mandatory_update}")
+                  print(f"Email time: {is_email_time}")
+                  print(f"Should process: {should_process}")
+                  print(f"Should send email: {should_send_email}")
                   
                   with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
                       f.write(f"changed={str(changed).lower()}\n")
                       f.write(f"should_process={str(should_process).lower()}\n")
-                      f.write(f"is_scheduled_email={str(is_scheduled_time).lower()}\n")
+                      f.write(f"should_send_email={str(should_send_email).lower()}\n")
+                      f.write(f"is_scheduled_email={str(is_email_time).lower()}\n")
                       f.write(f"filename={current_filename}\n")
                       f.write(f"old_filename={old_filename}\n")
                   
                   print("=" * 60)
                   print(f"Results:")
                   print(f"  File changed: {changed}")
-                  print(f"  Scheduled time: {is_scheduled_time}")
+                  print(f"  Mandatory update: {is_mandatory_update}")
+                  print(f"  Email time: {is_email_time}")
                   print(f"  Should process: {should_process}")
+                  print(f"  Should send email: {should_send_email}")
                   print("=" * 60)
                   
               except requests.exceptions.Timeout:
@@ -144,6 +159,7 @@ jobs:
           echo "File changed: ${{ steps.check_changes.outputs.changed }}"
           echo "Scheduled email: ${{ steps.check_changes.outputs.is_scheduled_email }}"
           echo "Should process: ${{ steps.check_changes.outputs.should_process }}"
+          echo "Should send email: ${{ steps.check_changes.outputs.should_send_email }}"
           echo "Current file: ${{ steps.check_changes.outputs.filename }}"
           echo "Previous file: ${{ steps.check_changes.outputs.old_filename }}"
           echo "========================================"
@@ -166,7 +182,7 @@ jobs:
           if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
             echo "Processing file (change detected): ${{ steps.check_changes.outputs.filename }}"
           else
-            echo "Processing file (scheduled email): ${{ steps.check_changes.outputs.filename }}"
+            echo "Processing file (scheduled update): ${{ steps.check_changes.outputs.filename }}"
           fi
           python generate_and_send.py
           echo "Processing and email completed successfully"
@@ -192,7 +208,7 @@ jobs:
             if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
               git commit -m "Update roster: ${{ steps.check_changes.outputs.filename }}"
             else
-              git commit -m "Scheduled email update"
+              git commit -m "Scheduled update"
             fi
             git push
             echo "Updates pushed to GitHub"

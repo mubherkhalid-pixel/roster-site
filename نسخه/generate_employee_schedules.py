@@ -391,43 +391,67 @@ def generate_schedule_index():
 # =========================
 # Main
 # =========================
+def add_months(year, month, delta):
+    """إضافة/طرح أشهر مع معالجة تجاوز السنة"""
+    month += delta
+    while month > 12:
+        month -= 12
+        year += 1
+    while month < 1:
+        month += 12
+        year -= 1
+    return year, month
+
+
 def main():
     parser = argparse.ArgumentParser(description='Generate employee schedules from roster Excel')
-    parser.add_argument('--month', help='Month to process (YYYY-MM format)', default=None)
+    parser.add_argument('--month', help='Month to process (YYYY-MM). Leave empty to process prev+curr+next automatically.', default=None)
     args = parser.parse_args()
-    
+
     if not EXCEL_URL:
         raise RuntimeError("❌ EXCEL_URL environment variable is missing")
-    
+
     now = datetime.now(TZ)
-    
+
     if args.month:
+        # شهر محدد يدوياً
         try:
             year, month = [int(x) for x in args.month.split('-')]
-        except:
+            months_to_process = [(year, month)]
+        except Exception:
             raise RuntimeError('❌ Invalid month format. Use YYYY-MM (e.g., 2026-03)')
     else:
-        year = now.year
-        month = now.month
-    
+        # تلقائي: الشهر السابق + الحالي + القادم
+        prev_y, prev_m = add_months(now.year, now.month, -1)
+        curr_y, curr_m = now.year, now.month
+        next_y, next_m = add_months(now.year, now.month, +1)
+        months_to_process = [
+            (prev_y, prev_m),
+            (curr_y, curr_m),
+            (next_y, next_m),
+        ]
+
     print("=" * 60)
     print(f"🗓️  Employee Schedule Generator")
-    print(f"📅 Processing: {year}-{month:02d}")
+    print(f"📅 Months to process: {[f'{y}-{m:02d}' for y, m in months_to_process]}")
     print("=" * 60)
-    
-    # تحميل Excel
+
+    # تحميل Excel مرة واحدة فقط
     data = download_excel(EXCEL_URL)
     wb = load_workbook(BytesIO(data), data_only=True)
-    
-    # توليد الجداول
-    generate_employee_schedules(wb, year, month)
+
+    # توليد الجداول لكل الأشهر
+    for year, month in months_to_process:
+        print(f"\n{'─'*40}")
+        generate_employee_schedules(wb, year, month)
+
     generate_schedule_index()
-    
+
     print("\n" + "=" * 60)
     print("✅ All done!")
     print("=" * 60)
     print(f"\n📂 Files saved to: docs/schedules/")
-    print(f"🌐 Access at: https://your-site.github.io/roster-site/my-schedule/")
+    print(f"🌐 Access at: https://your-site.github.io/roster-site/schedules/")
 
 
 if __name__ == "__main__":

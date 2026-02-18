@@ -590,11 +590,38 @@ function dlPDF(){
         doc.setDrawColor(...RULE);
       }
 
-      // Day number — bigger, top-right
-      doc.setTextColor(...INK);
-      doc.setFontSize(15);          // <-- BIG day number
+      // ── Day number — elegant circle badge, top-right ──────
+      const numStr = String(dc);
+      const badgeR = 5.5;
+      const badgeX = cx + CW - badgeR - 2.2;
+      const badgeY = cy + badgeR + 2;
+
+      if(isToday){
+        // Solid navy filled circle for today
+        doc.setFillColor(...NAVY);
+        doc.setDrawColor(...NAVY);
+        doc.circle(badgeX, badgeY, badgeR, 'F');
+        doc.setTextColor(...WHITE);
+      } else if(sh){
+        // White circle with coloured ring
+        doc.setFillColor(...WHITE);
+        doc.setDrawColor(...WHITE);
+        doc.circle(badgeX, badgeY, badgeR, 'F');
+        doc.setDrawColor(...sh.fg);
+        doc.setLineWidth(0.55);
+        doc.circle(badgeX, badgeY, badgeR, 'D');
+        doc.setLineWidth(0.22);
+        doc.setTextColor(...sh.fg);
+      } else {
+        doc.setFillColor(235,237,242);
+        doc.setDrawColor(235,237,242);
+        doc.circle(badgeX, badgeY, badgeR, 'F');
+        doc.setTextColor(...INK);
+      }
+      doc.setFontSize(dc > 9 ? 9 : 10);
       doc.setFont(undefined,'bold');
-      doc.text(String(dc), cx+CW-3, cy+10, {align:'right'});
+      doc.text(numStr, badgeX, badgeY + 3.1, {align:'center'});
+      doc.setDrawColor(...RULE);
 
       // Shift code — centred, very big, strong colour
       if(dd){

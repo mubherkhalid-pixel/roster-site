@@ -1,845 +1,559 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Schedule - Duty Roster</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>My Schedule</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *{box-sizing:border-box;margin:0;padding:0}
 
     :root{
-      --bg1:#f6f8ff;
-      --card:#ffffff;
+      --bg:#f0f4ff;
+      --card:#fff;
       --text:#0f172a;
       --muted:#64748b;
       --border:#e5e7eb;
-
-      --brand1:#1e73ff;
-      --brand2:#00b3ff;
-      --brand3:#2b59ff;
-
-      --shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
-      --shadow2: 0 8px 20px rgba(30, 115, 255, 0.18);
-      --radius: 18px;
+      --b1:#1e73ff;
+      --b2:#00b3ff;
+      --b3:#2b59ff;
+      --r:14px;
     }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: radial-gradient(1200px 500px at 50% 0%, rgba(30,115,255,.18), transparent 60%),
-                  radial-gradient(900px 450px at 20% 20%, rgba(0,179,255,.14), transparent 60%),
-                  linear-gradient(180deg, var(--bg1), #ffffff 65%);
-      min-height: 100vh;
-      padding: 16px;
-      color: var(--text);
+    body{
+      font-family:'Segoe UI',system-ui,sans-serif;
+      background:radial-gradient(ellipse 120% 40% at 50% 0%,rgba(30,115,255,.15),transparent 60%),
+                 linear-gradient(180deg,var(--bg),#fff 70%);
+      min-height:100vh;
+      padding:8px;
+      color:var(--text);
+      font-size:13px;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
+    .wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
 
-    /* Top hero like main page */
-    .hero {
-      border-radius: 26px;
-      padding: 22px 18px;
-      background: linear-gradient(135deg, var(--brand1), var(--brand2));
-      box-shadow: var(--shadow2);
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 14px;
+    /* ── HERO ── */
+    .hero{
+      background:linear-gradient(135deg,var(--b3),var(--b2));
+      border-radius:var(--r);
+      padding:10px 12px;
+      position:relative;overflow:hidden;
     }
-
     .hero::before{
-      content:"";
-      position:absolute;
-      inset:-60px -80px auto auto;
-      width:260px;
-      height:260px;
+      content:"";position:absolute;
+      top:-40px;right:-40px;
+      width:120px;height:120px;
       border-radius:50%;
-      background: rgba(255,255,255,0.14);
-      filter: blur(0px);
+      background:rgba(255,255,255,.12);
     }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      inset:auto auto -80px -60px;
-      width:220px;
-      height:220px;
-      border-radius:50%;
-      background: rgba(255,255,255,0.10);
-    }
-
-    .hero-inner{
+    .hero-row{
       position:relative;
-      display:flex;
-      gap:14px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
     }
+    .brand{display:flex;align-items:center;gap:8px}
+    .logo{
+      width:34px;height:34px;border-radius:10px;
+      background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.25);
+      display:flex;align-items:center;justify-content:center;font-size:16px;
+      flex-shrink:0;
+    }
+    .brand-text h1{color:#fff;font-size:14px;font-weight:800;line-height:1.2}
+    .brand-text p{color:rgba(255,255,255,.85);font-size:10px;font-weight:600}
 
-    .brand {
-      display:flex;
-      gap:12px;
-      align-items:center;
-    }
-    .brand .logo{
-      width:46px; height:46px;
-      border-radius:14px;
-      background: rgba(255,255,255,0.22);
-      border: 1px solid rgba(255,255,255,0.25);
-      display:flex; align-items:center; justify-content:center;
-      font-size: 22px;
-    }
-    .brand h1{
+    .hero-btns{display:flex;gap:6px;align-items:center}
+
+    /* lang toggle */
+    .lang-btn{
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.3);
       color:#fff;
-      font-size: 22px;
-      line-height: 1.2;
-      margin-bottom: 2px;
-    }
-    .brand p{
-      color: rgba(255,255,255,0.88);
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .top-actions{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      border: 0;
-      cursor:pointer;
-      padding: 12px 14px;
-      border-radius: 14px;
-      font-weight: 800;
-      font-size: 14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
-      user-select:none;
-      text-decoration:none;
+      border-radius:8px;
+      padding:4px 9px;
+      font-size:11px;font-weight:700;
+      cursor:pointer;transition:background .2s;
       white-space:nowrap;
     }
+    .lang-btn:hover{background:rgba(255,255,255,.28)}
 
-    .btn:active{ transform: translateY(1px); }
+    .back-btn{
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.3);
+      color:#fff;border-radius:8px;
+      padding:4px 9px;font-size:11px;font-weight:700;
+      cursor:pointer;transition:background .2s;white-space:nowrap;
+    }
+    .back-btn:hover{background:rgba(255,255,255,.28)}
 
-    .btn-ghost{
-      background: rgba(255,255,255,0.20);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.28);
-    }
-    .btn-ghost:hover{
-      box-shadow: 0 10px 24px rgba(2,6,23,0.14);
-    }
-
-    .btn-primary{
-      background: #fff;
-      color: #0f172a;
-      box-shadow: 0 12px 28px rgba(2,6,23,0.14);
-    }
-    .btn-primary:hover{
-      transform: translateY(-2px);
-    }
-
-    /* Card shell */
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
+    /* ── CARD ── */
+    .card{
+      background:var(--card);
+      border-radius:var(--r);
+      box-shadow:0 4px 20px rgba(2,6,23,.07);
+      border:1px solid var(--border);
       overflow:hidden;
     }
 
-    .card-header {
-      padding: 18px;
-      border-bottom: 1px solid var(--border);
+    /* ── SEARCH ── */
+    .search-area{
+      padding:10px 12px;
+      background:linear-gradient(180deg,#fff,#fbfcff);
+      border-bottom:1px solid var(--border);
+    }
+    .search-row{display:flex;gap:7px}
+    .search-input{
+      flex:1;min-width:0;
+      padding:9px 12px;
+      border:1.5px solid var(--border);
+      border-radius:10px;
+      font-size:13px;
+      direction:ltr;
+      background:#fff;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    .search-input:focus{
+      outline:none;
+      border-color:rgba(30,115,255,.7);
+      box-shadow:0 0 0 3px rgba(30,115,255,.1);
+    }
+    .search-btn{
+      padding:9px 14px;
+      background:linear-gradient(135deg,var(--b3),var(--b2));
+      color:#fff;border:none;border-radius:10px;
+      font-size:12px;font-weight:800;
+      cursor:pointer;transition:transform .2s,box-shadow .2s;
+      white-space:nowrap;
+    }
+    .search-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(30,115,255,.28)}
+
+    /* ── CONTENT ── */
+    .content{padding:10px}
+    .empty-state{text-align:center;padding:30px 16px;color:var(--muted)}
+    .empty-icon{font-size:36px;margin-bottom:8px}
+    .empty-state h3{font-size:14px;margin-bottom:4px;color:var(--text)}
+    .empty-state p{font-size:11px}
+
+    /* ── EMPLOYEE INFO BAR ── */
+    .emp-bar{
+      background:linear-gradient(135deg,var(--b3),var(--b2));
+      color:#fff;
+      border-radius:10px;
+      padding:8px 10px;
+      margin-bottom:8px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
+      gap:8px;
+      box-shadow:0 4px 14px rgba(30,115,255,.2);
     }
+    .emp-info h2{font-size:13px;font-weight:800;line-height:1.3}
+    .emp-info p{font-size:10px;opacity:.9;margin-top:1px}
+    .month-nav{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .month-nav button{
+      width:28px;height:28px;
+      border-radius:50%;
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.25);
+      color:#fff;font-size:14px;
+      cursor:pointer;transition:background .2s;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .month-nav button:hover{background:rgba(255,255,255,.3)}
+    .month-nav span{font-size:11px;font-weight:800;min-width:80px;text-align:center}
 
-    .card-header .title{
-      font-size: 18px;
-      font-weight: 900;
-    }
-    .card-header .subtitle{
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-
-    /* Search area */
-    .search-box {
-      padding: 16px 18px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, #ffffff, #fbfcff);
-    }
-
-    .search-form {
-      display: flex;
-      gap: 10px;
-      max-width: 640px;
-      margin: 0 auto;
-    }
-
-    .search-input {
-      flex: 1;
-      padding: 14px 16px;
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      font-size: 15px;
-      transition: all 0.25s;
-      direction: ltr;
-      text-align: left;
+    /* ── CALENDAR ── */
+    .calendar{
       background:#fff;
+      border-radius:10px;
+      border:1px solid var(--border);
+      overflow:hidden;
+      margin-bottom:8px;
     }
-
-    .search-input:focus {
-      outline: none;
-      border-color: rgba(30,115,255,0.7);
-      box-shadow: 0 0 0 4px rgba(30,115,255,0.12);
+    .cal-head{
+      display:grid;grid-template-columns:repeat(7,1fr);
+      background:#f8fafc;
+      border-bottom:1.5px solid var(--border);
     }
-
-    .search-btn {
-      padding: 14px 18px;
-      background: linear-gradient(135deg, var(--brand3), var(--brand2));
-      color: white;
-      border: none;
-      border-radius: 14px;
-      font-size: 15px;
-      font-weight: 900;
-      cursor: pointer;
-      transition: all 0.25s;
+    .cal-head div{
+      padding:6px 2px;
+      text-align:center;
+      font-weight:800;
+      color:#475569;
+      font-size:9px;
     }
+    .cal-body{display:grid;grid-template-columns:repeat(7,1fr)}
 
-    .search-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(30,115,255,0.28);
-    }
-
-    /* Content area */
-    .content {
-      padding: 18px;
-      min-height: 380px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-    }
-
-    .loading-spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #e5e7eb;
-      border-top-color: var(--brand1);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 18px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .empty-state {
-      text-align: center;
-      padding: 55px 20px;
-    }
-
-    .empty-state-icon { font-size: 56px; margin-bottom: 14px; }
-    .empty-state h3 { font-size: 20px; margin-bottom: 8px; }
-    .empty-state p { color: var(--muted); font-weight: 600; }
-
-    /* Employee Info */
-    .employee-info {
-      background: linear-gradient(135deg, var(--brand3), var(--brand2));
-      color: white;
-      padding: 16px;
-      border-radius: 16px;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      box-shadow: 0 10px 24px rgba(30,115,255,0.22);
-    }
-
-    .employee-details h2 {
-      font-size: 18px;
-      margin-bottom: 4px;
-      font-weight: 900;
-    }
-
-    .employee-details p {
-      opacity: 0.92;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .month-nav {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .month-nav button {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .month-nav button:hover { background: rgba(255,255,255,0.26); }
-    .month-nav span {
-      font-size: 15px;
-      font-weight: 900;
-      min-width: 150px;
-      text-align: center;
-    }
-
-    /* Calendar */
-    .calendar {
-      background: white;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    .calendar-header {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      background: #f8fafc;
-      border-bottom: 2px solid var(--border);
-    }
-
-    .calendar-header div {
-      padding: 12px 6px;
-      text-align: center;
-      font-weight: 900;
-      color: #475569;
-      font-size: 12px;
-    }
-
-    .calendar-body {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-    }
-
-    .calendar-day {
-      aspect-ratio: 1;
-      border: 1px solid var(--border);
-      padding: 8px;
-      transition: all 0.2s;
+    .cal-day{
+      border:1px solid #f0f0f0;
+      padding:3px 2px;
       background:#fff;
+      min-height:52px;
+      display:flex;flex-direction:column;align-items:center;
     }
+    .cal-day.empty{background:#fafafa}
+    .cal-day.today{box-shadow:inset 0 0 0 2px var(--b1)}
 
-    .calendar-day:hover { background: #f8fafc; }
-    .calendar-day.empty { background: #fafafa; }
-    .calendar-day.today { box-shadow: inset 0 0 0 2px rgba(30,115,255,0.8); }
-
-    .day-number {
-      font-size: 12px;
-      font-weight: 900;
-      color: #0f172a;
-      margin-bottom: 3px;
+    .d-num{font-size:10px;font-weight:900;color:#0f172a;margin-bottom:1px}
+    .d-icon{font-size:14px;line-height:1;margin:1px 0}
+    .d-lbl{
+      font-size:7.5px;font-weight:800;text-align:center;
+      padding:1px 3px;border-radius:5px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      max-width:100%;
     }
+    .d-code{font-size:7px;color:var(--muted);font-weight:700;margin-top:1px}
 
-    .day-shift {
-      text-align: center;
-      font-size: 20px;
-      margin: 6px 0;
+    .s-morning{background:#fef3c7;color:#92400e}
+    .s-afternoon{background:#fed7aa;color:#9a3412}
+    .s-night{background:#ddd6fe;color:#5b21b6}
+    .s-off{background:#f1f5f9;color:#475569}
+    .s-leave{background:#dcfce7;color:#166534}
+    .s-training{background:#dbeafe;color:#1e40af}
+    .s-standby{background:#fce7f3;color:#9f1239}
+    .s-other{background:#f3f4f6;color:#6b7280}
+
+    /* ── STATS ── */
+    .stats{
+      background:#f8fafc;
+      border-radius:10px;
+      border:1px solid var(--border);
+      padding:8px;
+      margin-bottom:8px;
     }
-
-    .day-label {
-      font-size: 10px;
-      font-weight: 900;
-      text-align: center;
-      padding: 4px 6px;
-      border-radius: 10px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .stats-title{
+      font-size:10px;font-weight:800;
+      color:var(--muted);
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:.5px;
     }
-
-    .day-code {
-      font-size: 10px;
-      text-align: center;
-      color: #64748b;
-      margin-top: 4px;
-      font-weight: 800;
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:4px;
     }
-
-    /* Shift Colors */
-    .shift-morning { background: #fef3c7; color: #92400e; }
-    .shift-afternoon { background: #fed7aa; color: #9a3412; }
-    .shift-night { background: #ddd6fe; color: #5b21b6; }
-    .shift-off { background: #f1f5f9; color: #475569; }
-    .shift-leave { background: #dcfce7; color: #166534; }
-    .shift-training { background: #dbeafe; color: #1e40af; }
-    .shift-standby { background: #fce7f3; color: #9f1239; }
-    .shift-other { background: #f3f4f6; color: #6b7280; }
-
-    /* Statistics */
-    .statistics {
-      margin-top: 16px;
-      background: #f8fafc;
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
+    @media(max-width:360px){
+      .stats-grid{grid-template-columns:repeat(3,1fr)}
     }
-
-    .statistics h3 {
-      font-size: 16px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 900;
+    .stat-box{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:7px;
+      padding:5px 4px;
+      text-align:center;
     }
+    .stat-lbl{font-size:8px;color:var(--muted);font-weight:700;margin-bottom:2px}
+    .stat-val{font-size:16px;font-weight:900;color:var(--text);line-height:1}
 
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 10px;
+    /* ── ACTIONS ── */
+    .actions{display:flex;gap:5px;flex-wrap:wrap}
+    .act-btn{
+      flex:1;min-width:0;
+      padding:7px 8px;
+      border:1.5px solid var(--border);
+      background:#fff;
+      border-radius:9px;
+      font-size:10px;font-weight:800;
+      cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:4px;
+      white-space:nowrap;
     }
+    .act-btn:hover{border-color:rgba(30,115,255,.5);color:var(--b1);transform:translateY(-1px)}
+    .act-primary{
+      background:linear-gradient(135deg,var(--b3),var(--b2));
+      color:#fff;border-color:transparent;
+    }
+    .act-primary:hover{color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(30,115,255,.26)}
 
-    .stat-card {
-      background: white;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      transition: all 0.2s;
+    /* Loading */
+    .loading{text-align:center;padding:30px 16px;color:var(--muted)}
+    .spinner{
+      width:32px;height:32px;
+      border:3px solid #e5e7eb;
+      border-top-color:var(--b1);
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin:0 auto 10px;
     }
-
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 22px rgba(2,6,23,0.08);
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      font-weight: 800;
-    }
-
-    .stat-value {
-      font-size: 22px;
-      font-weight: 1000;
-      color: #0f172a;
-    }
-
-    /* Actions */
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-
-    .action-btn {
-      flex: 1;
-      min-width: 190px;
-      padding: 12px 14px;
-      border: 2px solid var(--border);
-      background: white;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 900;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .action-btn:hover {
-      border-color: rgba(30,115,255,0.55);
-      color: var(--brand1);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 22px rgba(30,115,255,0.14);
-    }
-
-    .action-btn-primary {
-      background: linear-gradient(135deg, var(--brand3), var(--brand2));
-      color: white;
-      border-color: transparent;
-    }
-
-    .action-btn-primary:hover {
-      border-color: transparent;
-      color: #fff;
-      box-shadow: 0 12px 26px rgba(30,115,255,0.26);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      body{ padding: 12px; }
-      .search-form { flex-direction: column; }
-      .calendar-day { padding: 5px; }
-      .day-shift { font-size: 16px; margin: 4px 0; }
-      .day-label { font-size: 9px; }
-      .month-nav span { min-width: 130px; }
-    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading p{font-size:11px}
   </style>
 </head>
-
 <body>
-  <div class="container">
+<div class="wrap">
 
-    <!-- HERO TOP (similar vibe to main page) -->
-    <div class="hero">
-      <div class="hero-inner">
-        <div class="brand">
-          <div class="logo">📅</div>
-          <div>
-            <h1>Duty Roster</h1>
-            <p>صفحة الجدول الشخصي</p>
-          </div>
-        </div>
-
-        <div class="top-actions">
-          <button class="btn btn-ghost" onclick="goBackToRoster()">⬅ العودة للروستر</button>
-          <a class="btn btn-primary" href="#search">🔍 ابحث الآن</a>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-row">
+      <div class="brand">
+        <div class="logo">📅</div>
+        <div class="brand-text">
+          <h1 id="ttl">My Schedule</h1>
+          <p id="sub">Enter your Employee ID to view schedule</p>
         </div>
       </div>
-    </div>
-
-    <div class="card">
-      <!-- Header -->
-      <div class="card-header">
-        <div>
-          <div class="title">🗓️ جدولي الشخصي</div>
-          <div class="subtitle">اعرض مناوباتك الشهرية بإدخال رقمك الوظيفي</div>
-        </div>
-      </div>
-
-      <!-- Search Box -->
-      <div class="search-box" id="search">
-        <form class="search-form" id="searchForm">
-          <input
-            type="text"
-            class="search-input"
-            id="employeeId"
-            placeholder="أدخل رقمك الوظيفي (مثال: 12345)"
-            pattern="[0-9]+"
-            required
-          >
-          <button type="submit" class="search-btn">📅 عرض المناوبات</button>
-        </form>
-      </div>
-
-      <!-- Content Area -->
-      <div class="content" id="contentArea">
-        <div class="empty-state">
-          <div class="empty-state-icon">🔍</div>
-          <h3>ابحث عن جدولك</h3>
-          <p>أدخل رقمك الوظيفي أعلاه لعرض مناوباتك الشهرية</p>
-        </div>
+      <div class="hero-btns">
+        <button class="lang-btn" onclick="toggleLang()">العربية</button>
+        <button class="back-btn" onclick="goBack()">← Back</button>
       </div>
     </div>
   </div>
 
-  <script>
-    let currentData = null;
-    let currentMonth = null;
-    let availableMonths = [];
+  <!-- MAIN CARD -->
+  <div class="card">
+    <div class="search-area">
+      <form class="search-row" id="searchForm">
+        <input type="text" class="search-input" id="empId"
+          placeholder="Employee ID (e.g. 12345)"
+          pattern="[0-9]+" required>
+        <button type="submit" class="search-btn" id="sbtn">📅 View</button>
+      </form>
+    </div>
+    <div class="content" id="area">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3 id="e1">Search your schedule</h3>
+        <p id="e2">Enter your Employee ID above</p>
+      </div>
+    </div>
+  </div>
 
-    // ✅ Back button logic (smart)
-    function goBackToRoster(){
-      // If user has history, go back. Otherwise go to site home.
-      const base = location.pathname.includes("/roster-site/") ? "/roster-site/" : "/";
-      if (document.referrer && document.referrer.includes(location.host)) {
-        history.back();
-      } else {
-        location.href = base; // عدّلها إذا صفحتك الرئيسية داخل /now/
-      }
+</div>
+
+<script>
+  let data=null, month=null, months=[], lang='en';
+
+  /* ── TRANSLATIONS ── */
+  const T={
+    en:{
+      title:'My Schedule', sub:'Enter your Employee ID to view schedule',
+      back:'← Back', langBtn:'العربية',
+      ph:'Employee ID (e.g. 12345)', sbtn:'📅 View',
+      e1:'Search your schedule', e2:'Enter your Employee ID above',
+      loading:'Loading...', notFound:'Employee not found',
+      notFoundSub:'ID not in the system. Please check and try again.',
+      statsTitle:'STATISTICS',
+      workDays:'Work Days', offDays:'Off Days',
+      morning:'Morning', afternoon:'Afternoon', night:'Night', leaves:'Leaves',
+      pdf:'📥 PDF', share:'🔗 Share', print:'🖨️ Print',
+      shiftNames:{Morning:'Morning',Afternoon:'Afternoon',Night:'Night',
+        'Off Day':'Off','Annual Leave':'Leave','Sick Leave':'Sick',
+        Training:'Training',Standby:'Standby',Other:'Other'},
+      days:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+      months:['January','February','March','April','May','June',
+              'July','August','September','October','November','December']
+    },
+    ar:{
+      title:'جدولي', sub:'أدخل رقمك الوظيفي لعرض الجدول',
+      back:'رجوع ←', langBtn:'English',
+      ph:'الرقم الوظيفي (مثال: 12345)', sbtn:'📅 عرض',
+      e1:'ابحث عن جدولك', e2:'أدخل رقمك الوظيفي أعلاه',
+      loading:'جاري التحميل...', notFound:'لم يُعثر على موظف',
+      notFoundSub:'الرقم غير موجود. تحقق وأعد المحاولة.',
+      statsTitle:'الإحصائيات',
+      workDays:'أيام عمل', offDays:'إجازات',
+      morning:'صباح', afternoon:'مساء', night:'ليل', leaves:'إجازات سنوية',
+      pdf:'📥 PDF', share:'🔗 مشاركة', print:'🖨️ طباعة',
+      shiftNames:{Morning:'صباحية',Afternoon:'مسائية',Night:'ليلية',
+        'Off Day':'إجازة','Annual Leave':'سنوية','Sick Leave':'مرضية',
+        Training:'تدريب',Standby:'احتياطي',Other:'أخرى'},
+      days:['الأح','الاث','الثل','الأر','الخم','الجم','السب'],
+      months:['يناير','فبراير','مارس','أبريل','مايو','يونيو',
+              'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
     }
+  };
 
-    // Submit form
-    document.getElementById('searchForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const empId = document.getElementById('employeeId').value.trim();
-      if (empId) await loadEmployeeSchedule(empId);
-    });
+  function t(k){return T[lang][k]}
 
-    // Load employee schedule
-    async function loadEmployeeSchedule(empId) {
-      const contentArea = document.getElementById('contentArea');
+  function applyLangUI(){
+    const dir=lang==='ar'?'rtl':'ltr';
+    document.documentElement.lang=lang;
+    document.documentElement.dir=dir;
+    document.getElementById('ttl').textContent=t('title');
+    document.getElementById('sub').textContent=t('sub');
+    document.querySelector('.back-btn').textContent=t('back');
+    document.querySelector('.lang-btn').textContent=t('langBtn');
+    document.getElementById('empId').placeholder=t('ph');
+    document.getElementById('sbtn').textContent=t('sbtn');
+    const e1=document.getElementById('e1');
+    const e2=document.getElementById('e2');
+    if(e1) e1.textContent=t('e1');
+    if(e2) e2.textContent=t('e2');
+    if(data) renderSchedule();
+  }
 
-      // Show loading
-      contentArea.innerHTML = `
-        <div class="loading">
-          <div class="loading-spinner"></div>
-          <p>جاري تحميل البيانات...</p>
-        </div>
-      `;
+  function toggleLang(){
+    lang=lang==='en'?'ar':'en';
+    applyLangUI();
+  }
 
-      try {
-        // إذا كانت الصفحة داخل docs/my-schedule/ فـ ../schedules صحيح
-        const response = await fetch(`../schedules/${empId}.json`);
+  function goBack(){
+    const base=location.pathname.includes('/roster-site/')?'/roster-site/':'/';
+    if(document.referrer&&document.referrer.includes(location.host)) history.back();
+    else location.href=base;
+  }
 
-        if (!response.ok) throw new Error('Not found');
+  document.getElementById('searchForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const id=document.getElementById('empId').value.trim();
+    if(id) await loadSchedule(id);
+  });
 
-        const data = await response.json();
-        currentData = data;
-
-        availableMonths = Object.keys(data.schedules).sort().reverse();
-        if (availableMonths.length === 0) throw new Error('No schedules');
-
-        currentMonth = availableMonths[0];
-        renderSchedule();
-
-      } catch (error) {
-        contentArea.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">❌</div>
-            <h3>لم يتم العثور على بيانات</h3>
-            <p>الرقم الوظيفي ${empId} غير موجود في النظام</p>
-            <p style="margin-top:10px;font-size:13px;color:#94a3b8;font-weight:700;">تأكد من الرقم وحاول مرة أخرى</p>
-          </div>
-        `;
-      }
+  async function loadSchedule(id){
+    document.getElementById('area').innerHTML=`
+      <div class="loading"><div class="spinner"></div><p>${t('loading')}</p></div>`;
+    try{
+      const res=await fetch(`../schedules/${id}.json`);
+      if(!res.ok) throw new Error('not found');
+      data=await res.json();
+      months=Object.keys(data.schedules).sort().reverse();
+      if(!months.length) throw new Error('empty');
+      month=months[0];
+      renderSchedule();
+    }catch{
+      document.getElementById('area').innerHTML=`
+        <div class="empty-state">
+          <div class="empty-icon">❌</div>
+          <h3>${t('notFound')}</h3>
+          <p>${t('notFoundSub')}</p>
+        </div>`;
     }
+  }
 
-    // Render schedule
-    function renderSchedule() {
-      const schedule = currentData.schedules[currentMonth];
-      const [year, month] = currentMonth.split('-').map(Number);
+  function renderSchedule(){
+    const sched=data.schedules[month];
+    const [yr,mo]=month.split('-').map(Number);
+    const mName=T[lang].months[mo-1];
+    const ci=months.indexOf(month);
+    const hasNext=ci>0, hasPrev=ci<months.length-1;
 
-      const monthNames = [
-        'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-      ];
-      const monthName = monthNames[month - 1];
+    /* calendar grid — LTR always: Sun=0 Mon=1 ... Sat=6 */
+    const firstDow=new Date(yr,mo-1,1).getDay();
+    const daysInMonth=new Date(yr,mo,0).getDate();
+    const stats=calcStats(sched);
 
-      const currentMonthIndex = availableMonths.indexOf(currentMonth);
-      const hasNext = currentMonthIndex > 0;
-      const hasPrev = currentMonthIndex < availableMonths.length - 1;
-
-      // Build calendar
-      const firstDay = new Date(year, month - 1, 1);
-      const lastDay = new Date(year, month, 0);
-      const startDayOfWeek = (firstDay.getDay() + 1) % 7; // Adjust for Sunday = 0
-      const daysInMonth = lastDay.getDate();
-
-      let calendarHTML = '';
-      let dayCounter = 1;
-
-      for (let week = 0; week < 6; week++) {
-        for (let day = 0; day < 7; day++) {
-          if ((week === 0 && day < startDayOfWeek) || dayCounter > daysInMonth) {
-            calendarHTML += '<div class="calendar-day empty"></div>';
-          } else {
-            const dayData = schedule.find(s => s.day === dayCounter);
-            const isToday = isCurrentDay(year, month, dayCounter);
-
-            if (dayData) {
-              const shiftClass = getShiftClass(dayData.shift_group);
-              calendarHTML += `
-                <div class="calendar-day ${isToday ? 'today' : ''}">
-                  <div class="day-number">${dayCounter}</div>
-                  <div class="day-shift">${getShiftIcon(dayData.shift_group)}</div>
-                  <div class="day-label ${shiftClass}">${getShiftName(dayData.shift_group)}</div>
-                  <div class="day-code">${dayData.shift_code || ''}</div>
-                </div>
-              `;
-            } else {
-              calendarHTML += `
-                <div class="calendar-day ${isToday ? 'today' : ''}">
-                  <div class="day-number">${dayCounter}</div>
-                  <div class="day-shift">-</div>
-                  <div class="day-label shift-other">-</div>
-                </div>
-              `;
-            }
-            dayCounter++;
+    let cells='';
+    let dc=1;
+    for(let w=0;w<6;w++){
+      for(let d=0;d<7;d++){
+        if((w===0&&d<firstDow)||dc>daysInMonth){
+          cells+='<div class="cal-day empty"></div>';
+        }else{
+          const dd=sched.find(s=>s.day===dc);
+          const today=isToday(yr,mo,dc);
+          if(dd){
+            const sc=shiftClass(dd.shift_group);
+            cells+=`<div class="cal-day${today?' today':''}">
+              <div class="d-num">${dc}</div>
+              <div class="d-icon">${shiftIcon(dd.shift_group)}</div>
+              <div class="d-lbl ${sc}">${T[lang].shiftNames[dd.shift_group]||dd.shift_group}</div>
+              ${dd.shift_code?`<div class="d-code">${esc(dd.shift_code)}</div>`:''}
+            </div>`;
+          }else{
+            cells+=`<div class="cal-day${today?' today':''}">
+              <div class="d-num">${dc}</div>
+              <div class="d-icon">·</div>
+            </div>`;
           }
+          dc++;
         }
-        if (dayCounter > daysInMonth) break;
       }
+      if(dc>daysInMonth) break;
+    }
 
-      const stats = calculateStatistics(schedule);
+    /* day headers — always LTR Sun→Sat */
+    const dayHdr=T[lang].days.map(d=>`<div>${d}</div>`).join('');
 
-      document.getElementById('contentArea').innerHTML = `
-        <div class="employee-info">
-          <div class="employee-details">
-            <h2>${escapeHtml(currentData.name)}</h2>
-            <p>📋 ${escapeHtml(currentData.department)} • 🆔 ${escapeHtml(currentData.id)}</p>
-          </div>
-
-          <div class="month-nav">
-            <button onclick="changeMonth(-1)" ${!hasPrev ? 'disabled style="opacity:0.35;cursor:not-allowed"' : ''}>→</button>
-            <span>${monthName} ${year}</span>
-            <button onclick="changeMonth(1)" ${!hasNext ? 'disabled style="opacity:0.35;cursor:not-allowed"' : ''}>←</button>
-          </div>
+    document.getElementById('area').innerHTML=`
+      <div class="emp-bar">
+        <div class="emp-info">
+          <h2>${esc(data.name)}</h2>
+          <p>📋 ${esc(data.department)} &nbsp;•&nbsp; 🆔 ${esc(data.id)}</p>
         </div>
-
-        <div class="calendar">
-          <div class="calendar-header">
-            <div>السبت</div><div>الجمعة</div><div>الخميس</div><div>الأربعاء</div><div>الثلاثاء</div><div>الاثنين</div><div>الأحد</div>
-          </div>
-          <div class="calendar-body">
-            ${calendarHTML}
-          </div>
+        <div class="month-nav">
+          <button onclick="chMonth(-1)" ${!hasPrev?'disabled style="opacity:.35;cursor:default"':''}>&lt;</button>
+          <span>${mName} ${yr}</span>
+          <button onclick="chMonth(1)" ${!hasNext?'disabled style="opacity:.35;cursor:default"':''}>&gt;</button>
         </div>
+      </div>
 
-        <div class="statistics">
-          <h3>📊 الإحصائيات</h3>
-          <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">أيام العمل</div><div class="stat-value">${stats.workDays}</div></div>
-            <div class="stat-card"><div class="stat-label">أيام الإجازة</div><div class="stat-value">${stats.offDays}</div></div>
-            <div class="stat-card"><div class="stat-label">الصباحية</div><div class="stat-value">${stats.morning}</div></div>
-            <div class="stat-card"><div class="stat-label">المسائية</div><div class="stat-value">${stats.afternoon}</div></div>
-            <div class="stat-card"><div class="stat-label">الليلية</div><div class="stat-value">${stats.night}</div></div>
-            <div class="stat-card"><div class="stat-label">الإجازات السنوية</div><div class="stat-value">${stats.leaves}</div></div>
-          </div>
+      <div class="calendar">
+        <div class="cal-head">${dayHdr}</div>
+        <div class="cal-body">${cells}</div>
+      </div>
+
+      <div class="stats">
+        <div class="stats-title">${t('statsTitle')}</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-lbl">${t('workDays')}</div><div class="stat-val">${stats.work}</div></div>
+          <div class="stat-box"><div class="stat-lbl">${t('offDays')}</div><div class="stat-val">${stats.off}</div></div>
+          <div class="stat-box"><div class="stat-lbl">${t('morning')}</div><div class="stat-val">${stats.morning}</div></div>
+          <div class="stat-box"><div class="stat-lbl">${t('afternoon')}</div><div class="stat-val">${stats.afternoon}</div></div>
+          <div class="stat-box"><div class="stat-lbl">${t('night')}</div><div class="stat-val">${stats.night}</div></div>
+          <div class="stat-box"><div class="stat-lbl">${t('leaves')}</div><div class="stat-val">${stats.leaves}</div></div>
         </div>
+      </div>
 
-        <div class="actions">
-          <button class="action-btn action-btn-primary" onclick="downloadPDF()">📥 تحميل PDF</button>
-          <button class="action-btn" onclick="shareSchedule()">🔗 مشاركة الجدول</button>
-          <button class="action-btn" onclick="printSchedule()">🖨️ طباعة</button>
-          <button class="action-btn" onclick="goBackToRoster()">⬅ العودة للروستر</button>
-        </div>
-      `;
+      <div class="actions">
+        <button class="act-btn act-primary" onclick="dlPDF()">${t('pdf')}</button>
+        <button class="act-btn" onclick="shareS()">${t('share')}</button>
+        <button class="act-btn" onclick="window.print()">${t('print')}</button>
+      </div>
+    `;
+  }
+
+  function chMonth(dir){
+    const ci=months.indexOf(month);
+    const ni=ci-dir;
+    if(ni>=0&&ni<months.length){month=months[ni];renderSchedule()}
+  }
+
+  function calcStats(s){
+    const r={work:0,off:0,morning:0,afternoon:0,night:0,leaves:0};
+    s.forEach(d=>{
+      if(d.shift_group==='Morning') r.morning++;
+      else if(d.shift_group==='Afternoon') r.afternoon++;
+      else if(d.shift_group==='Night') r.night++;
+      else if(d.shift_group==='Off Day') r.off++;
+      else if(d.shift_group==='Annual Leave'||d.shift_group==='Sick Leave') r.leaves++;
+    });
+    r.work=r.morning+r.afternoon+r.night;
+    return r;
+  }
+
+  function shiftIcon(g){
+    return{Morning:'☀️',Afternoon:'🌤️',Night:'🌙','Off Day':'🛌',
+           'Annual Leave':'✈️','Sick Leave':'🤒',Training:'📚',
+           Standby:'🧍',Other:'❓'}[g]||'❓';
+  }
+  function shiftClass(g){
+    return{Morning:'s-morning',Afternoon:'s-afternoon',Night:'s-night',
+           'Off Day':'s-off','Annual Leave':'s-leave','Sick Leave':'s-leave',
+           Training:'s-training',Standby:'s-standby',Other:'s-other'}[g]||'s-other';
+  }
+  function isToday(y,m,d){
+    const t=new Date();
+    return t.getFullYear()===y&&t.getMonth()+1===m&&t.getDate()===d;
+  }
+  function esc(s){
+    return String(s??'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function dlPDF(){alert('Coming soon: PDF download')}
+  function shareS(){
+    const id=data.id;
+    const base=location.pathname.includes('/roster-site/')?'/roster-site/':'/';
+    const url=`${location.origin}${base}my-schedule/?emp=${encodeURIComponent(id)}`;
+    if(navigator.share){
+      navigator.share({title:'My Schedule',text:`Schedule: ${data.name}`,url});
+    }else{
+      navigator.clipboard.writeText(url);
+      alert('Link copied!');
     }
+  }
 
-    // Change month
-    function changeMonth(direction) {
-      const currentIndex = availableMonths.indexOf(currentMonth);
-      const newIndex = currentIndex - direction;
-
-      if (newIndex >= 0 && newIndex < availableMonths.length) {
-        currentMonth = availableMonths[newIndex];
-        renderSchedule();
-      }
-    }
-
-    function getShiftIcon(group) {
-      const icons = {
-        'Morning': '☀️',
-        'Afternoon': '🌤️',
-        'Night': '🌙',
-        'Off Day': '🛌',
-        'Annual Leave': '✈️',
-        'Sick Leave': '🤒',
-        'Training': '📚',
-        'Standby': '🧍',
-        'Other': '❓'
-      };
-      return icons[group] || '❓';
-    }
-
-    function getShiftName(group) {
-      const names = {
-        'Morning': 'صباحية',
-        'Afternoon': 'مسائية',
-        'Night': 'ليلية',
-        'Off Day': 'إجازة',
-        'Annual Leave': 'إجازة سنوية',
-        'Sick Leave': 'إجازة مرضية',
-        'Training': 'تدريب',
-        'Standby': 'احتياطي',
-        'Other': 'أخرى'
-      };
-      return names[group] || 'أخرى';
-    }
-
-    function getShiftClass(group) {
-      const classes = {
-        'Morning': 'shift-morning',
-        'Afternoon': 'shift-afternoon',
-        'Night': 'shift-night',
-        'Off Day': 'shift-off',
-        'Annual Leave': 'shift-leave',
-        'Sick Leave': 'shift-leave',
-        'Training': 'shift-training',
-        'Standby': 'shift-standby',
-        'Other': 'shift-other'
-      };
-      return classes[group] || 'shift-other';
-    }
-
-    function isCurrentDay(year, month, day) {
-      const today = new Date();
-      return today.getFullYear() === year &&
-             today.getMonth() + 1 === month &&
-             today.getDate() === day;
-    }
-
-    function calculateStatistics(schedule) {
-      const stats = { workDays:0, offDays:0, morning:0, afternoon:0, night:0, leaves:0 };
-
-      schedule.forEach(day => {
-        if (day.shift_group === 'Morning') stats.morning++;
-        else if (day.shift_group === 'Afternoon') stats.afternoon++;
-        else if (day.shift_group === 'Night') stats.night++;
-        else if (day.shift_group === 'Off Day') stats.offDays++;
-        else if (day.shift_group === 'Annual Leave' || day.shift_group === 'Sick Leave') stats.leaves++;
-      });
-
-      stats.workDays = stats.morning + stats.afternoon + stats.night;
-      return stats;
-    }
-
-    // Safe text
-    function escapeHtml(str){
-      return String(str ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    // Action functions (placeholders)
-    function downloadPDF() { alert('قريباً: سيتم تحميل الجدول كـ PDF'); }
-
-    function shareSchedule() {
-      const empId = currentData.id;
-      const base = location.pathname.includes("/roster-site/") ? "/roster-site/" : "/";
-      const url = `${window.location.origin}${base}my-schedule/?emp=${encodeURIComponent(empId)}`;
-
-      if (navigator.share) {
-        navigator.share({
-          title: 'جدولي - Duty Roster',
-          text: `جدول مناوبات ${currentData.name}`,
-          url
-        });
-      } else {
-        navigator.clipboard.writeText(url);
-        alert('تم نسخ الرابط! يمكنك مشاركته الآن');
-      }
-    }
-
-    function printSchedule() { window.print(); }
-
-    // Auto-load if emp parameter exists
-    const urlParams = new URLSearchParams(window.location.search);
-    const empParam = urlParams.get('emp');
-    if (empParam) {
-      document.getElementById('employeeId').value = empParam;
-      loadEmployeeSchedule(empParam);
-    }
-  </script>
+  /* auto-load */
+  const p=new URLSearchParams(location.search).get('emp');
+  if(p){document.getElementById('empId').value=p;loadSchedule(p);}
+</script>
 </body>
 </html>

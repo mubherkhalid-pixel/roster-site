@@ -403,48 +403,133 @@ def add_months(year, month, delta):
     return year, month
 
 
+def detect_month_from_url(url: str):
+    """استنتاج الشهر من اسم ملف Excel في الرابط"""
+    if not url:
+        return None
+    month_map = {
+        "jan":1,"january":1,"feb":2,"february":2,"mar":3,"march":3,
+        "apr":4,"april":4,"may":5,"jun":6,"june":6,"jul":7,"july":7,
+        "aug":8,"august":8,"sep":9,"sept":9,"september":9,
+        "oct":10,"october":10,"nov":11,"november":11,"dec":12,"december":12,
+    }
+    m = re.search(r'(20\d{2})[-_](0[1-9]|1[0-2])', url)
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    m2 = re.search(
+        r'(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)[\s_-]*(20\d{2})',
+        url, re.IGNORECASE
+    )
+    if m2:
+        mon = m2.group(1).lower()
+        yr = int(m2.group(2))
+        return (yr, month_map[mon]) if mon in month_map else None
+    return None
+
+
+def detect_month_from_wb(wb):
+    """
+    يكتشف الشهر الفعلي من محتوى Excel:
+    يقرأ أرقام الأيام في صف التواريخ ويحدد الشهر
+    بناءً على أكبر رقم يوم وعدد أيام كل شهر.
+    """
+    import calendar as cal_mod
+
+    now = datetime.now(TZ)
+
+    # جمع أرقام الأيام من أول sheet متاح
+    all_day_nums = set()
+    for sheet_name, _ in DEPARTMENTS:
+        if sheet_name not in wb.sheetnames:
+            continue
+        ws = wb[sheet_name]
+        _, date_row = find_days_and_dates_rows(ws)
+        if not date_row:
+            continue
+        daynum_to_col = get_daynum_to_col(ws, date_row)
+        all_day_nums.update(daynum_to_col.keys())
+        break
+
+    if not all_day_nums:
+        return None
+
+    max_day = max(all_day_nums)
+    num_days = len(all_day_nums)
+    print(f"  🔍 Excel has days 1-{max_day} ({num_days} days total)")
+
+    # جرب الأشهر: السابق، الحالي، القادم، بعد القادم
+    candidates = [
+        add_months(now.year, now.month, -1),
+        (now.year, now.month),
+        add_months(now.year, now.month, +1),
+        add_months(now.year, now.month, +2),
+    ]
+
+    for y, m in candidates:
+        days_in = cal_mod.monthrange(y, m)[1]
+        # الشهر الصحيح: عدد أيامه = عدد الأيام في Excel
+        if num_days == days_in:
+            print(f"  ✅ Matched: {y}-{m:02d} has {days_in} days")
+            return y, m
+
+    # إذا لم يطابق بالضبط، خذ أول شهر لا يتجاوز max_day
+    for y, m in candidates:
+        days_in = cal_mod.monthrange(y, m)[1]
+        if max_day <= days_in:
+            print(f"  ⚠️  Best guess: {y}-{m:02d}")
+            return y, m
+
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description='Generate employee schedules from roster Excel')
-    parser.add_argument('--month', help='Month to process (YYYY-MM). Leave empty to process prev+curr+next automatically.', default=None)
+    parser.add_argument('--month', help='تحديد الشهر يدوياً YYYY-MM. اتركه فارغاً للكشف التلقائي.', default=None)
     args = parser.parse_args()
 
     if not EXCEL_URL:
         raise RuntimeError("❌ EXCEL_URL environment variable is missing")
 
-    now = datetime.now(TZ)
+    print("=" * 60)
+    print("🗓️  Employee Schedule Generator")
+    print("=" * 60)
+
+    # تحميل Excel
+    data = download_excel(EXCEL_URL)
+    wb = load_workbook(BytesIO(data), data_only=True)
 
     if args.month:
         # شهر محدد يدوياً
         try:
             year, month = [int(x) for x in args.month.split('-')]
-            months_to_process = [(year, month)]
         except Exception:
-            raise RuntimeError('❌ Invalid month format. Use YYYY-MM (e.g., 2026-03)')
+            raise RuntimeError('❌ صيغة خاطئة. استخدم YYYY-MM مثل 2026-03')
+        print(f"📅 Month (manual): {year}-{month:02d}")
     else:
-        # تلقائي: الشهر السابق + الحالي + القادم
-        prev_y, prev_m = add_months(now.year, now.month, -1)
-        curr_y, curr_m = now.year, now.month
-        next_y, next_m = add_months(now.year, now.month, +1)
-        months_to_process = [
-            (prev_y, prev_m),
-            (curr_y, curr_m),
-            (next_y, next_m),
-        ]
+        # ── الكشف التلقائي ─────────────────────────────────────
+        # 1) من رابط EXCEL_URL
+        detected = detect_month_from_url(EXCEL_URL)
+        if detected:
+            year, month = detected
+            print(f"📅 Month detected from URL: {year}-{month:02d}")
+        else:
+            # 2) من محتوى Excel (عدد الأيام)
+            print("🔍 Detecting month from Excel content...")
+            detected = detect_month_from_wb(wb)
+            if detected:
+                year, month = detected
+                print(f"📅 Month detected from Excel content: {year}-{month:02d}")
+            else:
+                # 3) آخر خيار: الشهر الحالي
+                now = datetime.now(TZ)
+                year, month = now.year, now.month
+                print(f"⚠️  Could not detect — using current month: {year}-{month:02d}")
 
-    print("=" * 60)
-    print(f"🗓️  Employee Schedule Generator")
-    print(f"📅 Months to process: {[f'{y}-{m:02d}' for y, m in months_to_process]}")
-    print("=" * 60)
+    print(f"\n{'=' * 60}")
+    print(f"📅 Processing: {year}-{month:02d}")
+    print(f"{'=' * 60}")
 
-    # تحميل Excel مرة واحدة فقط
-    data = download_excel(EXCEL_URL)
-    wb = load_workbook(BytesIO(data), data_only=True)
-
-    # توليد الجداول لكل الأشهر
-    for year, month in months_to_process:
-        print(f"\n{'─'*40}")
-        generate_employee_schedules(wb, year, month)
-
+    generate_employee_schedules(wb, year, month)
     generate_schedule_index()
 
     print("\n" + "=" * 60)

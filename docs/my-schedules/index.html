@@ -447,190 +447,188 @@ function dlICS(){
   a.click();URL.revokeObjectURL(a.href);
 }
 
-/* ── PDF ── Full A4 beautiful layout ── */
+/* ── PDF ── Clean minimal A4 ── */
 function dlPDF(){
   if(!window.jspdf){alert('PDF library loading, please try again.');return}
   const {jsPDF}=window.jspdf;
 
-  // A4: 210 × 297 mm
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, H=297;
-  const M=10; // margin
+  const W=210, H=297, M=12;
 
   const sched=data.schedules[month];
   const [yr,mo]=month.split('-').map(Number);
   const mName=T.en.months[mo-1];
   const stats=calcStats(sched);
 
-  const PC={ // PDF shift colors [R,G,B]
-    Morning:[245,158,11], Afternoon:[249,115,22], Night:[124,58,237],
-    'Off Day':[148,163,184], 'Annual Leave':[34,197,94], 'Sick Leave':[34,197,94],
-    Training:[59,130,246], Standby:[236,72,153], Other:[156,163,175]
+  // ── colour palette: one accent per shift type, all muted/elegant ──
+  // Each entry: [dot R,G,B]  (cells stay white, only dot + code get colour)
+  const DOT={
+    Morning:     [180,130,40],
+    Afternoon:   [180,90,40],
+    Night:       [70,60,160],
+    'Off Day':   [150,160,170],
+    'Annual Leave':[50,140,90],
+    'Sick Leave':[50,140,90],
+    Training:    [50,100,180],
+    Standby:     [160,70,120],
+    Other:       [130,130,130]
   };
-  const PB={ // light bg per shift
-    Morning:[255,251,235], Afternoon:[255,247,237], Night:[245,243,255],
-    'Off Day':[248,250,252], 'Annual Leave':[240,253,244], 'Sick Leave':[240,253,244],
-    Training:[239,246,255], Standby:[253,242,248], Other:[249,250,251]
-  };
-  const ICONS={
+  const LNAMES={
     Morning:'Morning', Afternoon:'Afternoon', Night:'Night',
-    'Off Day':'Day Off', 'Annual Leave':'Leave', 'Sick Leave':'Sick',
-    Training:'Training', Standby:'Standby', Other:'Other'
+    'Off Day':'Day Off','Annual Leave':'Ann. Leave','Sick Leave':'Sick',
+    Training:'Training',Standby:'Standby',Other:'Other'
   };
 
-  // ── HERO HEADER (gradient simulation with two rects) ──
+  const INK  =[30, 35, 50];   // near-black text
+  const MUTED=[130,140,155];  // grey labels
+  const LINE =[215,220,228];  // cell borders
+  const BG   =[249,250,252];  // light grey backgrounds
+
+  // ══════════════════════════════════════
+  //  HEADER  – white background, left rule
+  // ══════════════════════════════════════
+  // thin blue left bar
   doc.setFillColor(43,89,255);
-  doc.rect(0,0,W,38,'F');
-  doc.setFillColor(0,179,255);
-  doc.rect(W*0.6,0,W*0.4,38,'F');
-  // decorative circle top-right
-  doc.setFillColor(255,255,255);
-  doc.setGState(new doc.GState({opacity:0.08}));
-  doc.circle(W-15, -5, 35, 'F');
-  doc.circle(W-40, 30, 22, 'F');
-  doc.setGState(new doc.GState({opacity:1}));
+  doc.rect(0,0,3,H,'F');
 
-  // White card logo box
-  doc.setFillColor(255,255,255);
-  doc.setDrawColor(255,255,255);
-  doc.roundedRect(M, 8, 18, 18, 3, 3, 'F');
-  doc.setTextColor(43,89,255);
-  doc.setFontSize(12);doc.setFont(undefined,'bold');
-  doc.text('M', M+9, 19.5, {align:'center'});
+  // name
+  doc.setTextColor(...INK);
+  doc.setFontSize(22);doc.setFont(undefined,'bold');
+  doc.text(String(data.name), M, 18);
 
-  // Title & subtitle
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(18);doc.setFont(undefined,'bold');
-  doc.text(String(data.name), M+23, 18);
+  // department · id
   doc.setFontSize(10);doc.setFont(undefined,'normal');
-  doc.setTextColor(200,225,255);
-  doc.text(`${data.department}   ·   ID: ${data.id}`, M+23, 25);
+  doc.setTextColor(...MUTED);
+  doc.text(`${data.department}   ·   ${data.id}`, M, 25);
 
-  // Month badge top-right
-  doc.setFillColor(255,255,255);
-  doc.setDrawColor(255,255,255);
-  doc.roundedRect(W-M-52, 10, 52, 18, 4, 4, 'F');
+  // month + year  – right aligned, large
+  doc.setFontSize(20);doc.setFont(undefined,'bold');
   doc.setTextColor(43,89,255);
-  doc.setFontSize(11);doc.setFont(undefined,'bold');
-  doc.text(`${mName} ${yr}`, W-M-26, 21, {align:'center'});
+  doc.text(`${mName} ${yr}`, W-M, 18, {align:'right'});
 
-  // ── STATS ROW ──
-  const stY=44;
-  const stItems=[
-    {l:'Work Days',v:stats.work,c:[43,89,255]},
-    {l:'Morning ☀',v:stats.morning,c:[245,158,11]},
-    {l:'Afternoon',v:stats.afternoon,c:[249,115,22]},
-    {l:'Night',v:stats.night,c:[124,58,237]},
-    {l:'Day Off',v:stats.off,c:[100,116,139]},
-    {l:'Leaves',v:stats.leaves,c:[34,197,94]}
+  // thin separator line under header
+  doc.setDrawColor(...LINE);
+  doc.setLineWidth(0.4);
+  doc.line(M, 29, W-M, 29);
+
+  // ══════════════════════════════════════
+  //  STATS ROW  – 6 compact boxes
+  // ══════════════════════════════════════
+  const stY=33;
+  const stData=[
+    ['Work',stats.work], ['Off',stats.off],
+    ['Morning',stats.morning], ['Afternoon',stats.afternoon],
+    ['Night',stats.night], ['Leaves',stats.leaves]
   ];
-  const stW=(W-M*2-5*3)/6;
-  stItems.forEach(({l,v,c},i)=>{
-    const sx=M+i*(stW+3);
-    doc.setFillColor(248,250,252);
-    doc.setDrawColor(229,231,235);
-    doc.roundedRect(sx,stY,stW,18,2,2,'FD');
-    // coloured top accent line
-    doc.setFillColor(...c);
-    doc.roundedRect(sx,stY,stW,2.5,1,1,'F');
-    // value
-    doc.setTextColor(15,23,42);
-    doc.setFontSize(16);doc.setFont(undefined,'bold');
-    doc.text(String(v),sx+stW/2,stY+12,{align:'center'});
-    // label
-    doc.setTextColor(100,116,139);
+  const stW=(W-M*2-5*2)/6;
+  stData.forEach(([lbl,val],i)=>{
+    const sx=M+i*(stW+2);
+    doc.setFillColor(...BG);
+    doc.setDrawColor(...LINE);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(sx,stY,stW,14,1.5,1.5,'FD');
+    doc.setTextColor(...INK);
+    doc.setFontSize(15);doc.setFont(undefined,'bold');
+    doc.text(String(val),sx+stW/2,stY+9,{align:'center'});
+    doc.setTextColor(...MUTED);
     doc.setFontSize(6.5);doc.setFont(undefined,'normal');
-    doc.text(l,sx+stW/2,stY+17,{align:'center'});
+    doc.text(lbl,sx+stW/2,stY+13.2,{align:'center'});
   });
 
-  // ── DAY HEADERS ──
-  const calY=stY+22;
+  // ══════════════════════════════════════
+  //  CALENDAR
+  // ══════════════════════════════════════
+  const calTop=stY+18;
   const dLabels=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const cW=(W-M*2)/7;
-  const hdrH=9;
+  const hH=8; // day-header row height
 
-  doc.setFillColor(30,40,80);
-  doc.rect(M,calY,W-M*2,hdrH,'F');
+  // Day header row – dark fill
+  doc.setFillColor(30,35,50);
+  doc.rect(M,calTop,W-M*2,hH,'F');
   dLabels.forEach((d,i)=>{
     doc.setTextColor(255,255,255);
-    doc.setFontSize(9);doc.setFont(undefined,'bold');
-    doc.text(d, M+i*cW+cW/2, calY+6.2, {align:'center'});
+    doc.setFontSize(8.5);doc.setFont(undefined,'bold');
+    doc.text(d, M+i*cW+cW/2, calTop+5.5, {align:'center'});
   });
 
-  // ── CALENDAR CELLS ──
   const firstDow=new Date(yr,mo-1,1).getDay();
   const dim=new Date(yr,mo,0).getDate();
-  const today=new Date();
-  const todayIsThisMonth=today.getFullYear()===yr&&today.getMonth()+1===mo;
+  const todayD=new Date();
+  const sameMonth=todayD.getFullYear()===yr&&todayD.getMonth()+1===mo;
 
-  // Calculate row count
-  let totalRows=0;
-  {let dc2=1,r2=0;
-   for(let w=0;w<6;w++){let anyDay=false;
-    for(let d=0;d<7;d++){if(!((w===0&&d<firstDow)||dc2>dim)){anyDay=true;dc2++;}}
-    if(anyDay) r2++;if(dc2>dim) break;}totalRows=r2;}
+  // count weeks
+  let nRows=0;
+  {let d2=1;
+   for(let w=0;w<6;w++){
+     let any=false;
+     for(let d=0;d<7;d++) if(!((w===0&&d<firstDow)||d2>dim)){any=true;d2++;}
+     if(any) nRows++;
+     if(d2>dim) break;
+   }
+  }
 
-  // Available height for calendar
-  const calAvail=H-M-calY-hdrH-2;
-  const cH=Math.min(32, Math.floor(calAvail/totalRows));
+  const calH=H-M-calTop-hH-10; // leave 10mm for footer
+  const cH=Math.floor(calH/nRows);
 
   let dc=1,row=0;
+  doc.setLineWidth(0.25);
+
   for(let w=0;w<6;w++){
     for(let d=0;d<7;d++){
       const x=M+d*cW;
-      const y=calY+hdrH+row*cH;
-      const isEmpty=(w===0&&d<firstDow)||dc>dim;
+      const y=calTop+hH+row*cH;
+      const empty=(w===0&&d<firstDow)||dc>dim;
 
-      if(isEmpty){
-        doc.setFillColor(250,251,253);
-        doc.setDrawColor(240,242,246);
+      if(empty){
+        doc.setFillColor(245,246,249);
+        doc.setDrawColor(...LINE);
         doc.rect(x,y,cW,cH,'FD');
-      }else{
+      } else {
         const dd=sched.find(s=>s.day===dc);
-        const isToday2=todayIsThisMonth&&today.getDate()===dc;
-        const pc=PC[dd?.shift_group]||[156,163,175];
-        const pb=PB[dd?.shift_group]||[249,250,251];
+        const isToday=sameMonth&&todayD.getDate()===dc;
 
-        // Cell background
-        doc.setFillColor(...pb);
-        doc.setDrawColor(229,231,235);
+        // white cell
+        doc.setFillColor(255,255,255);
+        doc.setDrawColor(...LINE);
         doc.rect(x,y,cW,cH,'FD');
 
-        // Coloured left accent bar
-        doc.setFillColor(...pc);
-        doc.rect(x,y,3,cH,'F');
-
-        // Today highlight ring
-        if(isToday2){
+        // today: subtle blue background
+        if(isToday){
+          doc.setFillColor(237,244,255);
+          doc.rect(x+0.15,y+0.15,cW-0.3,cH-0.3,'F');
           doc.setDrawColor(43,89,255);
-          doc.setLineWidth(0.8);
-          doc.rect(x+0.4,y+0.4,cW-0.8,cH-0.8,'D');
-          doc.setLineWidth(0.2);
+          doc.setLineWidth(0.5);
+          doc.rect(x+0.15,y+0.15,cW-0.3,cH-0.3,'D');
+          doc.setLineWidth(0.25);
+          doc.setDrawColor(...LINE);
         }
 
-        // Day number
-        doc.setTextColor(15,23,42);
-        doc.setFontSize(13);doc.setFont(undefined,'bold');
-        doc.text(String(dc), x+cW-3, y+9, {align:'right'});
+        // day number – top-left
+        doc.setTextColor(...INK);
+        doc.setFontSize(12);doc.setFont(undefined,'bold');
+        doc.text(String(dc), x+3.5, y+8);
 
-        // Shift icon label
         if(dd){
-          const lbl=ICONS[dd.shift_group]||dd.shift_group;
-          doc.setFillColor(...pc);
-          doc.roundedRect(x+4, y+cH-8, cW-8, 6, 1.5, 1.5, 'F');
-          doc.setTextColor(255,255,255);
-          doc.setFontSize(6);doc.setFont(undefined,'bold');
-          doc.text(lbl, x+cW/2, y+cH-4, {align:'center'});
-        }
+          const col=DOT[dd.shift_group]||[130,130,130];
+          const lbl=LNAMES[dd.shift_group]||dd.shift_group;
 
-        // Shift code (small, if exists)
-        if(dd?.shift_code){
-          doc.setTextColor(...pc);
-          doc.setFontSize(8);doc.setFont(undefined,'bold');
-          doc.text(dd.shift_code, x+5, y+cH-10);
-        }
+          // small filled dot centre-top
+          doc.setFillColor(...col);
+          doc.circle(x+cW/2, y+cH*0.42, 2.2, 'F');
 
-        doc.setDrawColor(229,231,235);
+          // shift label – bottom centre, grey small
+          doc.setTextColor(...col);
+          doc.setFontSize(6.5);doc.setFont(undefined,'bold');
+          doc.text(lbl, x+cW/2, y+cH-3.5, {align:'center'});
+
+          // shift code above label if exists
+          if(dd.shift_code){
+            doc.setTextColor(...MUTED);
+            doc.setFontSize(7);doc.setFont(undefined,'bold');
+            doc.text(dd.shift_code, x+cW/2, y+cH-8, {align:'center'});
+          }
+        }
         dc++;
       }
     }
@@ -638,27 +636,32 @@ function dlPDF(){
     row++;
   }
 
-  // ── LEGEND ──
-  const legY=calY+hdrH+row*cH+4;
-  const legItems=Object.entries(ICONS).filter(([g])=>sched.some(s=>s.shift_group===g));
-  const legW=(W-M*2)/legItems.length;
-  legItems.forEach(([g,lbl],i)=>{
-    const pc=PC[g]||[156,163,175];
-    const lx=M+i*legW;
-    doc.setFillColor(...pc);
-    doc.circle(lx+3,legY+2,1.8,'F');
-    doc.setTextColor(100,116,139);
+  // ══════════════════════════════════════
+  //  LEGEND  – one row at bottom
+  // ══════════════════════════════════════
+  const legY=calTop+hH+row*cH+3;
+  const used=[...new Set(sched.map(s=>s.shift_group))];
+  const gap=(W-M*2)/used.length;
+  used.forEach((g,i)=>{
+    const col=DOT[g]||[130,130,130];
+    const lx=M+i*gap;
+    doc.setFillColor(...col);
+    doc.circle(lx+2, legY+1.5, 1.5, 'F');
+    doc.setTextColor(...MUTED);
     doc.setFontSize(7);doc.setFont(undefined,'normal');
-    doc.text(lbl,lx+6.5,legY+3.2);
+    doc.text(LNAMES[g]||g, lx+5.5, legY+2.5);
   });
 
-  // ── FOOTER ──
-  doc.setFillColor(248,250,252);
-  doc.rect(0,H-10,W,10,'F');
-  doc.setTextColor(148,163,184);
+  // ══════════════════════════════════════
+  //  FOOTER
+  // ══════════════════════════════════════
+  doc.setDrawColor(...LINE);
+  doc.setLineWidth(0.3);
+  doc.line(M, H-8, W-M, H-8);
+  doc.setTextColor(...MUTED);
   doc.setFontSize(7);doc.setFont(undefined,'normal');
-  doc.text('Generated by My Schedule', M, H-3.5);
-  doc.text(`${mName} ${yr}  ·  ${data.id}`, W-M, H-3.5, {align:'right'});
+  doc.text('My Schedule', M, H-4);
+  doc.text(`${mName} ${yr}  ·  ID ${data.id}`, W-M, H-4, {align:'right'});
 
   doc.save(`schedule-${data.id}-${month}.pdf`);
 }

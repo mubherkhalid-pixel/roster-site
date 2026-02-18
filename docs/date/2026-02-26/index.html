@@ -72,15 +72,16 @@
       background:rgba(255,255,255,.25);
       transform:translateY(-1px);
     }
+    /* الـ input مخفي تماماً - لا يُرى ولا يُضغط عليه */
     #datePicker {
-      position:absolute;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
+      position:fixed;
+      top:-9999px;
+      left:-9999px;
+      width:1px;
+      height:1px;
       opacity:0;
-      cursor:pointer;
-      font-size:16px; /* منع zoom في iOS */
+      pointer-events:none;
+      font-size:16px;
       border:none;
     }
 
@@ -298,10 +299,12 @@
   <div class="header">
     <h1>📋 Duty Roster</h1>
     <div class="datePickerWrapper">
-      <label for="datePicker" class="dateTag">📅 26 February 2026</label>
-      <input id="datePicker" type="date" value="2026-02-26" />
+      <button class="dateTag" id="dateTag" onclick="openDatePicker()" type="button">📅 26 February 2026</button>
+      <input id="datePicker" type="date" value="2026-02-26" min="2026-01-01" max="2026-03-31" tabindex="-1" aria-hidden="true" />
     </div>
   </div>
+
+  
 
   <!-- ════ SUMMARY CHIPS ════ -->
   <div class="summaryBar">
@@ -921,7 +924,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">26FEB2026 / 00:00</strong>
     <br>Total: <strong>80 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster_February_2026_RAMADAN_Version4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026 -RAMADAN-Version-4.xlsx</strong>
   </div>
 
 </div>
@@ -931,26 +934,56 @@
   var picker = document.getElementById('datePicker');
   if(!picker) return;
 
-  // التحقق من التاريخ وإعادة التوجيه
-  function checkAndRedirectToToday(){
+  // ═══════════════════════════════════════════════════
+  // فتح الـ date picker - يعمل على Desktop + iOS + Android
+  // ═══════════════════════════════════════════════════
+  window.openDatePicker = function() {
+    picker.style.position = 'fixed';
+    picker.style.top = '0';
+    picker.style.left = '0';
+    picker.style.opacity = '0';
+    picker.style.width = '1px';
+    picker.style.height = '1px';
+    picker.style.pointerEvents = 'auto';
+
+    // showPicker() - يعمل في Chrome/Edge/Safari الحديث
+    if (typeof picker.showPicker === 'function') {
+      try {
+        picker.showPicker();
+        return;
+      } catch(e) {}
+    }
+
+    // Fallback: focus + click للمتصفحات القديمة
+    picker.focus();
+    picker.click();
+  };
+
+  // ═══════════════════════════════════════════════════
+  // التحقق من التاريخ وإعادة التوجيه للـ today
+  // ═══════════════════════════════════════════════════
+  function checkAndRedirectToToday() {
     var path = window.location.pathname || '/';
     var isNowPage = path.includes('/now');
-    
+
     var dateMatch = path.match(/\/date\/(\d{4})-(\d{2})-(\d{2})\//);
-    if(dateMatch){
+    if (dateMatch) {
       var pageDate = dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3];
-      
+
       var now = new Date();
       var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
-      var todayStr = muscatTime.getFullYear() + '-' + 
-                     String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' + 
-                     String(muscatTime.getDate()).padStart(2, '0');
-      
-      if(pageDate !== todayStr){
+      var todayStr = muscatTime.getFullYear() + '-' +
+        String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' +
+        String(muscatTime.getDate()).padStart(2, '0');
+
+      if (pageDate !== todayStr) {
         var isPageLoad = sessionStorage.getItem('pageLoaded');
-        if(isPageLoad){
+        if (isPageLoad) {
           sessionStorage.removeItem('pageLoaded');
-          var basePath = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+          var basePath = path
+            .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/, '/')
+            .replace(/\/now\/.*$/, '/')
+            .replace(/\/+$/, '');
           window.location.href = isNowPage ? basePath + '/now/' : basePath + '/';
           return true;
         } else {
@@ -961,23 +994,29 @@
     return false;
   }
 
-  if(checkAndRedirectToToday()) return;
+  if (checkAndRedirectToToday()) return;
 
-  // عند تغيير التاريخ - بسيط جداً
-  picker.addEventListener('change', function(){
-    if(!picker.value) return;
-    
+  // ═══════════════════════════════════════════════════
+  // عند تغيير التاريخ → انتقل للصفحة المناسبة
+  // ═══════════════════════════════════════════════════
+  picker.addEventListener('change', function() {
+    if (!picker.value) return;
+
     sessionStorage.removeItem('pageLoaded');
-    
+
     var path = window.location.pathname || '/';
     var isNowPage = path.includes('/now');
-    var base = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
-    
+    var base = path
+      .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/, '/')
+      .replace(/\/now\/.*$/, '/')
+      .replace(/\/+$/, '');
+
     var target = base + '/date/' + picker.value + '/';
-    if(isNowPage) target += 'now/';
-    
+    if (isNowPage) target += 'now/';
+
     window.location.href = target;
   });
+
 })();
 
 // ═══════════════════════════════════════════════════
@@ -1012,7 +1051,7 @@
     var t = hour * 60 + minute;
     
     if(t >= 21 * 60 || t < 5 * 60) return 'Night';
-    if(t >= 14 * 60) return 'Afternoon';
+    if(t >= 13 * 60) return 'Afternoon';
     return 'Morning';
   }
   

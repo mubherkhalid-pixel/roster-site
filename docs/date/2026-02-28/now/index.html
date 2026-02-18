@@ -72,15 +72,16 @@
       background:rgba(255,255,255,.25);
       transform:translateY(-1px);
     }
+    /* الـ input مخفي تماماً - لا يُرى ولا يُضغط عليه */
     #datePicker {
-      position:absolute;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
+      position:fixed;
+      top:-9999px;
+      left:-9999px;
+      width:1px;
+      height:1px;
       opacity:0;
-      cursor:pointer;
-      font-size:16px; /* منع zoom في iOS */
+      pointer-events:none;
+      font-size:16px;
       border:none;
     }
 
@@ -298,10 +299,12 @@
   <div class="header">
     <h1>📋 Duty Roster</h1>
     <div class="datePickerWrapper">
-      <label for="datePicker" class="dateTag">📅 28 February 2026</label>
-      <input id="datePicker" type="date" value="2026-02-28" />
+      <button class="dateTag" id="dateTag" onclick="openDatePicker()" type="button">📅 28 February 2026</button>
+      <input id="datePicker" type="date" value="2026-02-28" min="2026-01-01" max="2026-03-31" tabindex="-1" aria-hidden="true" />
     </div>
   </div>
+
+  
 
   <!-- ════ SUMMARY CHIPS ════ -->
   <div class="summaryBar">
@@ -351,40 +354,12 @@
         <div class="deptTitle">Officers</div>
         <div class="deptBadge" style="background:#2563eb15; color:#2563eb; border:1px solid #2563eb18;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">4</span>
+          <span style="font-size:17px;font-weight:900;">2</span>
         </div>
       </div>
 
       <div class="shiftStack">
 
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7">
-      <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
-        <span class="shiftIcon">☀️</span>
-        <span class="shiftLabel" style="color:#92400e;">Morning</span>
-        <span class="shiftCount" style="background:#f59e0b22; color:#92400e;">1</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Rajaram - 8899</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (MN06)</span>
-     </div>
-      </div>
-    </details>
-            
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
-      <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
-        <span class="shiftIcon">🌤️</span>
-        <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
-        <span class="shiftCount" style="background:#f9731622; color:#9a3412;">1</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Salim Al Masroori - 8926</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div>
-      </div>
-    </details>
-            
     <details class="shiftCard" style="border:1px solid #6366f144; background:#e0e7ff">
       <summary class="shiftSummary" style="background:#e0e7ff; border-bottom:1px solid #6366f133;">
         <span class="shiftIcon">🛋️</span>
@@ -422,40 +397,12 @@
         <div class="deptTitle">Supervisors</div>
         <div class="deptBadge" style="background:#0891b215; color:#0891b2; border:1px solid #0891b218;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">6</span>
+          <span style="font-size:17px;font-weight:900;">4</span>
         </div>
       </div>
 
       <div class="shiftStack">
 
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7">
-      <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
-        <span class="shiftIcon">☀️</span>
-        <span class="shiftLabel" style="color:#92400e;">Morning</span>
-        <span class="shiftCount" style="background:#f59e0b22; color:#92400e;">1</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Mohamed Al Amri - 81404</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div>
-      </div>
-    </details>
-            
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
-      <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
-        <span class="shiftIcon">🌤️</span>
-        <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
-        <span class="shiftCount" style="background:#f9731622; color:#9a3412;">1</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Mohamed Al Kalbani - 82593</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div>
-      </div>
-    </details>
-            
     <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe" open>
       <summary class="shiftSummary" style="background:#ede9fe; border-bottom:1px solid #8b5cf633;">
         <span class="shiftIcon">🌙</span>
@@ -510,52 +457,12 @@
         <div class="deptTitle">Load Control</div>
         <div class="deptBadge" style="background:#05966915; color:#059669; border:1px solid #05966918;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">15</span>
+          <span style="font-size:17px;font-weight:900;">9</span>
         </div>
       </div>
 
       <div class="shiftStack">
 
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7">
-      <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
-        <span class="shiftIcon">☀️</span>
-        <span class="shiftLabel" style="color:#92400e;">Morning</span>
-        <span class="shiftCount" style="background:#f59e0b22; color:#92400e;">3</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Hamed Al Fulaiti - 82596</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Jaafar Al Balushi - 81258</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow">
-       <span class="empName">Mohamed Al Siyabi - 81402</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div>
-      </div>
-    </details>
-            
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
-      <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
-        <span class="shiftIcon">🌤️</span>
-        <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
-        <span class="shiftCount" style="background:#f9731622; color:#9a3412;">3</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Mubarak Al Nofli - 82114</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Saleh Al Aufi - 82550</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow">
-       <span class="empName">Assad Al Omairi - 81348</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div>
-      </div>
-    </details>
-            
     <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe" open>
       <summary class="shiftSummary" style="background:#ede9fe; border-bottom:1px solid #8b5cf633;">
         <span class="shiftIcon">🌙</span>
@@ -647,73 +554,12 @@
         <div class="deptTitle">Export Checker</div>
         <div class="deptBadge" style="background:#dc262615; color:#dc2626; border:1px solid #dc262618;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">36</span>
+          <span style="font-size:17px;font-weight:900;">23</span>
         </div>
       </div>
 
       <div class="shiftStack">
 
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7">
-      <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
-        <span class="shiftIcon">☀️</span>
-        <span class="shiftLabel" style="color:#92400e;">Morning</span>
-        <span class="shiftCount" style="background:#f59e0b22; color:#92400e;">6</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Mohamed Al Mazroie - 82658</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Marhoon Al Kiyumi - 82545</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow">
-       <span class="empName">Ali Yousuf Al Balushi - 990752</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Mohamed Al Mamari - 82674</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow">
-       <span class="empName">Waleed Al Siyabi - 8611</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Riyadh Al Sulti - 82424</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div>
-      </div>
-    </details>
-            
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
-      <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
-        <span class="shiftIcon">🌤️</span>
-        <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
-        <span class="shiftCount" style="background:#f9731622; color:#9a3412;">7</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Khalifa Al Maqbali - 82673</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Khalil Al Hinai - 82671</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow">
-       <span class="empName">Rashid Al Farsi - 82615</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Ali Al Farsi - 81393</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow">
-       <span class="empName">Waleed Al Hadabi - 80482</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Mohamed Al Maskari - 82666</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow">
-       <span class="empName">Ahmed Al Hashmi - 82616</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div>
-      </div>
-    </details>
-            
     <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe" open>
       <summary class="shiftSummary" style="background:#ede9fe; border-bottom:1px solid #8b5cf633;">
         <span class="shiftIcon">🌙</span>
@@ -836,52 +682,12 @@
         <div class="deptTitle">Export Operators</div>
         <div class="deptBadge" style="background:#7c3aed15; color:#7c3aed; border:1px solid #7c3aed18;">
           <span style="font-size:10px;opacity:.7;display:block;margin-bottom:1px;text-transform:uppercase;letter-spacing:.5px;">Total</span>
-          <span style="font-size:17px;font-weight:900;">19</span>
+          <span style="font-size:17px;font-weight:900;">13</span>
         </div>
       </div>
 
       <div class="shiftStack">
 
-    <details class="shiftCard" style="border:1px solid #f59e0b44; background:#fef3c7">
-      <summary class="shiftSummary" style="background:#fef3c7; border-bottom:1px solid #f59e0b33;">
-        <span class="shiftIcon">☀️</span>
-        <span class="shiftLabel" style="color:#92400e;">Morning</span>
-        <span class="shiftCount" style="background:#f59e0b22; color:#92400e;">3</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Mohamed Al Amri - 81224</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Issa Al Douyani - 8647</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div><div class="empRow">
-       <span class="empName">Salim Sulieman - 8722</span>
-       <span class="empStatus" style="color:#92400e;">🌅 Morning (ME06)</span>
-     </div>
-      </div>
-    </details>
-            
-    <details class="shiftCard" style="border:1px solid #f9731644; background:#ffedd5">
-      <summary class="shiftSummary" style="background:#ffedd5; border-bottom:1px solid #f9731633;">
-        <span class="shiftIcon">🌤️</span>
-        <span class="shiftLabel" style="color:#9a3412;">Afternoon</span>
-        <span class="shiftCount" style="background:#f9731622; color:#9a3412;">3</span>
-      </summary>
-      <div class="shiftBody">
-        <div class="empRow">
-       <span class="empName">Ahmed Al Balushi - 82415</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow empRowAlt">
-       <span class="empName">Khamis Al Hinai - 82467</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div><div class="empRow">
-       <span class="empName">Zakariya Al Balushi - 82429</span>
-       <span class="empStatus" style="color:#9a3412;">🌆 Afternoon (AE14)</span>
-     </div>
-      </div>
-    </details>
-            
     <details class="shiftCard" style="border:1px solid #8b5cf644; background:#ede9fe" open>
       <summary class="shiftSummary" style="background:#ede9fe; border-bottom:1px solid #8b5cf633;">
         <span class="shiftIcon">🌙</span>
@@ -971,7 +777,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">28FEB2026 / 00:00</strong>
     <br>Total: <strong>51 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster_February_2026_RAMADAN_Version4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster February 2026 -RAMADAN-Version-4.xlsx</strong>
   </div>
 
 </div>
@@ -981,26 +787,56 @@
   var picker = document.getElementById('datePicker');
   if(!picker) return;
 
-  // التحقق من التاريخ وإعادة التوجيه
-  function checkAndRedirectToToday(){
+  // ═══════════════════════════════════════════════════
+  // فتح الـ date picker - يعمل على Desktop + iOS + Android
+  // ═══════════════════════════════════════════════════
+  window.openDatePicker = function() {
+    picker.style.position = 'fixed';
+    picker.style.top = '0';
+    picker.style.left = '0';
+    picker.style.opacity = '0';
+    picker.style.width = '1px';
+    picker.style.height = '1px';
+    picker.style.pointerEvents = 'auto';
+
+    // showPicker() - يعمل في Chrome/Edge/Safari الحديث
+    if (typeof picker.showPicker === 'function') {
+      try {
+        picker.showPicker();
+        return;
+      } catch(e) {}
+    }
+
+    // Fallback: focus + click للمتصفحات القديمة
+    picker.focus();
+    picker.click();
+  };
+
+  // ═══════════════════════════════════════════════════
+  // التحقق من التاريخ وإعادة التوجيه للـ today
+  // ═══════════════════════════════════════════════════
+  function checkAndRedirectToToday() {
     var path = window.location.pathname || '/';
     var isNowPage = path.includes('/now');
-    
+
     var dateMatch = path.match(/\/date\/(\d{4})-(\d{2})-(\d{2})\//);
-    if(dateMatch){
+    if (dateMatch) {
       var pageDate = dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3];
-      
+
       var now = new Date();
       var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
-      var todayStr = muscatTime.getFullYear() + '-' + 
-                     String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' + 
-                     String(muscatTime.getDate()).padStart(2, '0');
-      
-      if(pageDate !== todayStr){
+      var todayStr = muscatTime.getFullYear() + '-' +
+        String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' +
+        String(muscatTime.getDate()).padStart(2, '0');
+
+      if (pageDate !== todayStr) {
         var isPageLoad = sessionStorage.getItem('pageLoaded');
-        if(isPageLoad){
+        if (isPageLoad) {
           sessionStorage.removeItem('pageLoaded');
-          var basePath = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+          var basePath = path
+            .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/, '/')
+            .replace(/\/now\/.*$/, '/')
+            .replace(/\/+$/, '');
           window.location.href = isNowPage ? basePath + '/now/' : basePath + '/';
           return true;
         } else {
@@ -1011,23 +847,29 @@
     return false;
   }
 
-  if(checkAndRedirectToToday()) return;
+  if (checkAndRedirectToToday()) return;
 
-  // عند تغيير التاريخ - بسيط جداً
-  picker.addEventListener('change', function(){
-    if(!picker.value) return;
-    
+  // ═══════════════════════════════════════════════════
+  // عند تغيير التاريخ → انتقل للصفحة المناسبة
+  // ═══════════════════════════════════════════════════
+  picker.addEventListener('change', function() {
+    if (!picker.value) return;
+
     sessionStorage.removeItem('pageLoaded');
-    
+
     var path = window.location.pathname || '/';
     var isNowPage = path.includes('/now');
-    var base = path.replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
-    
+    var base = path
+      .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/, '/')
+      .replace(/\/now\/.*$/, '/')
+      .replace(/\/+$/, '');
+
     var target = base + '/date/' + picker.value + '/';
-    if(isNowPage) target += 'now/';
-    
+    if (isNowPage) target += 'now/';
+
     window.location.href = target;
   });
+
 })();
 
 // ═══════════════════════════════════════════════════
@@ -1062,7 +904,7 @@
     var t = hour * 60 + minute;
     
     if(t >= 21 * 60 || t < 5 * 60) return 'Night';
-    if(t >= 14 * 60) return 'Afternoon';
+    if(t >= 13 * 60) return 'Afternoon';
     return 'Morning';
   }
   

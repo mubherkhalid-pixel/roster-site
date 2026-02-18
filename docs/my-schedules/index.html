@@ -454,270 +454,208 @@ function dlPDF(){
   if(!window.jspdf){alert('PDF library loading, please try again.');return}
   const {jsPDF}=window.jspdf;
 
-  // ── A4 Portrait ──────────────────────────────────────────
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, H=297;
-  const ML=10, MR=10, MT=8, MB=8; // margins
+  const W=210,H=297,ML=8,MR=8;
+  const sched=data.schedules[month];
+  const [yr,mo]=month.split('-').map(Number);
+  const mName=T.en.months[mo-1];
+  const stats=calcStats(sched);
 
-  const sched  = data.schedules[month];
-  const [yr,mo]= month.split('-').map(Number);
-  const mName  = T.en.months[mo-1];
-  const stats  = calcStats(sched);
-
-  // ── Colours ──────────────────────────────────────────────
-  // Shift code colours — matches the uploaded PDF style
-  const SHIFT_COLOR = {
-    Morning:      [220, 130,  20],   // warm amber
-    Afternoon:    [220, 100,  20],   // orange
-    Night:        [ 60,  90, 200],   // blue
-    'Off Day':    [140, 150, 165],   // grey
-    'Annual Leave':[ 50, 160, 100],  // green
-    'Sick Leave': [ 50, 160, 100],
-    Training:     [ 40, 120, 210],
-    Standby:      [180,  50, 130],   // pink/magenta
-    Other:        [120, 128, 140]
+  // Strong opaque colours — no transparency tricks
+  const SC={
+    Morning:        [200, 95,   0],
+    Afternoon:      [185, 50,   5],
+    Night:          [ 25, 60, 195],
+    'Off Day':      [ 90,100, 118],
+    'Annual Leave': [ 15,130,  65],
+    'Sick Leave':   [ 15,130,  65],
+    Training:       [ 15, 90, 195],
+    Standby:        [155, 15, 115],
+    Other:          [ 95,105, 120]
+  };
+  const FALLBACK={
+    'Off Day':'OFF','Annual Leave':'LV','Sick Leave':'SL',
+    Training:'TR',Standby:'ST',Other:'—'
+  };
+  const LNAMES={
+    Morning:'Morning',Afternoon:'Afternoon',Night:'Night',
+    'Off Day':'Day Off','Annual Leave':'Leave','Sick Leave':'Sick',
+    Training:'Training',Standby:'Standby',Other:'Other'
   };
 
-  const NAVY   = [18,  30,  72];
-  const WHITE  = [255,255,255];
-  const LIGHT  = [245,247,252];   // empty cell bg
-  const RULE   = [210,215,225];   // grid lines
-  const INK    = [22,  28,  48];  // day numbers
-  const GREY   = [120,130,148];   // secondary text
+  const NAVY =[15,25,70];
+  const WHITE=[255,255,255];
+  const RULE =[195,202,215];
+  const EMPTY=[244,245,249];
+  const INK  =[18,24,44];
+  const DIM  =[110,120,138];
 
-  // ── Helper: rounded rect ─────────────────────────────────
-  const rr=(x,y,w,h,r,style)=>doc.roundedRect(x,y,w,h,r,r,style);
-
-  // ═══════════════════════════════════════════════════════════
-  //  HEADER
-  // ═══════════════════════════════════════════════════════════
-  const HDR_H = 36;
-
-  // Navy background
+  // ── HEADER ───────────────────────────────────────────────
   doc.setFillColor(...NAVY);
-  doc.rect(0, 0, W, HDR_H, 'F');
+  doc.rect(0,0,W,34,'F');
 
-  // Calendar emoji placeholder — white circle
-  doc.setFillColor(255,255,255);
-  doc.setGState && doc.setGState(doc.GState ? new doc.GState({opacity:0.12}) : undefined);
-  // decorative right circle
-  doc.setFillColor(...NAVY); // reset opacity trick — just skip opacity
-  // white large circle decoration top-right
-  doc.setFillColor(255,255,255);
-  // small dots grid top right
-  for(let rr2=0;rr2<3;rr2++) for(let cc=0;cc<4;cc++)
-    doc.circle(W-ML-cc*7, MT+rr2*6, 0.6, 'F');
-
-  // White divider line
-  doc.setDrawColor(255,255,255);
-  doc.setLineWidth(0.2);
-  // Name
   doc.setTextColor(...WHITE);
-  doc.setFontSize(20);
-  doc.setFont(undefined,'bold');
-  doc.text(String(data.name), ML, 16);
+  doc.setFontSize(19);doc.setFont(undefined,'bold');
+  doc.text(String(data.name),ML,14);
 
-  // Department · ID
-  doc.setFontSize(9);
-  doc.setFont(undefined,'normal');
-  doc.setTextColor(180,200,240);
-  doc.text(`${data.department}  ·  ${data.id}`, ML, 23);
+  doc.setFontSize(9);doc.setFont(undefined,'normal');
+  doc.setTextColor(165,188,235);
+  doc.text(`${data.department}   ·   ID: ${data.id}`,ML,22);
 
-  // Month + Year pill — white pill on right
-  const pillW=52, pillH=12;
+  // Month pill
   doc.setFillColor(...WHITE);
-  rr(W-ML-pillW, 12, pillW, pillH, 2, 'F');
+  doc.roundedRect(W-MR-58,8,58,16,3,3,'F');
   doc.setTextColor(...NAVY);
-  doc.setFontSize(10);
-  doc.setFont(undefined,'bold');
-  doc.text(`${mName}  ${yr}`, W-ML-pillW/2, 12+pillH*0.68, {align:'center'});
+  doc.setFontSize(11);doc.setFont(undefined,'bold');
+  doc.text(`${mName}  ${yr}`,W-MR-29,18,{align:'center'});
 
-  // ═══════════════════════════════════════════════════════════
-  //  STATS ROW — 7 compact cards
-  // ═══════════════════════════════════════════════════════════
-  const ST_Y  = HDR_H + 5;
-  const ST_H  = 18;
-  const GAP   = 2;
-  const items = [
-    {l:'Work Days', v:stats.work,      c:NAVY},
-    {l:'Day Off',   v:stats.off,       c:[120,130,148]},
-    {l:'Morning',   v:stats.morning,   c:[220,130,20]},
-    {l:'Afternoon', v:stats.afternoon, c:[220,100,20]},
-    {l:'Night',     v:stats.night,     c:[60,90,200]},
-    {l:'Standby',   v:stats.standby,   c:[180,50,130]},
-    {l:'Leaves',    v:stats.leaves,    c:[50,160,100]}
+  // ── STATS ────────────────────────────────────────────────
+  const SY=38,SH=20,GAP=2;
+  const SL=[
+    {l:'Work',    v:stats.work,      c:NAVY},
+    {l:'Off',     v:stats.off,       c:[90,100,118]},
+    {l:'Morning', v:stats.morning,   c:[200,95,0]},
+    {l:'Afternoon',v:stats.afternoon,c:[185,50,5]},
+    {l:'Night',   v:stats.night,     c:[25,60,195]},
+    {l:'Standby', v:stats.standby,   c:[155,15,115]},
+    {l:'Leaves',  v:stats.leaves,    c:[15,130,65]}
   ];
-  const nI  = items.length;
-  const stW = (W - ML - MR - (nI-1)*GAP) / nI;
+  const nS=SL.length;
+  const sW=(W-ML-MR-(nS-1)*GAP)/nS;
 
-  items.forEach(({l,v,c},i)=>{
-    const sx = ML + i*(stW+GAP);
-    // card
-    doc.setFillColor(248,249,253);
+  SL.forEach(({l,v,c},i)=>{
+    const sx=ML+i*(sW+GAP);
+    doc.setFillColor(247,248,252);
     doc.setDrawColor(...RULE);
-    doc.setLineWidth(0.25);
-    rr(sx, ST_Y, stW, ST_H, 1.5, 'FD');
-    // top colour bar
+    doc.setLineWidth(0.2);
+    doc.roundedRect(sx,SY,sW,SH,2,2,'FD');
     doc.setFillColor(...c);
-    rr(sx, ST_Y, stW, 2.2, 1, 'F');
-    // value
+    doc.roundedRect(sx,SY,sW,2.8,1,1,'F');
     doc.setTextColor(...INK);
-    doc.setFontSize(16);
-    doc.setFont(undefined,'bold');
-    doc.text(String(v), sx+stW/2, ST_Y+11.5, {align:'center'});
-    // label
-    doc.setTextColor(...GREY);
-    doc.setFontSize(5.8);
-    doc.setFont(undefined,'normal');
-    doc.text(l, sx+stW/2, ST_Y+16.5, {align:'center'});
+    doc.setFontSize(15);doc.setFont(undefined,'bold');
+    doc.text(String(v),sx+sW/2,SY+13,{align:'center'});
+    doc.setTextColor(...DIM);
+    doc.setFontSize(5.8);doc.setFont(undefined,'normal');
+    doc.text(l,sx+sW/2,SY+18.5,{align:'center'});
   });
 
-  // ═══════════════════════════════════════════════════════════
-  //  CALENDAR GRID
-  // ═══════════════════════════════════════════════════════════
-  const CAL_TOP = ST_Y + ST_H + 5;
-  const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const HDR2_H = 8;
-  const CAL_W  = W - ML - MR;
-  const CELL_W = CAL_W / 7;
+  // ── CALENDAR ─────────────────────────────────────────────
+  const CTOP=SY+SH+5;
+  const DNAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const CW=(W-ML-MR)/7;
+  const HH=9;
 
-  // Day header row
   doc.setFillColor(...NAVY);
-  doc.rect(ML, CAL_TOP, CAL_W, HDR2_H, 'F');
-  DAY_LABELS.forEach((d,i)=>{
+  doc.rect(ML,CTOP,W-ML-MR,HH,'F');
+  DNAMES.forEach((d,i)=>{
     doc.setTextColor(...WHITE);
-    doc.setFontSize(8);
-    doc.setFont(undefined,'bold');
-    doc.text(d, ML+i*CELL_W+CELL_W/2, CAL_TOP+5.5, {align:'center'});
+    doc.setFontSize(8.5);doc.setFont(undefined,'bold');
+    doc.text(d,ML+i*CW+CW/2,CTOP+6.2,{align:'center'});
   });
 
-  // Calendar cell dimensions
-  const firstDow   = new Date(yr, mo-1, 1).getDay();
-  const daysInMonth= new Date(yr, mo,   0).getDate();
-  const todayObj   = new Date();
-  const isThisMonth= todayObj.getFullYear()===yr && todayObj.getMonth()+1===mo;
+  const firstDow=new Date(yr,mo-1,1).getDay();
+  const dim=new Date(yr,mo,0).getDate();
+  const now=new Date();
+  const thisMo=now.getFullYear()===yr&&now.getMonth()+1===mo;
 
-  // Count number of weeks
-  let nWeeks=0;
+  let nRows=0;
   {let d2=1;
    for(let w=0;w<6;w++){
      let any=false;
-     for(let d=0;d<7;d++) if(!((w===0&&d<firstDow)||d2>daysInMonth)){any=true;d2++;}
-     if(any) nWeeks++;
-     if(d2>daysInMonth) break;
+     for(let d=0;d<7;d++) if(!((w===0&&d<firstDow)||d2>dim)){any=true;d2++;}
+     if(any) nRows++;
+     if(d2>dim) break;
    }
   }
 
-  const FOOT_H  = 14;
-  const CAL_BOD = H - CAL_TOP - HDR2_H - FOOT_H - MB;
-  const CELL_H  = Math.floor(CAL_BOD / nWeeks);
+  const FOOT=16;
+  const CH=Math.floor((H-CTOP-HH-FOOT)/nRows);
 
-  let dc=1, rowIdx=0;
-  doc.setLineWidth(0.25);
+  let dc=1,row=0;
+  doc.setLineWidth(0.22);
 
   for(let w=0;w<6;w++){
     for(let d=0;d<7;d++){
-      const cx = ML + d*CELL_W;
-      const cy = CAL_TOP + HDR2_H + rowIdx*CELL_H;
-      const isEmpty = (w===0&&d<firstDow) || dc>daysInMonth;
+      const cx=ML+d*CW;
+      const cy=CTOP+HH+row*CH;
+      const empty=(w===0&&d<firstDow)||dc>dim;
 
-      // ── Empty cell ────────────────────────────────────────
-      if(isEmpty){
-        doc.setFillColor(...LIGHT);
+      if(empty){
+        doc.setFillColor(...EMPTY);
         doc.setDrawColor(...RULE);
-        doc.rect(cx, cy, CELL_W, CELL_H, 'FD');
+        doc.rect(cx,cy,CW,CH,'FD');
         continue;
       }
 
-      // ── Day cell ──────────────────────────────────────────
-      const dd       = sched.find(s=>s.day===dc);
-      const isToday  = isThisMonth && todayObj.getDate()===dc;
-      const shColor  = dd ? (SHIFT_COLOR[dd.shift_group]||SHIFT_COLOR.Other) : RULE;
+      const dd=sched.find(s=>s.day===dc);
+      const today=thisMo&&now.getDate()===dc;
+      const col=dd?(SC[dd.shift_group]||SC.Other):SC.Other;
 
-      // White cell background
+      // White cell
       doc.setFillColor(...WHITE);
       doc.setDrawColor(...RULE);
-      doc.rect(cx, cy, CELL_W, CELL_H, 'FD');
+      doc.rect(cx,cy,CW,CH,'FD');
 
-      // Today highlight — very light blue bg + coloured border
-      if(isToday){
-        doc.setFillColor(235,242,255);
-        doc.rect(cx+0.13, cy+0.13, CELL_W-0.26, CELL_H-0.26, 'F');
-        doc.setDrawColor(43,89,255);
-        doc.setLineWidth(0.65);
-        doc.rect(cx+0.13, cy+0.13, CELL_W-0.26, CELL_H-0.26, 'D');
-        doc.setLineWidth(0.25);
+      // Today: light-blue bg + blue border
+      if(today){
+        doc.setFillColor(228,240,255);
+        doc.rect(cx+0.12,cy+0.12,CW-0.24,CH-0.24,'F');
+        doc.setDrawColor(25,80,220);
+        doc.setLineWidth(0.7);
+        doc.rect(cx+0.12,cy+0.12,CW-0.24,CH-0.24,'D');
+        doc.setLineWidth(0.22);
         doc.setDrawColor(...RULE);
       }
 
-      // Day number — top-right corner, large and bold
+      // Day number — top-right, bold dark
       doc.setTextColor(...INK);
-      doc.setFontSize(12);
-      doc.setFont(undefined,'bold');
-      doc.text(String(dc), cx+CELL_W-3.5, cy+9, {align:'right'});
+      doc.setFontSize(11);doc.setFont(undefined,'bold');
+      doc.text(String(dc),cx+CW-3.5,cy+8,{align:'right'});
 
-      // Shift code — BIG, centred, coloured (exactly like the sample PDF)
-      if(dd && dd.shift_code){
-        doc.setTextColor(...shColor);
-        doc.setFontSize(13);
-        doc.setFont(undefined,'bold');
-        doc.text(dd.shift_code, cx+CELL_W/2, cy+CELL_H/2+3, {align:'center'});
-      } else if(dd && dd.shift_group==='Off Day'){
-        doc.setTextColor(...SHIFT_COLOR['Off Day']);
-        doc.setFontSize(12);
-        doc.setFont(undefined,'bold');
-        doc.text('OFF', cx+CELL_W/2, cy+CELL_H/2+3, {align:'center'});
-      } else if(dd && dd.shift_group==='Annual Leave'){
-        doc.setTextColor(...SHIFT_COLOR['Annual Leave']);
-        doc.setFontSize(11);
-        doc.setFont(undefined,'bold');
-        doc.text('LV', cx+CELL_W/2, cy+CELL_H/2+3, {align:'center'});
-      } else if(dd && dd.shift_group==='Sick Leave'){
-        doc.setTextColor(...SHIFT_COLOR['Sick Leave']);
-        doc.setFontSize(11);
-        doc.setFont(undefined,'bold');
-        doc.text('SL', cx+CELL_W/2, cy+CELL_H/2+3, {align:'center'});
+      // ── Shift code: BIG, BOLD, STRONG colour, centred ──
+      if(dd){
+        const code=dd.shift_code||(FALLBACK[dd.shift_group]||'');
+        if(code){
+          // Font size based on available cell height
+          const fs=CH>=34?17:CH>=26?15:13;
+          doc.setTextColor(...col);
+          doc.setFontSize(fs);
+          doc.setFont(undefined,'bold');
+          doc.text(code,cx+CW/2,cy+CH*0.64,{align:'center'});
+        }
       }
 
       dc++;
     }
-    if(dc>daysInMonth) break;
-    rowIdx++;
+    if(dc>dim) break;
+    row++;
   }
 
-  // ═══════════════════════════════════════════════════════════
-  //  FOOTER
-  // ═══════════════════════════════════════════════════════════
-  const FY = CAL_TOP + HDR2_H + rowIdx*CELL_H + 3;
-
-  // Legend
-  const usedGroups = [...new Set(sched.map(s=>s.shift_group))];
-  const legItemW   = CAL_W / usedGroups.length;
-  const LNAMES2    = {
-    Morning:'Morning', Afternoon:'Afternoon', Night:'Night',
-    'Off Day':'Day Off','Annual Leave':'Leave','Sick Leave':'Sick',
-    Training:'Training',Standby:'Standby',Other:'Other'
-  };
-  usedGroups.forEach((g,i)=>{
-    const col = SHIFT_COLOR[g]||SHIFT_COLOR.Other;
-    const lx  = ML + i*legItemW;
-    doc.setFillColor(...col);
-    doc.circle(lx+2.5, FY+2, 1.8, 'F');
-    doc.setTextColor(...GREY);
-    doc.setFontSize(7);
-    doc.setFont(undefined,'bold');
-    doc.text(LNAMES2[g]||g, lx+6, FY+3);
-  });
-
-  // bottom rule + generated text
+  // ── LEGEND ───────────────────────────────────────────────
+  const LY=CTOP+HH+row*CH+3;
   doc.setDrawColor(...RULE);
   doc.setLineWidth(0.25);
-  doc.line(ML, H-MB-4, W-MR, H-MB-4);
-  doc.setTextColor(...GREY);
-  doc.setFontSize(7);
-  doc.setFont(undefined,'normal');
-  doc.text('My Schedule', ML, H-MB-1);
-  doc.text(`${mName} ${yr}  ·  ID ${data.id}`, W-MR, H-MB-1, {align:'right'});
+  doc.line(ML,LY,W-MR,LY);
+
+  const used=[...new Set(sched.map(s=>s.shift_group))];
+  const lStep=(W-ML-MR)/used.length;
+  used.forEach((g,i)=>{
+    const c2=SC[g]||SC.Other;
+    const lx=ML+i*lStep;
+    doc.setFillColor(...c2);
+    doc.circle(lx+2.5,LY+3.8,2,'F');
+    doc.setTextColor(...DIM);
+    doc.setFontSize(7);doc.setFont(undefined,'bold');
+    doc.text(LNAMES[g]||g,lx+6.5,LY+5.2);
+  });
+
+  // ── FOOTER ───────────────────────────────────────────────
+  doc.setDrawColor(...RULE);
+  doc.line(ML,H-6,W-MR,H-6);
+  doc.setTextColor(...DIM);
+  doc.setFontSize(7);doc.setFont(undefined,'normal');
+  doc.text('My Schedule',ML,H-2.5);
+  doc.text(`${mName} ${yr}  ·  ${data.id}`,W-MR,H-2.5,{align:'right'});
 
   doc.save(`schedule-${data.id}-${month}.pdf`);
 }

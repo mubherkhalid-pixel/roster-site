@@ -58,6 +58,17 @@
     .langToggle:hover { background:rgba(255,255,255,.30); transform:scale(1.08); }
     body.ar { direction:rtl; font-family:'Segoe UI',Tahoma,Arial,sans-serif; }
     body.ar .langToggle { left:auto; right:16px; }
+    .myScheduleBtn {
+      position:absolute; top:54px; left:16px; z-index:10;
+      background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.25);
+      border-radius:50%; width:32px; height:32px;
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:15px; cursor:pointer;
+      transition:all .25s; -webkit-tap-highlight-color:transparent; padding:0;
+      text-decoration:none;
+    }
+    .myScheduleBtn:hover { background:rgba(255,255,255,.30); transform:scale(1.08); }
+    body.ar .myScheduleBtn { left:auto; right:16px; }
     .empRow, .empName, .empStatus { direction:ltr !important; unicode-bidi:embed; text-align:left !important; }
 
     /* Date Picker Wrapper */
@@ -316,6 +327,7 @@
   <!-- ════ HEADER ════ -->
   <div class="header">
     <button class="langToggle" id="langToggle" onclick="toggleLang()">ع</button>
+    <a class="myScheduleBtn" href="https://khalidsaif912.github.io/roster-site//my-schedules/index.html" title="My Schedule">👤</a>
     <h1 id="pageTitle">📋 Duty Roster</h1>
     <div class="datePickerWrapper">
       <button class="dateTag" id="dateTag" onclick="openDatePicker()" type="button">📅 4 January 2026</button>
@@ -388,14 +400,24 @@ window.openDatePicker = function() {
   var picker = document.getElementById('datePicker');
   if (!picker) return;
 
+  // احسب موقع زر التاريخ وضع العنصر المخفي تحته مباشرة
   var btn = document.getElementById('dateTag');
   if (btn) {
     var rect = btn.getBoundingClientRect();
+    var btnCenterX = rect.left + rect.width / 2;
+    var btnBottom  = rect.bottom + 6; // 6px تحت الزر
+
+    // تأكد أن النافذة لن تخرج من يمين الشاشة
+    var pickerWidth = 280; // تقدير عرض نافذة التقويم
+    var leftPos = Math.min(btnCenterX - pickerWidth / 2, window.innerWidth - pickerWidth - 10);
+    leftPos = Math.max(leftPos, 10);
+
     picker.style.position = 'fixed';
-    picker.style.top  = (rect.bottom + 6) + 'px';
-    picker.style.left = (rect.left + rect.width / 2) + 'px';
-    picker.style.transform = 'translateX(-70%)';
+    picker.style.top  = btnBottom + 'px';
+    picker.style.left = (btnCenterX) + 'px';
+    picker.style.transform = 'translateX(-50%)';
   } else {
+    // fallback: وسط الشاشة
     picker.style.position = 'fixed';
     picker.style.top = '50%';
     picker.style.left = '50%';

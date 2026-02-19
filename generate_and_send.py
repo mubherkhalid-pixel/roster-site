@@ -223,6 +223,24 @@ def download_text(url: str) -> str:
 
 def get_source_name() -> str:
     """Return the original roster file name for display on the website."""
+    # 1. استخراج الاسم من EXCEL_URL مباشرة (الأدق)
+    if EXCEL_URL:
+        try:
+            import urllib.parse
+            parsed = urllib.parse.urlparse(EXCEL_URL)
+            # SharePoint URLs contain the filename in the path
+            path = urllib.parse.unquote(parsed.path)
+            filename = path.split('/')[-1]
+            if filename.endswith('.xlsx') or filename.endswith('.xls'):
+                return filename
+            # Try query string for download URLs
+            qs = urllib.parse.parse_qs(parsed.query)
+            for key in ['file', 'FileName', 'filename']:
+                if key in qs:
+                    return urllib.parse.unquote(qs[key][0]).split('/')[-1]
+        except Exception:
+            pass
+    # 2. ملف نصي خارجي
     if SOURCE_NAME_URL:
         try:
             name = download_text(SOURCE_NAME_URL)
@@ -230,6 +248,7 @@ def get_source_name() -> str:
                 return name
         except Exception:
             pass
+    # 3. fallback
     return SOURCE_NAME_FALLBACK or "latest.xlsx"
 
 def infer_pages_base_url():

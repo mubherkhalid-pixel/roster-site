@@ -408,11 +408,11 @@
     <button class="langToggle" id="langToggle" onclick="toggleLang()">ع</button>
     <h1 id="pageTitle">📋 Duty Roster</h1>
     <div class="datePickerWrapper">
-      <button class="dateTag" id="dateTag" type="button" onclick="openCalPopup()">📅 6 March 2026</button>
+      <button class="dateTag" id="dateTag" type="button" onclick="openCalPopup(this)" data-date="2026-03-06">📅 6 March 2026</button>
     </div>
     <!-- Custom Calendar Popup -->
     <div class="calOverlay" id="calOverlay" onclick="closeCalPopup()"></div>
-    <div class="calPopup" id="calPopup">
+    <div class="calPopup" id="calPopup" data-min="2026-01-01" data-max="2026-03-31" data-sel="2026-03-06">
       <div class="calHeader">
         <button onclick="calPrevMonth()">&#8249;</button>
         <span class="calMonthYear" id="calMonthYear"></span>
@@ -1252,115 +1252,92 @@
 // Custom Calendar Popup
 // ═══════════════════════════════════════════════════
 (function() {
-  var CAL_MIN = '2026-01-01';
-  var CAL_MAX = '2026-03-31';
-  var CAL_CURRENT = '2026-03-06';
-
-  var MONTHS_EN = ['January','February','March','April','May','June',
-                   'July','August','September','October','November','December'];
-
+  var MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
   var calYear, calMonth;
-  var todayMus = (function(){
-    var n=new Date();
-    var m=new Date(n.getTime()+(4*3600000)+(n.getTimezoneOffset()*60000));
+
+  function getTodayMus() {
+    var n=new Date(), m=new Date(n.getTime()+(4*3600000)+(n.getTimezoneOffset()*60000));
     return m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0')+'-'+String(m.getDate()).padStart(2,'0');
-  })();
+  }
 
-  function parseDate(s){
+  function parseD(s) {
     if(!s) return null;
-    var p=s.split('-');
-    return {y:+p[0],m:+p[1]-1,d:+p[2]};
+    var p=s.split('-'); return {y:+p[0],m:+p[1]-1,d:+p[2]};
   }
 
-  function isoStr(y,m,d){
-    return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-  }
-
-  function renderCal(){
+  function renderCal() {
     var grid=document.getElementById('calGrid');
     var title=document.getElementById('calMonthYear');
     if(!grid||!title) return;
-    title.textContent=MONTHS_EN[calMonth]+' '+calYear;
+    title.textContent=MONTHS[calMonth]+' '+calYear;
 
-    var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var html=days.map(function(d){return '<div class="calDayName">'+d+'</div>';}).join('');
-
-    var first=new Date(calYear,calMonth,1).getDay();
-    var total=new Date(calYear,calMonth+1,0).getDate();
+    var firstDay=new Date(calYear,calMonth,1).getDay();
+    var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
     var prevTotal=new Date(calYear,calMonth,0).getDate();
+    var minD=parseD(document.getElementById('calPopup').dataset.min);
+    var maxD=parseD(document.getElementById('calPopup').dataset.max);
+    var selD=parseD(document.getElementById('calPopup').dataset.sel);
+    var todD=parseD(getTodayMus());
 
-    // prev month padding
-    for(var i=first-1;i>=0;i--){
+    var html=['Su','Mo','Tu','We','Th','Fr','Sa'].map(function(d){
+      return '<div class="calDayName">'+d+'</div>';
+    }).join('');
+
+    for(var i=firstDay-1;i>=0;i--)
       html+='<button class="calDay other-month" disabled>'+(prevTotal-i)+'</button>';
-    }
 
-    var minD=parseDate(CAL_MIN);
-    var maxD=parseDate(CAL_MAX);
-    var selD=parseDate(CAL_CURRENT);
-    var todD=parseDate(todayMus);
-
-    for(var d=1;d<=total;d++){
-      var iso=isoStr(calYear,calMonth,d);
-      var cls='calDay';
-      var dis='';
-
-      if(selD&&selD.y===calYear&&selD.m===calMonth&&selD.d===d) cls+=' selected';
+    for(var d=1;d<=daysInMonth;d++) {
+      var iso=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var cls='calDay', dis='';
+      if(selD&&selD.y===calYear&&selD.m===calMonth&&selD.d===d) cls+=' today';
       else if(todD&&todD.y===calYear&&todD.m===calMonth&&todD.d===d) cls+=' today';
-
-      if((minD&&(calYear<minD.y||(calYear===minD.y&&calMonth<minD.m)||(calYear===minD.y&&calMonth===minD.m&&d<minD.d)))||
-         (maxD&&(calYear>maxD.y||(calYear===maxD.y&&calMonth>maxD.m)||(calYear===maxD.y&&calMonth===maxD.m&&d>maxD.d)))){
-        dis='disabled';
-        cls+=' other-month';
-      }
-
-      html+='<button class="'+cls+'" '+dis+' onclick="calSelectDay(''+iso+'')">'+d+'</button>';
+      var early=minD&&(calYear<minD.y||(calYear===minD.y&&(calMonth<minD.m||(calMonth===minD.m&&d<minD.d))));
+      var late=maxD&&(calYear>maxD.y||(calYear===maxD.y&&(calMonth>maxD.m||(calMonth===maxD.m&&d>maxD.d))));
+      if(early||late){cls+=' other-month';dis='disabled';}
+      html+='<button class="'+cls+'" '+dis+' onclick="calSelect(this,''+iso+'')">'+d+'</button>';
     }
 
-    // next month padding
-    var remaining=(7-((first+total)%7))%7;
-    for(var n=1;n<=remaining;n++){
+    var rem=(7-(firstDay+daysInMonth)%7)%7;
+    for(var n=1;n<=rem;n++)
       html+='<button class="calDay other-month" disabled>'+n+'</button>';
-    }
 
     grid.innerHTML=html;
   }
 
-  window.openCalPopup=function(){
-    var d=parseDate(CAL_CURRENT)||parseDate(todayMus)||{y:new Date().getFullYear(),m:new Date().getMonth(),d:1};
+  window.openCalPopup=function(btn) {
+    var popup=document.getElementById('calPopup');
+    var overlay=document.getElementById('calOverlay');
+    if(!popup||!overlay) return;
+    var iso=btn?btn.dataset.date:'';
+    var d=parseD(iso)||parseD(getTodayMus());
     calYear=d.y; calMonth=d.m;
     renderCal();
-    document.getElementById('calPopup').classList.add('open');
-    document.getElementById('calOverlay').classList.add('open');
+    popup.classList.add('open');
+    overlay.classList.add('open');
   };
 
-  window.closeCalPopup=function(){
-    document.getElementById('calPopup').classList.remove('open');
-    document.getElementById('calOverlay').classList.remove('open');
+  window.closeCalPopup=function() {
+    var p=document.getElementById('calPopup');
+    var o=document.getElementById('calOverlay');
+    if(p) p.classList.remove('open');
+    if(o) o.classList.remove('open');
   };
 
-  window.calPrevMonth=function(){
-    calMonth--;
-    if(calMonth<0){calMonth=11;calYear--;}
-    renderCal();
+  window.calPrevMonth=function() {
+    if(--calMonth<0){calMonth=11;calYear--;} renderCal();
   };
 
-  window.calNextMonth=function(){
-    calMonth++;
-    if(calMonth>11){calMonth=0;calYear++;}
-    renderCal();
+  window.calNextMonth=function() {
+    if(++calMonth>11){calMonth=0;calYear++;} renderCal();
   };
 
-  window.calSelectDay=function(iso){
+  window.calSelect=function(btn,iso) {
     sessionStorage.removeItem('pageLoaded');
     var path=window.location.pathname||'/';
     var isNow=path.includes('/now');
-    var base=path
-      .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/')
-      .replace(/\/now\/.*$/,'/')
-      .replace(/\/+$/,'');
-    var target=base+'/date/'+iso+'/';
-    if(isNow) target+='now/';
-    window.location.href=target;
+    var base=path.replace(/\/date\/[0-9-]+\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+    window.location.href=base+'/date/'+iso+'/'+(isNow?'now/':'');
   };
 })();
 

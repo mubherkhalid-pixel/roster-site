@@ -454,77 +454,40 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">04JAN2026 / 00:00</strong>
     <br>Total: <strong>0 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster-February_2026RAMADAN-Versio=4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster-February_2026RAMADAN-Versio&4.xlsx</strong>
   </div>
 
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════
+// Auto-redirect to today if page date is outdated
+// ═══════════════════════════════════════════════════
 (function(){
-  var picker = document.getElementById('datePicker');
-  if(!picker) return;
+  var path = window.location.pathname || '/';
+  var dateMatch = path.match(/\/date\/(\d{4})-(\d{2})-(\d{2})\//);
+  if (!dateMatch) return;
 
-  // Custom calendar - no input type=date needed
-  window.openDatePicker = function() { openCalPopup(); };
+  var pageDate = dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3];
+  var now = new Date();
+  var mus = new Date(now.getTime() + (4*3600000) + (now.getTimezoneOffset()*60000));
+  var todayStr = mus.getFullYear() + '-' +
+    String(mus.getMonth()+1).padStart(2,'0') + '-' +
+    String(mus.getDate()).padStart(2,'0');
 
-  // ═══════════════════════════════════════════════════
-  // التحقق من التاريخ وإعادة التوجيه للـ today
-  // ═══════════════════════════════════════════════════
-  function checkAndRedirectToToday() {
-    var path = window.location.pathname || '/';
-    var isNowPage = path.includes('/now');
-
-    var dateMatch = path.match(/\/date\/(\d{4})-(\d{2})-(\d{2})\//);
-    if (dateMatch) {
-      var pageDate = dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3];
-
-      var now = new Date();
-      var muscatTime = new Date(now.getTime() + (4 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
-      var todayStr = muscatTime.getFullYear() + '-' +
-        String(muscatTime.getMonth() + 1).padStart(2, '0') + '-' +
-        String(muscatTime.getDate()).padStart(2, '0');
-
-      if (pageDate !== todayStr) {
-        var isPageLoad = sessionStorage.getItem('pageLoaded');
-        if (isPageLoad) {
-          sessionStorage.removeItem('pageLoaded');
-          var basePath = path
-            .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/, '/')
-            .replace(/\/now\/.*$/, '/')
-            .replace(/\/+$/, '');
-          window.location.href = basePath + '/date/' + todayStr + '/' + (isNowPage ? 'now/' : '');
-          return true;
-        } else {
-          sessionStorage.setItem('pageLoaded', 'true');
-        }
-      }
+  if (pageDate !== todayStr) {
+    if (sessionStorage.getItem('pageLoaded')) {
+      sessionStorage.removeItem('pageLoaded');
+      var base = path
+        .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/,'/')
+        .replace(/\/now\/.*$/,'/')
+        .replace(/\/+$/,'');
+      var isNow = path.includes('/now');
+      window.location.href = base + '/date/' + todayStr + '/' + (isNow ? 'now/' : '');
+    } else {
+      sessionStorage.setItem('pageLoaded','true');
     }
-    return false;
   }
-
-  if (checkAndRedirectToToday()) return;
-
-  // ═══════════════════════════════════════════════════
-  // عند تغيير التاريخ → انتقل للصفحة المناسبة
-  // ═══════════════════════════════════════════════════
-  picker.addEventListener('change', function() {
-    if (!picker.value) return;
-
-    sessionStorage.removeItem('pageLoaded');
-
-    var path = window.location.pathname || '/';
-    var isNowPage = path.includes('/now');
-    var base = path
-      .replace(/\/date\/\d{4}-\d{2}-\d{2}\/.*$/, '/')
-      .replace(/\/now\/.*$/, '/')
-      .replace(/\/+$/, '');
-
-    var target = base + '/date/' + picker.value + '/';
-    if (isNowPage) target += 'now/';
-
-    window.location.href = target;
-  });
-
 })();
 
 // ═══════════════════════════════════════════════════

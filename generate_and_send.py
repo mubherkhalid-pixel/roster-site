@@ -790,7 +790,7 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
       transform:translateY(-1px);
     }}
     /* الـ input مخفي تماماً - لا يُرى ولا يُضغط عليه */
-#datePicker {
+#datePicker {{
   position: absolute;
   top: 100%;
   left: 50%;
@@ -803,7 +803,7 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
   border: none;
   /* ← أضف هذا: */
   -webkit-appearance: none;
-}
+}}
 
 
     /* ═══════ SUMMARY BAR ═══════ */
@@ -1087,7 +1087,7 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
   // ═══════════════════════════════════════════════════
   // فتح الـ date picker - يعمل على Desktop + iOS + Android
   // ═══════════════════════════════════════════════════
-window.openDatePicker = function() {
+window.openDatePicker = function() {{
   var picker = document.getElementById('datePicker');
   if (!picker) return;
 
@@ -1102,13 +1102,13 @@ window.openDatePicker = function() {
 
   picker.focus();
 
-  if (typeof picker.showPicker === 'function') {
-    try { picker.showPicker(); } catch(e) {}
-  } else {
+  if (typeof picker.showPicker === 'function') {{
+    try {{ picker.showPicker(); }} catch(e) {{}}
+  }} else {{
     picker.click();
-  }
+  }}
 
-  function restore() {
+  function restore() {{
     picker.style.position = 'absolute';
     picker.style.top = '100%';
     picker.style.left = '50%';
@@ -1119,11 +1119,11 @@ window.openDatePicker = function() {
     picker.style.zIndex = '';
     picker.removeEventListener('change', restore);
     picker.removeEventListener('blur', restore);
-  }
+  }}
 
   picker.addEventListener('change', restore);
   picker.addEventListener('blur', restore);
-};
+}};
 
   // ═══════════════════════════════════════════════════
   // التحقق من التاريخ وإعادة التوجيه للـ today

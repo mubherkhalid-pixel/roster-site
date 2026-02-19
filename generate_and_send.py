@@ -1097,7 +1097,7 @@ window.openDatePicker = function() {{
     picker.style.position = 'fixed';
     picker.style.top  = (rect.bottom + 6) + 'px';
     picker.style.left = (rect.left + rect.width / 2) + 'px';
-    picker.style.transform = 'translateX(-50%)';
+    picker.style.transform = 'translateX(-70%)';
   }} else {{
     picker.style.position = 'fixed';
     picker.style.top = '50%';

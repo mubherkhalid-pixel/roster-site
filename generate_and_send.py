@@ -763,6 +763,36 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
     body.ar .langToggle {{ left:auto; right:16px; }}
     .empRow, .empName, .empStatus {{ direction:ltr !important; unicode-bidi:embed; text-align:left !important; }}
 
+    /* Custom Calendar Popup */
+    .calOverlay {{
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.45); z-index:9998;
+    }}
+    .calOverlay.open {{ display:block; }}
+    .calPopup {{
+      display:none; position:fixed;
+      top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      background:#fff; border-radius:16px;
+      box-shadow:0 20px 60px rgba(0,0,0,.3);
+      padding:20px; z-index:9999; min-width:300px;
+      font-family:'Segoe UI',system-ui,sans-serif;
+    }}
+    .calPopup.open {{ display:block; }}
+    .calHeader {{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }}
+    .calHeader button {{ background:none; border:none; font-size:22px; cursor:pointer; color:#1e40af; padding:4px 12px; border-radius:8px; }}
+    .calHeader button:hover {{ background:#f1f5f9; }}
+    .calMonthYear {{ font-weight:700; font-size:15px; color:#0f172a; }}
+    .calGrid {{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center; }}
+    .calDayName {{ font-size:11px; font-weight:700; color:#94a3b8; padding:4px 0; }}
+    .calDay {{ padding:8px 2px; border-radius:8px; font-size:13px; cursor:pointer; border:none; background:none; width:100%; }}
+    .calDay:hover:not(:disabled) {{ background:#dbeafe; color:#1e40af; }}
+    .calDay.isToday {{ background:#1e40af; color:#fff; font-weight:700; }}
+    .calDay.isSel {{ background:#0ea5e9; color:#fff; font-weight:700; }}
+    .calDay.dimmed {{ color:#d1d5db; cursor:default; }}
+    .calCloseRow {{ text-align:center; margin-top:12px; }}
+    .calCloseRow button {{ background:#f1f5f9; border:none; padding:8px 24px; border-radius:8px; cursor:pointer; font-size:13px; color:#64748b; }}
+
     /* Date Picker Wrapper */
     .datePickerWrapper {{
       position:relative;
@@ -1017,9 +1047,19 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
     <button class="langToggle" id="langToggle" onclick="toggleLang()">ع</button>
     <h1 id="pageTitle">📋 Duty Roster</h1>
     <div class="datePickerWrapper">
-      <button class="dateTag" id="dateTag" onclick="openDatePicker()" type="button">📅 {date_label}</button>
-      <input id="datePicker" type="date" value="{iso_date}" {min_attr} {max_attr} tabindex="-1" aria-hidden="true" />
+      <button class="dateTag" id="dateTag" onclick="openCalendar()" type="button">📅 {date_label}</button>
+      <input id="datePicker" type="date" value="{iso_date}" {min_attr} {max_attr} style="position:fixed;top:-9999px;left:-9999px;opacity:0;" />
     </div>
+  </div>
+  <div class="calOverlay" id="calOverlay" onclick="closeCalendar()"></div>
+  <div class="calPopup" id="calPopup" data-sel="{iso_date}" data-min="{min_date}" data-max="{max_date}">
+    <div class="calHeader">
+      <button onclick="calNav(-1)">&#8249;</button>
+      <span class="calMonthYear" id="calMonthYear"></span>
+      <button onclick="calNav(1)">&#8250;</button>
+    </div>
+    <div class="calGrid" id="calGrid"></div>
+    <div class="calCloseRow"><button onclick="closeCalendar()">✕ Close</button></div>
   </div>
 
   {notice_html if notice_html else ""}
@@ -1277,6 +1317,63 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
   
   // Auto-filter on page load - show current shift
   filterShifts(currentShift);
+}})();
+
+// ══════════════════════════════════════════════════
+// Custom Calendar
+// ══════════════════════════════════════════════════
+(function() {{
+  var MN=['January','February','March','April','May','June',
+          'July','August','September','October','November','December'];
+  var cy, cm;
+
+  function pD(s) {{ if(!s) return null; var p=s.split('-'); return {{y:+p[0],m:+p[1]-1,d:+p[2]}}; }}
+  function toISO(y,m,d) {{ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }}
+  function todayMus() {{
+    var n=new Date(), mu=new Date(n.getTime()+(4*3600000)+(n.getTimezoneOffset()*60000));
+    return toISO(mu.getFullYear(),mu.getMonth(),mu.getDate());
+  }}
+
+  function render() {{
+    var pop=document.getElementById('calPopup');
+    var grid=document.getElementById('calGrid');
+    var title=document.getElementById('calMonthYear');
+    if(!pop||!grid||!title) return;
+    title.textContent=MN[cm]+' '+cy;
+    var sel=pD(pop.dataset.sel), mn=pD(pop.dataset.min), mx=pD(pop.dataset.max), tod=pD(todayMus());
+    var fd=new Date(cy,cm,1).getDay(), dim=new Date(cy,cm+1,0).getDate(), prev=new Date(cy,cm,0).getDate();
+    var h=['Su','Mo','Tu','We','Th','Fr','Sa'].map(function(d){{return '<div class="calDayName">'+d+'</div>';}}).join('');
+    for(var i=fd-1;i>=0;i--) h+='<button class="calDay dimmed" disabled>'+(prev-i)+'</button>';
+    for(var d=1;d<=dim;d++) {{
+      var iso=toISO(cy,cm,d);
+      var early=mn&&(cy<mn.y||(cy===mn.y&&(cm<mn.m||(cm===mn.m&&d<mn.d))));
+      var late=mx&&(cy>mx.y||(cy===mx.y&&(cm>mx.m||(cm===mx.m&&d>mx.d))));
+      var cls='calDay'+(early||late?' dimmed':'')+(sel&&sel.y===cy&&sel.m===cm&&sel.d===d?' isSel':'')+(tod&&tod.y===cy&&tod.m===cm&&tod.d===d&&!(sel&&sel.y===cy&&sel.m===cm&&sel.d===d)?' isToday':'');
+      h+='<button class="'+cls+'"'+(early||late?' disabled':'')+' onclick="calPick(''+iso+'')"  >'+d+'</button>';
+    }}
+    var rem=(7-(fd+dim)%7)%7; for(var n=1;n<=rem;n++) h+='<button class="calDay dimmed" disabled>'+n+'</button>';
+    grid.innerHTML=h;
+  }}
+
+  window.openCalendar=function() {{
+    var pop=document.getElementById('calPopup');
+    var d=pD(pop.dataset.sel)||pD(todayMus());
+    cy=d.y; cm=d.m; render();
+    pop.classList.add('open');
+    document.getElementById('calOverlay').classList.add('open');
+  }};
+  window.closeCalendar=function() {{
+    document.getElementById('calPopup').classList.remove('open');
+    document.getElementById('calOverlay').classList.remove('open');
+  }};
+  window.calNav=function(dir) {{ cm+=dir; if(cm<0){{cm=11;cy--;}} if(cm>11){{cm=0;cy++;}} render(); }};
+  window.calPick=function(iso) {{
+    sessionStorage.removeItem('pageLoaded');
+    var path=window.location.pathname||'/';
+    var isNow=path.includes('/now');
+    var base=path.replace(/\/date\/[0-9-]+\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+    window.location.href=base+'/date/'+iso+'/'+(isNow?'now/':'');
+  }};
 }})();
 
 // ══════════════════════════════════════════════════

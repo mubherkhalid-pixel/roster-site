@@ -108,18 +108,32 @@
       background:rgba(255,255,255,.25);
       transform:translateY(-1px);
     }
-    /* الـ input شفاف فوق الزر - يعمل على كل الأجهزة */
+    /* الـ input شفاف فوق كامل الـ wrapper */
     #datePicker {
       position:absolute;
-      inset:0;
+      top:0; left:0;
       width:100%;
       height:100%;
       opacity:0;
       cursor:pointer;
       font-size:16px;
       border:none;
-      z-index:3;
+      margin:0; padding:0;
+      z-index:5;
       -webkit-appearance:none;
+      box-sizing:border-box;
+    }
+    .datePickerWrapper {
+      position:relative;
+      display:inline-block;
+      margin-top:14px;
+      z-index:1;
+    }
+    .datePickerWrapper .dateTag {
+      display:block;
+      position:relative;
+      z-index:1;
+      pointer-events:none;
     }
 
     /* ═══════ SUMMARY BAR ═══════ */
@@ -373,7 +387,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">29JAN2026 / 00:00</strong>
     <br>Total: <strong>0 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster-February_2026_RAMADAN-Version_4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster-February_2026RAMADAN-Version4.xlsx</strong>
   </div>
 
 </div>

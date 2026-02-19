@@ -1091,10 +1091,20 @@ window.openDatePicker = function() {{
   var picker = document.getElementById('datePicker');
   if (!picker) return;
 
-  picker.style.position = 'fixed';
-  picker.style.top = '50%';
-  picker.style.left = '50%';
-  picker.style.transform = 'translate(-50%, -50%)';
+  var btn = document.getElementById('dateTag');
+  if (btn) {{
+    var rect = btn.getBoundingClientRect();
+    picker.style.position = 'fixed';
+    picker.style.top  = (rect.bottom + 6) + 'px';
+    picker.style.left = (rect.left + rect.width / 2) + 'px';
+    picker.style.transform = 'translateX(-50%)';
+  }} else {{
+    picker.style.position = 'fixed';
+    picker.style.top = '50%';
+    picker.style.left = '50%';
+    picker.style.transform = 'translate(-50%, -50%)';
+  }}
+
   picker.style.width = '1px';
   picker.style.height = '1px';
   picker.style.opacity = '0';

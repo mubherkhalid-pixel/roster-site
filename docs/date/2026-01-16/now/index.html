@@ -471,7 +471,7 @@
   <div class="footer">
     <strong style="color:#475569;font-size:13px;">Last Updated:</strong> <strong style="color:#1e40af;">16JAN2026 / 00:00</strong>
     <br>Total: <strong>0 employees</strong>
-     &nbsp;·&nbsp; Source: <strong>Export New Roster-February_2026RAMADAN-Versio##4.xlsx</strong>
+     &nbsp;·&nbsp; Source: <strong>Export New Roster-February_2026RAMADAN-Versio-4.xlsx</strong>
   </div>
 
 </div>
@@ -639,79 +639,84 @@
     var p=s.split('-'); return {y:+p[0],m:+p[1]-1,d:+p[2]};
   }
 
-  function renderCal() {
-    var grid=document.getElementById('calGrid');
-    var title=document.getElementById('calMonthYear');
-    if(!grid||!title) return;
-    title.textContent=MONTHS[calMonth]+' '+calYear;
+ function renderCal() {
+  var grid=document.getElementById('calGrid');
+  var title=document.getElementById('calMonthYear');
+  if(!grid||!title) return;
+  title.textContent=MONTHS[calMonth]+' '+calYear;
 
-    var firstDay=new Date(calYear,calMonth,1).getDay();
-    var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-    var prevTotal=new Date(calYear,calMonth,0).getDate();
-    var minD=parseD(document.getElementById('calPopup').dataset.min);
-    var maxD=parseD(document.getElementById('calPopup').dataset.max);
-    var selD=parseD(document.getElementById('calPopup').dataset.sel);
-    var todD=parseD(getTodayMus());
+  var firstDay=new Date(calYear,calMonth,1).getDay();
+  var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  var prevTotal=new Date(calYear,calMonth,0).getDate();
+  var minD=parseD(document.getElementById('calPopup').dataset.min);
+  var maxD=parseD(document.getElementById('calPopup').dataset.max);
+  var selD=parseD(document.getElementById('calPopup').dataset.sel);
+  var todD=parseD(getTodayMus());
 
-    var html=['Su','Mo','Tu','We','Th','Fr','Sa'].map(function(d){
-      return '<div class="calDayName">'+d+'</div>';
-    }).join('');
+  var html=['Su','Mo','Tu','We','Th','Fr','Sa'].map(function(d){
+    return '<div class="calDayName">'+d+'</div>';
+  }).join('');
 
-    for(var i=firstDay-1;i>=0;i--)
-      html+='<button class="calDay other-month" disabled>'+(prevTotal-i)+'</button>';
+  for(var i=firstDay-1;i>=0;i--)
+    html+='<button class="calDay other-month" disabled>'+(prevTotal-i)+'</button>';
 
-    for(var d=1;d<=daysInMonth;d++) {
-      var iso=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-      var cls='calDay', dis='';
-      if(selD&&selD.y===calYear&&selD.m===calMonth&&selD.d===d) cls+=' today';
-      else if(todD&&todD.y===calYear&&todD.m===calMonth&&todD.d===d) cls+=' today';
-      var early=minD&&(calYear<minD.y||(calYear===minD.y&&(calMonth<minD.m||(calMonth===minD.m&&d<minD.d))));
-      var late=maxD&&(calYear>maxD.y||(calYear===maxD.y&&(calMonth>maxD.m||(calMonth===maxD.m&&d>maxD.d))));
-      if(early||late){cls+=' other-month';dis='disabled';}
-      html+='<button class="'+cls+'" '+dis+' onclick="calSelect(this,''+iso+'')">'+d+'</button>';
-    }
+  for(var d=1;d<=daysInMonth;d++) {
+    var iso=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var cls='calDay', dis='';
 
-    var rem=(7-(firstDay+daysInMonth)%7)%7;
-    for(var n=1;n<=rem;n++)
-      html+='<button class="calDay other-month" disabled>'+n+'</button>';
+    // ✅ المختار = selected، واليوم الحالي = today
+    if(selD&&selD.y===calYear&&selD.m===calMonth&&selD.d===d) cls+=' selected';
+    else if(todD&&todD.y===calYear&&todD.m===calMonth&&todD.d===d) cls+=' today';
 
-    grid.innerHTML=html;
+    var early=minD&&(calYear<minD.y||(calYear===minD.y&&(calMonth<minD.m||(calMonth===minD.m&&d<minD.d))));
+    var late=maxD&&(calYear>maxD.y||(calYear===maxD.y&&(calMonth>maxD.m||(calMonth===maxD.m&&d>maxD.d))));
+    if(early||late){cls+=' other-month';dis='disabled';}
+
+    // ✅ إصلاح الاقتباسات داخل onclick
+    html+='<button class="'+cls+'" '+dis+' onclick="calSelect(this,''+iso+'')">'+d+'</button>';
   }
 
-  window.openCalPopup=function(btn) {
-    var popup=document.getElementById('calPopup');
-    var overlay=document.getElementById('calOverlay');
-    if(!popup||!overlay) return;
-    var iso=btn?btn.dataset.date:'';
-    var d=parseD(iso)||parseD(getTodayMus());
-    calYear=d.y; calMonth=d.m;
-    renderCal();
-    popup.classList.add('open');
-    overlay.classList.add('open');
-  };
+  var rem=(7-(firstDay+daysInMonth)%7)%7;
+  for(var n=1;n<=rem;n++)
+    html+='<button class="calDay other-month" disabled>'+n+'</button>';
 
-  window.closeCalPopup=function() {
-    var p=document.getElementById('calPopup');
-    var o=document.getElementById('calOverlay');
-    if(p) p.classList.remove('open');
-    if(o) o.classList.remove('open');
-  };
+  grid.innerHTML=html;
+}
 
-  window.calPrevMonth=function() {
-    if(--calMonth<0){calMonth=11;calYear--;} renderCal();
-  };
+window.openCalPopup=function(btn) {
+  var popup=document.getElementById('calPopup');
+  var overlay=document.getElementById('calOverlay');
+  if(!popup||!overlay) return;
+  var iso=btn?btn.dataset.date:'';
+  var d=parseD(iso)||parseD(getTodayMus());
+  calYear=d.y; calMonth=d.m;
+  renderCal();
+  popup.classList.add('open');
+  overlay.classList.add('open');
+};
 
-  window.calNextMonth=function() {
-    if(++calMonth>11){calMonth=0;calYear++;} renderCal();
-  };
+window.closeCalPopup=function() {
+  var p=document.getElementById('calPopup');
+  var o=document.getElementById('calOverlay');
+  if(p) p.classList.remove('open');
+  if(o) o.classList.remove('open');
+};
 
-  window.calSelect=function(btn,iso) {
-    sessionStorage.removeItem('pageLoaded');
-    var path=window.location.pathname||'/';
-    var isNow=path.includes('/now');
-    var base=path.replace(/\/date\/[0-9-]+\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
-    window.location.href=base+'/date/'+iso+'/'+(isNow?'now/':'');
-  };
+window.calPrevMonth=function() {
+  if(--calMonth<0){calMonth=11;calYear--;} renderCal();
+};
+
+window.calNextMonth=function() {
+  if(++calMonth>11){calMonth=0;calYear++;} renderCal();
+};
+
+window.calSelect=function(btn,iso) {
+  sessionStorage.removeItem('pageLoaded');
+  var path=window.location.pathname||'/';
+  var isNow=path.includes('/now');
+  var base=path.replace(/\/date\/[0-9-]+\/.*$/,'/').replace(/\/now\/.*$/,'/').replace(/\/+$/,'');
+  window.location.href=base+'/date/'+iso+'/'+(isNow?'now/':'');
+};
 })();
 
 // ═══════════════════════════════════════════════════

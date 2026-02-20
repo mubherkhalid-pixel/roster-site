@@ -74,7 +74,7 @@
       display:flex;align-items:center;justify-content:space-between;
       padding:12px 24px;
       gap:12px;
-      max-width:1400px;margin:0 auto;
+      max-width:960px;margin:0 auto;
     }
     .brand{display:flex;align-items:center;gap:10px;min-width:0}
     .brand-icon{
@@ -106,8 +106,8 @@
 
     /* ── SEARCH SECTION ── */
     .search-section{
-      padding:16px 24px 0;
-      max-width:1400px;margin:0 auto;
+      padding:16px 20px 0;
+      max-width:960px;margin:0 auto;
     }
     .search-hero{
       background:var(--surface);
@@ -203,56 +203,35 @@
 
     /* ── MAIN CONTENT ── */
     .main{
-      padding:20px 24px calc(32px + var(--safe-bot));
-      max-width:1400px;
+      padding:20px 20px calc(40px + var(--safe-bot));
+      max-width:960px;
       margin:0 auto;
     }
-    .stack{display:flex;flex-direction:column;gap:14px}
-
-    /* ── DESKTOP LAYOUT: sidebar + calendar ── */
-    @media(min-width:900px){
-      .stack{flex-direction:row;align-items:flex-start;gap:20px}
-      .col-left{flex:0 0 280px;display:flex;flex-direction:column;gap:14px;position:sticky;top:80px}
-      .col-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
-      /* on mobile everything stacks */
-    }
-    @media(max-width:899px){
-      .col-left,.col-right{display:contents}
-    }
+    .stack{display:flex;flex-direction:column;gap:16px}
+    .col-left,.col-right{display:contents}
 
     /* ── EMPLOYEE BANNER ── */
     .emp-banner{
       background:var(--surface);
       border:1px solid var(--border);
       border-radius:var(--r-lg);
-      padding:18px;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:16px 20px;
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
     }
-    @media(min-width:900px){
-      .emp-banner{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:14px;
-        padding:20px;
-      }
-    }
-    .emp-left{display:flex;align-items:center;gap:12px;min-width:0}
-    @media(min-width:900px){.emp-left{gap:14px}}
+    .emp-left{display:flex;align-items:center;gap:14px;min-width:0}
     .emp-avatar{
-      width:44px;height:44px;border-radius:12px;
+      width:48px;height:48px;border-radius:14px;
       background:linear-gradient(135deg,#1f6feb,#58a6ff);
       display:grid;place-items:center;
-      color:#fff;font-weight:800;font-size:16px;
+      color:#fff;font-weight:800;font-size:17px;
       flex:0 0 auto;
-      box-shadow:0 4px 14px rgba(31,111,235,.35);
+      box-shadow:0 4px 16px rgba(31,111,235,.4);
     }
-    @media(min-width:900px){.emp-avatar{width:56px;height:56px;font-size:20px;border-radius:16px}}
-    .emp-name{font-size:15px;font-weight:700;color:var(--ink);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    @media(min-width:900px){.emp-name{font-size:17px;white-space:normal}}
-    .emp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+    .emp-name{font-size:16px;font-weight:700;color:var(--ink);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .emp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
     .emp-tag{
       display:inline-flex;align-items:center;gap:4px;
-      background:rgba(255,255,255,.04);
+      background:rgba(255,255,255,.05);
       border:1px solid var(--border);
       border-radius:6px;
       padding:3px 8px;
@@ -260,47 +239,45 @@
       font-family:'DM Mono',monospace;
     }
     .change-btn{
-      width:32px;height:32px;
+      width:34px;height:34px;
       background:transparent;
       border:1px solid var(--border2);
       color:var(--muted);
-      border-radius:8px;
-      font-size:15px;
+      border-radius:9px;
+      font-size:16px;
       display:grid;place-items:center;
       flex:0 0 auto;
       transition:all .15s;
     }
     .change-btn:hover{background:rgba(255,255,255,.07);color:var(--ink)}
-    @media(min-width:900px){
-      .emp-banner-actions{display:flex;gap:8px;width:100%}
-      .emp-banner-actions .change-btn{width:auto;padding:0 12px;font-size:12px;font-weight:600}
-    }
 
-    /* ── STATS ROW ── */
+    /* ── STATS ROW — 7 cards in one row on desktop ── */
     .stats-row{
       display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:8px;
+      grid-template-columns:repeat(7,1fr);
+      gap:10px;
     }
-    @media(min-width:900px){
-      /* In desktop sidebar: 2 columns */
-      .col-left .stats-row{grid-template-columns:repeat(2,1fr);gap:10px}
-    }
-    @media(max-width:380px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:700px){.stats-row{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:400px){.stats-row{grid-template-columns:repeat(2,1fr)}}
     .stat-card{
       background:var(--surface);
       border:1px solid var(--border);
       border-radius:var(--r);
-      padding:14px 10px;
+      padding:16px 8px 14px;
       text-align:center;
       position:relative;
       overflow:hidden;
-      transition:border-color .15s, transform .1s;
+      transition:border-color .2s, transform .15s, box-shadow .15s;
+      cursor:default;
     }
-    .stat-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+    .stat-card:hover{
+      border-color:var(--border2);
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(0,0,0,.3);
+    }
     .stat-card::after{
       content:'';
-      position:absolute;top:0;left:0;right:0;height:2.5px;
+      position:absolute;top:0;left:0;right:0;height:3px;
     }
     .stat-card.c-blue::after{background:linear-gradient(90deg,#1f6feb,#58a6ff)}
     .stat-card.c-gray::after{background:linear-gradient(90deg,#484f58,#8b949e)}
@@ -309,15 +286,9 @@
     .stat-card.c-purple::after{background:linear-gradient(90deg,#7c3aed,#bc8cff)}
     .stat-card.c-pink::after{background:linear-gradient(90deg,#be185d,#ff7b72)}
     .stat-card.c-green::after{background:linear-gradient(90deg,#15803d,#3fb950)}
-    .stat-ico{font-size:18px;margin-bottom:4px;display:block}
-    @media(min-width:900px){
-      .col-left .stat-card{padding:16px 12px}
-      .col-left .stat-ico{font-size:22px;margin-bottom:6px}
-      .col-left .stat-val{font-size:30px}
-      .col-left .stat-lbl{font-size:11px}
-    }
-    .stat-val{font-size:22px;font-weight:800;color:var(--ink);font-family:'DM Mono',monospace;line-height:1}
-    .stat-lbl{font-size:10px;color:var(--muted);font-weight:600;margin-top:4px;line-height:1.2}
+    .stat-ico{font-size:18px;margin-bottom:6px;display:block}
+    .stat-val{font-size:24px;font-weight:800;color:var(--ink);font-family:'DM Mono',monospace;line-height:1}
+    .stat-lbl{font-size:9.5px;color:var(--muted);font-weight:600;margin-top:5px;line-height:1.3}
 
     /* ── CALENDAR ── */
     .cal-card{
@@ -332,15 +303,12 @@
       border-bottom:1px solid var(--border);
     }
     .cal-head div{
-      padding:12px 2px;
+      padding:14px 4px;
       text-align:center;
-      font-size:11px;font-weight:700;
+      font-size:12px;font-weight:700;
       color:var(--muted);
-      letter-spacing:.3px;
+      letter-spacing:.5px;
       text-transform:uppercase;
-    }
-    @media(min-width:900px){
-      .cal-head div{padding:16px 4px;font-size:12px;letter-spacing:.5px}
     }
     .cal-body{
       display:grid;
@@ -348,8 +316,8 @@
     }
     .day{
       background:var(--surface);
-      min-height:64px;
-      padding:6px 4px;
+      min-height:80px;
+      padding:8px 6px;
       display:flex;flex-direction:column;justify-content:space-between;
       position:relative;
       transition:background .1s;
@@ -357,33 +325,25 @@
       border-right:1px solid var(--border);
       border-bottom:1px solid var(--border);
     }
-    @media(min-width:900px){
-      .day{min-height:110px;padding:10px 8px;}
-    }
     .day:nth-child(7n){border-right:none}
     @media(max-width:380px){.day{min-height:52px;padding:4px 3px}}
     .day.empty{background:rgba(13,17,23,.6);cursor:default}
     body.light .day.empty{background:rgba(240,242,245,.7)}
     .day-top{display:flex;align-items:center;justify-content:space-between;width:100%}
-    .dnum{font-size:11px;font-weight:700;color:var(--muted);font-family:'DM Mono',monospace}
-    @media(min-width:900px){.dnum{font-size:14px}}
+    .dnum{font-size:12px;font-weight:700;color:var(--muted);font-family:'DM Mono',monospace}
     .day:not(.empty) .dnum{color:var(--ink)}
-    .day-ico{font-size:13px;line-height:1}
-    @media(min-width:900px){.day-ico{font-size:18px}}
+    .day-ico{font-size:16px;line-height:1}
     .day-tag{
-      margin-top:3px;
-      font-size:9px;font-weight:700;
-      border-radius:4px;
-      padding:2px 4px;
+      margin-top:auto;
+      font-size:10px;font-weight:700;
+      border-radius:5px;
+      padding:3px 5px;
       border:1px solid transparent;
       text-align:center;
       letter-spacing:.15px;
       line-height:1.2;
       overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
       max-width:100%;
-    }
-    @media(min-width:900px){
-      .day-tag{font-size:11px;padding:4px 6px;border-radius:6px;margin-top:auto}
     }
     /* Ghost shift code in day cells - desktop */
     @media(min-width:900px){
@@ -471,12 +431,8 @@
     }
     .actions-grid{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-    }
-    @media(min-width:900px){
-      .actions-grid{grid-template-columns:1fr;gap:8px}
-      .action-btn.primary{grid-column:span 1}
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
     }
     .action-btn{
       display:flex;align-items:center;gap:10px;
@@ -490,16 +446,14 @@
       text-align:left;
       cursor:pointer;
     }
-    .action-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:var(--ink);transform:translateX(2px)}
-    body.ar .action-btn:hover{transform:translateX(-2px)}
+    .action-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:var(--ink)}
     .action-btn:active{transform:scale(.98)}
     .action-btn.primary{
       background:linear-gradient(135deg,rgba(31,111,235,.2),rgba(56,139,253,.1));
       border-color:rgba(56,139,253,.3);
       color:var(--accent);
-      grid-column:span 2;
+      grid-column:1 / -1;
     }
-    @media(min-width:900px){.action-btn.primary{grid-column:span 1}}
     .action-btn.primary:hover{background:linear-gradient(135deg,rgba(31,111,235,.3),rgba(56,139,253,.2));border-color:rgba(56,139,253,.5)}
     .action-ico{font-size:18px;flex:0 0 auto}
 
@@ -998,43 +952,39 @@
         </div>`).join('');
 
       document.getElementById('area').innerHTML=`
-        <div class="col-left">
-          <!-- Employee Banner -->
-          <div class="emp-banner">
-            <div class="emp-left">
-              <div class="emp-avatar">${esc(initials)}</div>
-              <div style="min-width:0">
-                <div class="emp-name">${esc(data.name)}</div>
-                <div class="emp-tags">
-                  <span class="emp-tag">📋 ${esc(data.department)}</span>
-                  <span class="emp-tag">🆔 ${esc(data.id)}</span>
-                </div>
+        <!-- Employee Banner -->
+        <div class="emp-banner">
+          <div class="emp-left">
+            <div class="emp-avatar">${esc(initials)}</div>
+            <div style="min-width:0">
+              <div class="emp-name">${esc(data.name)}</div>
+              <div class="emp-tags">
+                <span class="emp-tag">📋 ${esc(data.department)}</span>
+                <span class="emp-tag">🆔 ${esc(data.id)}</span>
               </div>
             </div>
-            ${changeBtn}
           </div>
-
-          <!-- Stats -->
-          <div class="stats-row">${statsHTML}</div>
-
-          <!-- Actions -->
-          <div class="actions-card">
-            <div class="section-label">${t('actionsTitle')}</div>
-            <div class="actions-grid">
-              <button class="action-btn primary" onclick="dlPDF()"><span class="action-ico">📄</span>${t('pdf')}</button>
-              <button class="action-btn" onclick="dlIMG()"><span class="action-ico">🖼️</span>${t('img')}</button>
-              <button class="action-btn" onclick="dlICS()"><span class="action-ico">📆</span>${t('ics')}</button>
-              <button class="action-btn" onclick="shareS()"><span class="action-ico">🔗</span>${t('share')}</button>
-              <button class="action-btn" onclick="window.print()"><span class="action-ico">🖨️</span>${t('print')}</button>
-            </div>
-          </div>
+          ${changeBtn}
         </div>
 
-        <div class="col-right">
-          <!-- Calendar -->
-          <div class="cal-card">
-            <div class="cal-head">${dayHdr}</div>
-            <div class="cal-body">${cells}</div>
+        <!-- Calendar — main content -->
+        <div class="cal-card">
+          <div class="cal-head">${dayHdr}</div>
+          <div class="cal-body">${cells}</div>
+        </div>
+
+        <!-- Stats — full width 7-column row -->
+        <div class="stats-row">${statsHTML}</div>
+
+        <!-- Actions -->
+        <div class="actions-card">
+          <div class="section-label">${t('actionsTitle')}</div>
+          <div class="actions-grid">
+            <button class="action-btn primary" onclick="dlPDF()"><span class="action-ico">📄</span>${t('pdf')}</button>
+            <button class="action-btn" onclick="dlIMG()"><span class="action-ico">🖼️</span>${t('img')}</button>
+            <button class="action-btn" onclick="dlICS()"><span class="action-ico">📆</span>${t('ics')}</button>
+            <button class="action-btn" onclick="shareS()"><span class="action-ico">🔗</span>${t('share')}</button>
+            <button class="action-btn" onclick="window.print()"><span class="action-ico">🖨️</span>${t('print')}</button>
           </div>
         </div>`;
     }

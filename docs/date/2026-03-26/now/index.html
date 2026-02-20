@@ -58,17 +58,6 @@
     .langToggle:hover { background:rgba(255,255,255,.30); transform:scale(1.08); }
     body.ar { direction:rtl; font-family:'Segoe UI',Tahoma,Arial,sans-serif; }
     body.ar .langToggle { left:auto; right:16px; }
-    .myScheduleBtn {
-      position:absolute; top:54px; left:16px; z-index:10;
-      background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.25);
-      border-radius:50%; width:32px; height:32px;
-      display:flex; align-items:center; justify-content:center;
-      color:#fff; font-size:15px; cursor:pointer;
-      transition:all .25s; -webkit-tap-highlight-color:transparent; padding:0;
-      text-decoration:none;
-    }
-    .myScheduleBtn:hover { background:rgba(255,255,255,.30); transform:scale(1.08); }
-    body.ar .myScheduleBtn { left:auto; right:16px; }
     .empRow, .empName, .empStatus { direction:ltr !important; unicode-bidi:embed; text-align:left !important; }
 
     /* Date Picker Wrapper */
@@ -331,7 +320,6 @@
   <!-- ════ HEADER ════ -->
   <div class="header">
     <button class="langToggle" id="langToggle" onclick="toggleLang()">ع</button>
-    <a class="myScheduleBtn" href="https://khalidsaif912.github.io/roster-site//my-schedules/index.html" title="My Schedule">👤</a>
     <h1 id="pageTitle">📋 Duty Roster</h1>
     <div class="datePickerWrapper">
       <button class="dateTag" id="dateTag" onclick="openDatePicker()" type="button">📅 26 March 2026</button>

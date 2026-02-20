@@ -6,70 +6,93 @@
   <title>My Schedule</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
     /* ── RESET ── */
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
     :root{
-      --bg:#0d1117;
-      --surface:#161b22;
-      --surface2:#1c2330;
-      --surface3:#21262d;
+      /* Softer, eye-friendly dark theme */
+      --bg:#0b0f14;
+      --surface:#121823;
+      --surface2:#161f2c;
+      --surface3:#1b2533;
       --border:rgba(255,255,255,.08);
-      --border2:rgba(255,255,255,.12);
-      --ink:#e6edf3;
-      --muted:#8b949e;
-      --dim:#484f58;
-      --accent:#58a6ff;
-      --accent2:#3fb950;
-      --amber:#d29922;
-      --orange:#db6d28;
-      --purple:#bc8cff;
-      --pink:#ff7b72;
+      --border2:rgba(255,255,255,.14);
+      --ink:#e7edf6;
+      --muted:#a2adbb;
+      --dim:#6b7685;
+
+      /* Calmer accent (less neon) */
+      --accent:#5ea3ff;
+      --accent2:#39c36a;
+
+      /* Status colors (kept, slightly softened) */
+      --amber:#d8a63a;
+      --orange:#de7b3a;
+      --purple:#b99bff;
+      --pink:#ff8f87;
       --cyan:#39d353;
-      --r:12px;
-      --r-lg:18px;
+
+      --r:14px;
+      --r-lg:20px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
     }
     body.light{
-      --bg:#f5f7fa;
+      /* Clean, calm light theme */
+      --bg:#f6f8fb;
       --surface:#ffffff;
-      --surface2:#f0f2f5;
-      --surface3:#e8ebf0;
-      --border:rgba(0,0,0,.08);
-      --border2:rgba(0,0,0,.13);
-      --ink:#1a1f2e;
-      --muted:#6b7280;
-      --dim:#9ca3af;
+      --surface2:#f1f5f9;
+      --surface3:#e9eef6;
+      --border:rgba(15,23,42,.10);
+      --border2:rgba(15,23,42,.16);
+      --ink:#0f172a;
+      --muted:#475569;
+      --dim:#94a3b8;
       --accent:#1d6fd4;
     }
 
-    html{background:var(--bg); color:var(--ink); font-size:15px; scroll-behavior:smooth}
+    html{background:var(--bg); color:var(--ink); font-size:16px; scroll-behavior:smooth}
     body{
       font-family:'Sora', system-ui, -apple-system, sans-serif;
+      line-height:1.55;
       background:var(--bg);
       min-height:100dvh;
       -webkit-font-smoothing:antialiased;
       overflow-x:hidden;
       transition:background .2s, color .2s;
     }
-    body.ar{direction:rtl}
+    body.ar{direction:rtl; font-family:'Tajawal','Sora',system-ui,-apple-system,sans-serif}
+    body.ar .dnum, body.ar .stat-val, body.ar .mnav-label{font-variant-numeric:tabular-nums}
     a{color:var(--accent);text-decoration:none}
     button,input,select{font-family:inherit;font-size:inherit}
     button{cursor:pointer}
+
+
+    /* ── ACCESSIBILITY ── */
+    :focus{outline:none}
+    :focus-visible{
+      outline:3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+      outline-offset:2px;
+      border-radius:10px;
+    }
+    @media (prefers-reduced-motion: reduce){
+      *{scroll-behavior:auto!important}
+      *,*::before,*::after{transition:none!important;animation:none!important}
+    }
 
     /* ── TOPBAR ── */
     .topbar{
       position:sticky;top:0;z-index:100;
       padding-top:var(--safe-top);
-      background:rgba(13,17,23,.92);
+      background:color-mix(in srgb, var(--bg) 82%, transparent);
       backdrop-filter:blur(20px) saturate(180%);
       -webkit-backdrop-filter:blur(20px) saturate(180%);
       border-bottom:1px solid var(--border);
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
       transition:background .2s;
     }
-    body.light .topbar{background:rgba(245,247,250,.92)}
+    body.light .topbar{background:color-mix(in srgb, var(--bg) 82%, transparent)}
     .topbar-inner{
       display:flex;align-items:center;justify-content:space-between;
       padding:12px 24px;
@@ -83,7 +106,7 @@
       display:grid;place-items:center;
       font-size:18px;
       flex:0 0 auto;
-      box-shadow:0 0 0 1px rgba(56,139,253,.3),0 4px 12px rgba(31,111,235,.4);
+      box-shadow:0 0 0 1px rgba(94,163,255,.24),0 10px 28px rgba(0,0,0,.22);
     }
     .brand-info{min-width:0}
     .brand-name{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -99,7 +122,7 @@
       transition:all .15s;
       white-space:nowrap;
     }
-    .ghost-btn:hover{background:rgba(255,255,255,.1);color:var(--ink);border-color:rgba(255,255,255,.2)}
+    .ghost-btn:hover{background:color-mix(in srgb, var(--surface3) 70%, transparent);color:var(--ink);border-color:var(--border2)}
     body.light .ghost-btn:hover{background:rgba(0,0,0,.07);border-color:rgba(0,0,0,.18)}
     .ghost-btn:active{transform:scale(.97)}
     .theme-btn{width:34px;padding:0;font-size:15px;}
@@ -131,8 +154,8 @@
 
     .search-form{display:flex;gap:8px;align-items:center}
     .search-input{
-      width:130px;
-      flex:0 0 130px;
+      width:clamp(160px, 40vw, 260px);
+      flex:1 1 auto;
       background:var(--surface3);
       border:1px solid var(--border2);
       color:var(--ink);
@@ -273,7 +296,7 @@
     .stat-card:hover{
       border-color:var(--border2);
       transform:translateY(-2px);
-      box-shadow:0 8px 24px rgba(0,0,0,.3);
+      box-shadow:0 10px 28px rgba(0,0,0,.22);
     }
     .stat-card::after{
       content:'';
@@ -327,15 +350,15 @@
     }
     .day:nth-child(7n){border-right:none}
     @media(max-width:380px){.day{min-height:52px;padding:4px 3px}}
-    .day.empty{background:rgba(13,17,23,.6);cursor:default}
+    .day.empty{background:color-mix(in srgb, var(--bg) 72%, var(--surface) 28%);cursor:default}
     body.light .day.empty{background:rgba(240,242,245,.7)}
     .day-top{display:flex;align-items:center;justify-content:space-between;width:100%}
-    .dnum{font-size:12px;font-weight:700;color:var(--muted);font-family:'DM Mono',monospace}
+    .dnum{font-size:12.5px;font-weight:800;color:var(--muted);font-family:'DM Mono',monospace}
     .day:not(.empty) .dnum{color:var(--ink)}
     .day-ico{font-size:16px;line-height:1}
     .day-tag{
       margin-top:auto;
-      font-size:10px;font-weight:700;
+      font-size:10.5px;font-weight:800;
       border-radius:5px;
       padding:3px 5px;
       border:1px solid transparent;
@@ -688,11 +711,27 @@
     </div>
   </div>
 
+
+  <script>
+    // Theme boot: respect OS preference unless user already toggled
+    (function(){
+      try{
+        const saved = localStorage.getItem('theme');
+        if(saved==='light' || saved==='dark'){
+          document.body.classList.toggle('light', saved==='light');
+        } else {
+          const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+          document.body.classList.toggle('light', prefersLight);
+        }
+      }catch(e){}
+    })();
+  </script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
-    let data=null, month=null, months=[], lang='ar', theme='dark';
+    let data=null, month=null, months=[], lang='ar', theme=(document.body.classList.contains('light')?'light':'dark');
 
     const COLORS={
       Morning:       {icon:'☀️', dot:'#d29922'},
@@ -781,8 +820,9 @@
     }
 
     function toggleTheme(){
-      theme=(theme==='dark'?'light':'dark');
+      theme=(document.body.classList.contains('light')?'dark':'light');
       document.body.classList.toggle('light', theme==='light');
+      localStorage.setItem('theme', theme);
       document.getElementById('themeBtn').textContent=(theme==='dark'?'🌙':'☀️');
     }
     function toggleLang(){ lang=(lang==='en'?'ar':'en'); applyLangUI(); }

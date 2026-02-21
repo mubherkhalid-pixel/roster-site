@@ -936,17 +936,16 @@
       --glass-shadow: 0 10px 24px rgba(0,0,0,.10);
     }
 
-    /* Base glass style */
+
+    /* Base glass style — NO !important on color/bg so specific rules can override */
     .ghost-btn,
     .tips-pill,
     .month-picker-btn,
-    .search-btn,
     .search-change-btn,
-    .change-btn,
-    .action-btn{
+    .change-btn{
       position:relative;
-      background:var(--glass-bg)!important;
-      border:1px solid var(--glass-border)!important;
+      background:var(--glass-bg);
+      border:1px solid var(--glass-border);
       box-shadow:var(--glass-shadow);
       backdrop-filter: blur(14px) saturate(170%);
       -webkit-backdrop-filter: blur(14px) saturate(170%);
@@ -957,6 +956,25 @@
     body.light .month-picker-btn,
     body.light .change-btn{
       color: #1a1f2e;
+    }
+
+    /* action-btn — نص واضح */
+    .action-btn{
+      position:relative;
+      backdrop-filter: blur(14px) saturate(170%);
+      -webkit-backdrop-filter: blur(14px) saturate(170%);
+    }
+
+    /* search-btn — أزرق غامق صلب */
+    .search-btn{
+      background: linear-gradient(135deg,#1553c7,#1f6feb) !important;
+      border: 1px solid rgba(56,139,253,.6) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 18px rgba(31,111,235,.55), inset 0 1px 0 rgba(255,255,255,.18) !important;
+    }
+    .search-btn:hover{
+      background: linear-gradient(135deg,#1a5fd4,#2979ff) !important;
+      box-shadow: 0 6px 22px rgba(31,111,235,.7) !important;
     }
 
     /* Subtle reflection under buttons */
@@ -994,18 +1012,18 @@
     .ghost-btn:hover,
     .tips-pill:hover,
     .month-picker-btn:hover,
-    .search-btn:hover,
     .search-change-btn:hover,
-    .change-btn:hover,
+    .change-btn:hover{
+      background:var(--glass-bg-hover);
+      border-color:var(--glass-border-hover);
+      transform: translateY(-1px);
+    }
     .action-btn:hover{
-      background:var(--glass-bg-hover)!important;
-      border-color:var(--glass-border-hover)!important;
       transform: translateY(-1px);
     }
     .ghost-btn:active,
     .tips-pill:active,
     .month-picker-btn:active,
-    .search-btn:active,
     .search-change-btn:active,
     .change-btn:active,
     .action-btn:active{
@@ -1013,15 +1031,24 @@
       filter: brightness(1.02);
     }
 
-    /* Keep primary actions readable while staying glassy */
+    /* action-btn ألوان واضحة */
+    .action-btn{
+      color: #c9d1d9 !important;
+      font-weight:600;
+    }
     .action-btn.primary{
-      color: var(--ink) !important;
-      font-weight: 700;
+      background: linear-gradient(135deg,rgba(31,111,235,.22),rgba(56,139,253,.12)) !important;
+      border: 1px solid rgba(56,139,253,.45) !important;
+      color: #58a6ff !important;
+      font-weight: 700 !important;
+    }
+    .action-btn.primary:hover{
+      background: linear-gradient(135deg,rgba(31,111,235,.35),rgba(56,139,253,.25)) !important;
+      border-color: rgba(56,139,253,.7) !important;
+      color: #79b8ff !important;
     }
 
-    /* Remove old gradient shadows for these (override) */
-    .search-btn{ box-shadow: var(--glass-shadow) !important; }
-    .search-change-btn{ box-shadow: var(--glass-shadow) !important; }
+
 
 
     /* ── Reflection for input + key containers ── */

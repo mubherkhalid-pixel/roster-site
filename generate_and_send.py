@@ -832,6 +832,8 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
       transform:translateY(-3px);
       box-shadow:0 8px 20px rgba(15,23,42,.12);
     }}
+    a.summaryChip.gamesChip .chipVal {{ color:#7c3aed; }}
+    a.summaryChip.gamesChip:hover {{ box-shadow:0 8px 20px rgba(124,58,237,.18); }}
     .summaryChip {{
       background:#fff;
       border:1px solid rgba(15,23,42,.1);
@@ -1059,6 +1061,10 @@ def page_shell_html(date_label: str, iso_date: str, employees_total: int, depart
     <a href="https://khalidsaif912.github.io/roster-site/my-schedules/index.html" id="myScheduleBtn" class="summaryChip" style="cursor:pointer;text-decoration:none;" onclick="goToMySchedule(event)">
       <div class="chipVal">🗓️</div>
       <div class="chipLabel" data-key="mySchedule">My Schedule</div>
+    </a>
+    <a href="https://dgr-exp.netlify.app" class="summaryChip gamesChip" style="cursor:pointer;text-decoration:none;">
+      <div class="chipVal">🎮</div>
+      <div class="chipLabel" data-key="games">Games</div>
     </a>
     {"" if not is_now_page else '''
     <button class="summaryChip shiftFilterBtn morning" data-shift="Morning" style="cursor:pointer;">
@@ -1356,7 +1362,7 @@ var T = {{
     viewFull:'📋 View Full Duty Roster', subscribe:'📩 Subscribe',
     officers:'Officers', supervisors:'Supervisors', loadControl:'Load Control',
     exportChecker:'Export Checker', exportOps:'Export Operators', unassigned:'Unassigned',
-    morning2:'Morning', afternoon2:'Afternoon', night2:'Night', allShifts:'All Shifts', mySchedule:'My Schedule',
+    morning2:'Morning', afternoon2:'Afternoon', night2:'Night', allShifts:'All Shifts', mySchedule:'My Schedule', games:'Games',
   }},
   ar: {{
     title:'📋 جدول المناوبات', langBtn:'EN',
@@ -1368,7 +1374,7 @@ var T = {{
     viewFull:'📋 عرض جدول المناوبات الكامل', subscribe:'📩 اشتراك',
     officers:'الضباط', supervisors:'المشرفون', loadControl:'مراقبة الحمولة',
     exportChecker:'مدقق الصادرات', exportOps:'مشغلو الصادرات', unassigned:'غير مُعيَّن',
-    morning2:'صباح', afternoon2:'ظهر', night2:'ليل', allShifts:'الكل', mySchedule:'جدولي',
+    morning2:'صباح', afternoon2:'ظهر', night2:'ليل', allShifts:'الكل', mySchedule:'جدولي', games:'الألعاب',
   }}
 }};
 

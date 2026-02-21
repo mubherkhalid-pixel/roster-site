@@ -851,6 +851,73 @@
     .search-btn{ box-shadow: var(--glass-shadow) !important; }
     .search-change-btn{ box-shadow: var(--glass-shadow) !important; }
 
+
+    /* ── Reflection for input + key containers ── */
+    .search-input,
+    .emp-banner,
+    .cal-card,
+    .actions-card,
+    .legend-card{
+      position:relative;
+      overflow:visible;
+    }
+    .search-input::after,
+    .emp-banner::after,
+    .cal-card::after,
+    .actions-card::after,
+    .legend-card::after{
+      content:"";
+      position:absolute;
+      left:8%;
+      right:8%;
+      bottom:-14px;
+      height:14px;
+      background:linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,0));
+      filter: blur(7px);
+      opacity:.32;
+      pointer-events:none;
+      border-radius:999px;
+      z-index:-1;
+    }
+    body.light .search-input::after,
+    body.light .emp-banner::after,
+    body.light .cal-card::after,
+    body.light .actions-card::after,
+    body.light .legend-card::after{
+      background:linear-gradient(to bottom, rgba(0,0,0,.14), rgba(0,0,0,0));
+      opacity:.18;
+    }
+
+    /* Make the input itself slightly glassy (but keep readability) */
+    .search-input{
+      backdrop-filter: blur(14px) saturate(170%);
+      -webkit-backdrop-filter: blur(14px) saturate(170%);
+      box-shadow: var(--glass-shadow);
+      background: var(--glass-bg)!important;
+      border: 1px solid var(--glass-border)!important;
+    }
+    .search-input:focus{
+      border-color: var(--glass-border-hover)!important;
+      box-shadow: 0 0 0 3px rgba(56,139,253,.15), var(--glass-shadow);
+    }
+
+    /* ── Month button: remove reflection/glass because it sits inside the banner ── */
+    .month-picker-btn{
+      box-shadow:none!important;
+      backdrop-filter:none!important;
+      -webkit-backdrop-filter:none!important;
+      background: transparent!important;
+      border:1px solid var(--border2)!important;
+      color: var(--ink)!important;
+    }
+    .month-picker-btn::after{ display:none!important; }
+    .month-picker-btn:hover{
+      background: rgba(255,255,255,.04)!important;
+    }
+    body.light .month-picker-btn:hover{
+      background: rgba(0,0,0,.04)!important;
+    }
+
 </style>
 </head>
 <body>
@@ -1318,11 +1385,17 @@
       const stats=calcStats(sched);
       const isAr=lang==='ar';
 
-      // ── Palette ──
-      const BG='#0d1117', SURF='#161b22', SURF2='#1c2330';
-      const INK='#e6edf3', MUTED='#8b949e', DIM='#3d444d';
-      const BORDER='rgba(255,255,255,0.09)', BORDER2='rgba(255,255,255,0.15)';
-      const ACCENT='#58a6ff';
+      // ── Palette (match UI / calendar style) ──
+      const cs=getComputedStyle(document.documentElement);
+      const BG=cs.getPropertyValue('--bg').trim()||'#0d1117';
+      const SURF=cs.getPropertyValue('--surface').trim()||'#161b22';
+      const SURF2=cs.getPropertyValue('--surface2').trim()||'#1c2330';
+      const INK=cs.getPropertyValue('--ink').trim()||'#e6edf3';
+      const MUTED=cs.getPropertyValue('--muted').trim()||'#8b949e';
+      const DIM=cs.getPropertyValue('--dim').trim()||'#3d444d';
+      const BORDER=cs.getPropertyValue('--border').trim()||'rgba(255,255,255,0.09)';
+      const BORDER2=cs.getPropertyValue('--border2').trim()||'rgba(255,255,255,0.15)';
+      const ACCENT=cs.getPropertyValue('--accent').trim()||'#58a6ff';
 
       const SHIFT_THEME={
         Morning:       {bg:'#1f1500',fg:'#e3a217',tagBg:'rgba(227,162,23,.22)',tagBd:'rgba(227,162,23,.5)'},
@@ -1648,39 +1721,72 @@
       const stats=calcStats(sched);
       const SC={Morning:{fg:[180,80,0],bg:[255,243,224]},Afternoon:{fg:[160,40,5],bg:[255,235,218]},Night:{fg:[100,40,210],bg:[237,233,254]},'Off Day':{fg:[85,95,115],bg:[238,240,245]},'Annual Leave':{fg:[10,125,60],bg:[218,248,230]},'Sick Leave':{fg:[10,125,60],bg:[218,248,230]},Training:{fg:[10,85,190],bg:[218,238,255]},Standby:{fg:[148,10,110],bg:[250,218,242]},Other:{fg:[90,100,115],bg:[240,241,246]}};
       const FALLBACK={'Off Day':'OFF','Annual Leave':'LV','Sick Leave':'SL',Training:'TR',Standby:'ST',Other:'—'};
-      const LNAMES={Morning:'Morning',Afternoon:'Afternoon',Night:'Night','Off Day':'Day Off','Annual Leave':'Leave','Sick Leave':'Sick',Training:'Training',Standby:'Standby',Other:'Other'};
-      const NAVY=[10,22,40],NAVY2=[18,36,65],WHITE=[255,255,255],RULE=[210,216,226],EMPTY=[246,247,251],DIM=[120,130,148],ACCENT=[29,111,235],MUTED=[140,155,180];
+            const LNAMES={Morning:'Morning',Afternoon:'Afternoon',Night:'Night','Off Day':'Day Off','Annual Leave':'Leave','Sick Leave':'Sick',Training:'Training',Standby:'Standby',Other:'Other'};
+      // Match UI theme (calendar look)
+      const cs=getComputedStyle(document.documentElement);
+      const BG=cs.getPropertyValue('--bg').trim()||'#ffffff';
+      const SURF=cs.getPropertyValue('--surface').trim()||'#ffffff';
+      const SURF2=cs.getPropertyValue('--surface2').trim()||'#f0f2f5';
+      const INK=cs.getPropertyValue('--ink').trim()||'#1a1f2e';
+      const MUTED_TX=cs.getPropertyValue('--muted').trim()||'#6b7280';
+      const DIM_TX=cs.getPropertyValue('--dim').trim()||'#9ca3af';
+      const ACCENT_HEX=cs.getPropertyValue('--accent').trim()||'#1d6fd4';
 
-      // ── HEADER ──
-      // Deep navy gradient background
-      const HDR_H=42;
-      doc.setFillColor(...NAVY);doc.rect(0,0,W,HDR_H,'F');
-      // Subtle accent stripe at bottom of header
-      doc.setFillColor(...ACCENT);doc.rect(0,HDR_H-1.5,W,1.5,'F');
+      function hexToRgbArr(h){
+        const x=h.replace('#','').trim();
+        if(x.length===3){
+          const r=parseInt(x[0]+x[0],16), g=parseInt(x[1]+x[1],16), b=parseInt(x[2]+x[2],16);
+          return [r,g,b];
+        }
+        if(x.length===6){
+          return [parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)];
+        }
+        return [29,111,212];
+      }
+      const ACCENT=hexToRgbArr(ACCENT_HEX);
+      const NAVY=hexToRgbArr(SURF2);      // reuse naming to keep rest minimal
+      const NAVY2=hexToRgbArr(SURF);      // card bg
+      const WHITE=hexToRgbArr(INK);       // ink
+      const RULE=hexToRgbArr('#cfd6e3');  // soft grid/border
+      const EMPTY=hexToRgbArr('#f6f7fb'); // empty cell
+      const DIM=hexToRgbArr(DIM_TX);
+      const MUTED=hexToRgbArr(MUTED_TX);
 
-      // Employee name — big and bold, left side
+      // ── HEADER (calendar style) ──
+      const HDR_H=32;
+      // Background matches UI bg
+      doc.setFillColor(...hexToRgbArr(BG));doc.rect(0,0,W,HDR_H,'F');
+
+      // Header card (like the banner)
+      const cardX=ML, cardY=8, cardW=W-ML-MR, cardH=20;
+      doc.setFillColor(...NAVY2); // SURF
+      doc.setDrawColor(...RULE);
+      doc.roundedRect(cardX, cardY, cardW, cardH, 4, 4, 'FD');
+
+      // Subtle accent line
+      doc.setFillColor(...ACCENT);
+      doc.roundedRect(cardX, cardY, cardW, 1.6, 4, 4, 'F');
+
+      // Name
       doc.setTextColor(...WHITE);
-      doc.setFontSize(22);doc.setFont(undefined,'bold');
-      doc.text(String(data.name), ML, 16);
+      doc.setFontSize(14);doc.setFont(undefined,'bold');
+      doc.text(String(data.name), cardX+6, cardY+9);
 
-      // Department · ID — smaller, muted blue
-      doc.setFontSize(10);doc.setFont(undefined,'normal');
+      // Dept + ID
+      doc.setFontSize(9);doc.setFont(undefined,'normal');
       doc.setTextColor(...MUTED);
-      doc.text(`${data.department}`, ML, 25);
+      doc.text(String(data.department||''), cardX+6, cardY+15.2);
+      doc.setTextColor(...MUTED);
+      doc.setFontSize(8);
+      doc.text(`ID  ${data.id}`, cardX+6, cardY+19);
 
-      // ID with slight separator
-      doc.setTextColor(100,140,210);
-      doc.setFontSize(9);
-      doc.text(`ID  ${data.id}`, ML, 33);
-
-      // Month + Year — right side, large, no box
-      const monthStr = mName.toUpperCase();
+      // Month + Year on the right (same row)
       doc.setTextColor(...WHITE);
-      doc.setFontSize(20);doc.setFont(undefined,'bold');
-      doc.text(monthStr, W - MR, 19, {align:'right'});
-      doc.setFontSize(11);doc.setFont(undefined,'normal');
+      doc.setFontSize(12);doc.setFont(undefined,'bold');
+      doc.text(String(mName), cardX+cardW-6, cardY+9, {align:'right'});
       doc.setTextColor(...MUTED);
-      doc.text(String(yr), W - MR, 29, {align:'right'});
+      doc.setFontSize(9);doc.setFont(undefined,'normal');
+      doc.text(String(yr), cardX+cardW-6, cardY+15.2, {align:'right'});
 
       // ── CALENDAR ──
       const CAL_HDR=9,STATS_H=44,FOOT_H=8,GAP1=4,GAP2=5;

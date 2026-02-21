@@ -53,6 +53,7 @@
       -webkit-font-smoothing:antialiased;
       overflow-x:hidden;
       transition:background .2s, color .2s;
+      padding-top:64px; /* offset for fixed topbar */
     }
     body.ar{direction:rtl}
     a{color:var(--accent);text-decoration:none}
@@ -65,30 +66,22 @@
       50%  { background-position: 100% 50% }
       100% { background-position: 0% 50% }
     }
-    @keyframes auroraFadeIn{
-      from{ opacity:0; transform:scaleX(.7) }
-      to  { opacity:1; transform:scaleX(1) }
-    }
     .topbar{
-      position:sticky;top:0;z-index:100;
+      position:fixed;top:0;left:0;right:0;z-index:100;
       padding-top:var(--safe-top);
       background:linear-gradient(135deg,rgba(3,5,11,.99) 0%,rgba(6,10,19,.99) 60%,rgba(4,7,15,.99) 100%);
       backdrop-filter:blur(28px) saturate(220%);
       -webkit-backdrop-filter:blur(28px) saturate(220%);
-      border-bottom:1px solid rgba(56,139,253,.15);
-      /* shadow hidden by default, shown via .scrolled class */
-      box-shadow: 0 0 0 rgba(0,0,0,0);
-      transition: box-shadow .35s ease, background .2s;
-      position:relative;
+      border-bottom:1px solid rgba(56,139,253,.18);
+      box-shadow:
+        0 8px 32px rgba(0,0,0,.85),
+        0 3px 10px rgba(0,0,0,.7),
+        0 1px 0 rgba(56,139,253,.12),
+        inset 0 1px 0 rgba(255,255,255,.04);
+      transition: background .2s;
       overflow:visible;
     }
-    .topbar.scrolled{
-      box-shadow:
-        0 8px 40px rgba(0,0,0,.9),
-        0 2px 10px rgba(0,0,0,.6),
-        inset 0 1px 0 rgba(255,255,255,.04);
-    }
-    /* shimmer line always visible on border */
+    /* shimmer line on border */
     .topbar::before{
       content:'';
       position:absolute;
@@ -107,24 +100,52 @@
     body.light .topbar{
       background:rgba(225,232,245,.97);
       border-bottom-color:rgba(29,111,212,.18);
-      box-shadow:none;
-    }
-    body.light .topbar.scrolled{
-      box-shadow:0 4px 20px rgba(0,0,0,.14),0 1px 4px rgba(0,0,0,.08);
+      box-shadow:0 6px 24px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.1);
     }
     .topbar-inner{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:13px 32px;
-      gap:12px;
+      display:flex;
+      align-items:center;
+      padding:11px 20px;
+      gap:10px;
       max-width:1080px;margin:0 auto;
+    }
+
+    /* Home button — far LEFT */
+    .home-btn{
+      width:38px;height:38px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      display:grid;place-items:center;
+      cursor:pointer;
+      transition:all .18s;
+      flex:0 0 auto;
+      font-size:0;
+      position:relative;
+    }
+    .home-btn svg{ width:19px;height:19px;transition:transform .18s; }
+    .home-btn:hover{ background:rgba(56,139,253,.18); border-color:rgba(56,139,253,.4); }
+    .home-btn:hover svg{ transform:scale(1.12); }
+    .home-btn:active{ transform:scale(.94); }
+    body.light .home-btn{ background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.12); }
+    body.light .home-btn:hover{ background:rgba(29,111,212,.12); border-color:rgba(29,111,212,.3); }
+
+    /* Brand text — next to home button, grows to push right-side buttons away */
+    .topbar-center{
+      display:flex;align-items:center;flex:1;min-width:0;
+    }
+
+    /* Calendar icon — far RIGHT */
+    .topbar-right{
+      display:flex;align-items:center;gap:8px;justify-content:flex-end;flex:0 0 auto;
     }
 
     /* ── AURORA BAR (below topbar, separate element) ── */
     .aurora-bar{
-      position:sticky;
-      top: 0; /* will be set by JS to topbar height */
+      position:fixed;
       z-index:99;
       height:0;
+      left:0;right:0;
       overflow:visible;
       pointer-events:none;
     }
@@ -174,11 +195,11 @@
     .brand-sub{font-size:11px;color:rgba(139,148,158,.9);font-weight:500;white-space:nowrap}
     .top-btns{display:flex;gap:6px;flex:0 0 auto}
     .ghost-btn{
-      height:34px;padding:0 12px;
+      height:38px;padding:0 12px;
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.06);
       color:rgba(139,148,158,.9);
-      border-radius:8px;
+      border-radius:10px;
       font-size:12px;font-weight:600;
       transition:all .15s;
       white-space:nowrap;
@@ -186,7 +207,21 @@
     .ghost-btn:hover{background:rgba(56,139,253,.15);color:#e6edf3;border-color:rgba(56,139,253,.35)}
     body.light .ghost-btn:hover{background:rgba(0,0,0,.07);border-color:rgba(0,0,0,.18)}
     .ghost-btn:active{transform:scale(.97)}
-    .theme-btn{width:34px;padding:0;font-size:15px;}
+    .theme-btn{width:38px;padding:0;font-size:17px;border-radius:10px;}
+
+    /* Lang button — always blue */
+    #langBtn{
+      color:#58a6ff !important;
+      border-color:rgba(56,139,253,.3) !important;
+      font-weight:700;
+      font-size:13px;
+      letter-spacing:.2px;
+    }
+    #langBtn:hover{
+      background:rgba(56,139,253,.18) !important;
+      border-color:rgba(56,139,253,.5) !important;
+      color:#79b8ff !important;
+    }
 
     /* ── SEARCH SECTION ── */
     .search-section{
@@ -913,7 +948,13 @@
       box-shadow:var(--glass-shadow);
       backdrop-filter: blur(14px) saturate(170%);
       -webkit-backdrop-filter: blur(14px) saturate(170%);
-      color: var(--ink);
+      color: #c9d1d9;
+    }
+    body.light .ghost-btn,
+    body.light .tips-pill,
+    body.light .month-picker-btn,
+    body.light .change-btn{
+      color: #1a1f2e;
     }
 
     /* Subtle reflection under buttons */
@@ -1164,7 +1205,32 @@
     }
 
 
-    /* ── Topbar squares: same size + perfectly stacked ── */
+    /* ── TOPBAR: كل الأيقونات بنفس الحجم 38×38 ── */
+    .topbar-inner .home-btn,
+    .topbar-inner .ghost-btn.theme-btn,
+    .topbar-inner #langBtn,
+    .topbar-inner .brand-swap,
+    .topbar-inner .brand-sq{
+      width:38px !important;
+      height:38px !important;
+      min-width:38px !important;
+      border-radius:10px !important;
+      display:grid !important;
+      place-items:center !important;
+      flex:0 0 38px !important;
+    }
+    /* lang button needs auto width to fit text */
+    .topbar-inner #langBtn{
+      width:auto !important;
+      min-width:38px !important;
+      padding:0 11px !important;
+      flex:0 0 auto !important;
+    }
+    /* font-size unified for emoji icons */
+    .topbar-inner .ghost-btn.theme-btn{ font-size:18px !important; }
+    .topbar-inner .brand-sq{ font-size:18px !important; }
+
+
     .brand-mark{
       display:flex;
       flex-direction:column;
@@ -1255,8 +1321,27 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-inner">
-      <div class="brand">
-        
+
+      <!-- FAR LEFT: Home button -->
+      <button class="home-btn" onclick="goBack()" id="backBtn" aria-label="Home" title="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="color:#8b949e">
+          <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+          <path d="M9 21V12h6v9"/>
+        </svg>
+      </button>
+
+      <!-- CENTER: Brand info -->
+      <div class="topbar-center">
+        <div class="brand-info">
+          <div class="brand-name" id="ttl">My Schedule</div>
+          <div class="brand-sub" id="sub">Enter your Employee ID</div>
+        </div>
+      </div>
+
+      <!-- FAR RIGHT: theme + lang + calendar icon -->
+      <div class="topbar-right">
+        <button class="ghost-btn theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme">🌙</button>
+        <button class="ghost-btn" onclick="toggleLang()" id="langBtn">English</button>
         <div class="brand-mark">
           <div class="brand-swap" aria-label="Help" title="Help">
             <button class="brand-sq brand-cal show" id="brandCal" type="button" onclick="openTips()" aria-label="Help">📅</button>
@@ -1264,16 +1349,8 @@
           </div>
           <div class="brand-mini" id="brandMini" style="display:none"></div>
         </div>
-        <div class="brand-info">
-          <div class="brand-name" id="ttl">My Schedule</div>
-          <div class="brand-sub" id="sub">Enter your Employee ID</div>
-        </div>
       </div>
-      <div class="top-btns">
-        <button class="ghost-btn theme-btn" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme">🌙</button>
-        <button class="ghost-btn" onclick="toggleLang()" id="langBtn">English</button>
-        <button class="ghost-btn" onclick="goBack()" id="backBtn">رجوع →</button>
-      </div>
+
     </div>
   </header>
   <!-- Aurora glow bar: shown only when scrolled -->
@@ -1478,7 +1555,8 @@
       document.getElementById('ttl').textContent=t('title');
       document.getElementById('sub').textContent=t('sub');
       document.getElementById('langBtn').textContent=t('langBtn');
-      document.getElementById('backBtn').textContent=t('back');
+      // backBtn is now an SVG icon — don't overwrite it
+      // document.getElementById('backBtn').textContent=t('back');
       document.getElementById('empId').placeholder=t('ph');
       document.getElementById('sbtn').textContent=t('sbtn');
       const e1=document.getElementById('e1'),e2=document.getElementById('e2');
@@ -1936,24 +2014,25 @@
       }, 2600);
     })();
 
-    // ── Scroll: show shadow + aurora only when scrolled ──
+    // ── Scroll: show aurora only when scrolled ──
     (function(){
       const topbar = document.querySelector('.topbar');
       const auroraBar = document.getElementById('auroraBar');
       const auroraInner = document.getElementById('auroraBarInner');
       if(!topbar) return;
 
-      function onScroll(){
-        const scrolled = window.scrollY > 10;
-        topbar.classList.toggle('scrolled', scrolled);
-        if(auroraInner) auroraInner.classList.toggle('visible', scrolled);
-        // keep aurora bar sticky just below topbar
+      function setAuroraPos(){
         if(auroraBar) auroraBar.style.top = topbar.offsetHeight + 'px';
       }
 
-      // set initial position
-      if(auroraBar) auroraBar.style.top = (topbar.offsetHeight||60) + 'px';
+      function onScroll(){
+        const scrolled = window.scrollY > 10;
+        if(auroraInner) auroraInner.classList.toggle('visible', scrolled);
+      }
+
+      setAuroraPos();
       window.addEventListener('scroll', onScroll, {passive:true});
+      window.addEventListener('resize', setAuroraPos);
     })();
 
 

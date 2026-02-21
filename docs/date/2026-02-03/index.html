@@ -135,21 +135,21 @@
       background:#fff;
       border:1px solid rgba(15,23,42,.1);
       border-radius:14px;
-      padding:10px 16px; /* تقليل padding قليلاً */
+      padding:10px 12px;
       text-align:center;
       box-shadow:0 2px 8px rgba(15,23,42,.06);
       transition:all .25s ease;
-      min-width:90px; /* حد أدنى للعرض */
+      min-width:72px;
     }
     .summaryChip .chipVal { font-size:22px; font-weight:900; color:#1e40af; }
     .summaryChip .chipLabel { 
-      font-size:10px; /* خط أصغر قليلاً */
+      font-size:9.5px;
       font-weight:600; 
       color:#64748b; 
       text-transform:uppercase; 
-      letter-spacing:.5px; 
+      letter-spacing:.4px; 
       margin-top:2px;
-      white-space:nowrap; /* منع الكسر */
+      white-space:nowrap;
     }
 
     /* ═══════ SHIFT FILTER BUTTONS AS CHIPS ═══════ */
@@ -207,10 +207,10 @@
     
     /* للموبايل */
     @media (max-width:600px){
-      .summaryBar { gap:8px; }
-      .summaryChip { padding:8px 12px; min-width:70px; }
-      .summaryChip .chipVal { font-size:19px; }
-      .summaryChip .chipLabel { font-size:9px; }
+      .summaryBar { gap:6px; }
+      .summaryChip { padding:8px 8px; min-width:60px; }
+      .summaryChip .chipVal { font-size:18px; }
+      .summaryChip .chipLabel { font-size:8.5px; letter-spacing:.2px; }
     }
 
 
@@ -1289,7 +1289,7 @@ var LANG = localStorage.getItem('rosterLang') || 'en';
 var T = {
   en: {
     title:'📋 Duty Roster', langBtn:'ع',
-    employees:'Employees', departments:'Departments', total:'Total',
+    employees:'Emp.', departments:'Depts.', total:'Total',
     morning:'Morning', afternoon:'Afternoon', night:'Night',
     offday:'Off Day', annualLeave:'Annual Leave', sickLeave:'Sick Leave',
     training:'Training', standby:'Standby', other:'Other',
@@ -1297,7 +1297,7 @@ var T = {
     viewFull:'📋 View Full Duty Roster', subscribe:'📩 Subscribe',
     officers:'Officers', supervisors:'Supervisors', loadControl:'Load Control',
     exportChecker:'Export Checker', exportOps:'Export Operators', unassigned:'Unassigned',
-    morning2:'Morning', afternoon2:'Afternoon', night2:'Night', allShifts:'All Shifts', mySchedule:'My Schedule', games:'Games',
+    morning2:'Morning', afternoon2:'Afternoon', night2:'Night', allShifts:'All Shifts', mySchedule:'Schedule', games:'Games',
   },
   ar: {
     title:'📋 جدول المناوبات', langBtn:'EN',

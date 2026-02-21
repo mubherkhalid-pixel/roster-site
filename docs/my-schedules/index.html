@@ -85,6 +85,17 @@
       flex:0 0 auto;
       box-shadow:0 0 0 1px rgba(56,139,253,.3),0 4px 12px rgba(31,111,235,.4);
     }
+
+    .brand-mark{display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+    .brand-mini{
+      width:38px;height:38px;border-radius:10px;
+      background:linear-gradient(135deg,#1f6feb,#58a6ff);
+      display:grid;place-items:center;
+      font-size:13px;font-weight:900;color:#fff;
+      box-shadow:0 0 0 1px rgba(56,139,253,.25),0 4px 12px rgba(31,111,235,.25);
+      letter-spacing:-.6px;
+      font-family:'Sora',system-ui,sans-serif;
+    }
     .brand-info{min-width:0}
     .brand-name{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .brand-sub{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap}
@@ -284,6 +295,32 @@
       box-shadow:0 4px 16px rgba(31,111,235,.4);
     }
     .emp-name{font-size:16px;font-weight:700;color:var(--ink);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    .emp-name-row{display:flex;align-items:baseline;gap:10px;min-width:0}
+    .emp-name-row .emp-name{min-width:0}
+    .emp-idpill{
+      display:inline-flex;align-items:center;
+      padding:3px 8px;
+      border-radius:8px;
+      font-size:12px;
+      font-weight:700;
+      font-family:'DM Mono',monospace;
+      color:var(--ink);
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--border2);
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    body.light .emp-idpill{ background:rgba(0,0,0,.04); }
+    .emp-dept{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
     .emp-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
     .emp-tag{
       display:inline-flex;align-items:center;gap:4px;
@@ -930,7 +967,10 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <div class="brand-icon">📅</div>
+        <div class="brand-mark">
+          <div class="brand-icon">📅</div>
+          <div class="brand-mini" id="brandMini" style="display:none"></div>
+        </div>
         <div class="brand-info">
           <div class="brand-name" id="ttl">My Schedule</div>
           <div class="brand-sub" id="sub">Enter your Employee ID</div>
@@ -1054,7 +1094,7 @@
         heroTitle:'Your roster in one view',
         heroDesc:'Enter your Employee ID to view the month, export as PDF, Image, or add to your calendar.',
         tipsTitle:'Help & Tips',tipsSub:'Quick help for using the roster.',
-        langBtn:'العربية',back:'← Back',ph:'e.g. 12345',sbtn:'📅 View',tipsBtn:'❔ Tips',
+        langBtn:'ع',back:'← Back',ph:'e.g. 12345',sbtn:'📅 View',tipsBtn:'❔ Tips',
         loading:'Loading…',notFound:'Employee not found',
         notFoundSub:'ID not in the system. Please check and try again.',
         e1:'Search your schedule',e2:'Enter your Employee ID above to view your monthly roster.',
@@ -1071,7 +1111,7 @@
         heroTitle:'جدولك في عرض واحد',
         heroDesc:'أدخل رقمك الوظيفي لعرض الشهر، ثم حمّل PDF/صورة أو أضفه للتقويم.',
         tipsTitle:'مساعدة ونصائح',tipsSub:'مساعدة سريعة لاستخدام الجدول.',
-        langBtn:'English',back:'رجوع →',ph:'مثال: 12345',sbtn:'📅 عرض',tipsBtn:'❔ نصائح',
+        langBtn:'EN',back:'رجوع →',ph:'مثال: 12345',sbtn:'📅 عرض',tipsBtn:'❔ نصائح',
         loading:'جاري التحميل…',notFound:'لم يُعثر على موظف',
         notFoundSub:'الرقم غير موجود في النظام. تحقق وأعد المحاولة.',
         e1:'ابحث عن جدولك',e2:'أدخل رقمك الوظيفي أعلاه لعرض مناوباتك الشهرية.',
@@ -1130,6 +1170,8 @@
     function goBack(){
       const wrap=document.getElementById('searchAvatarWrap');
       if(wrap) wrap.style.display='none';
+      const bm=document.getElementById('brandMini');
+      if(bm) bm.style.display='none';
       const base=location.pathname.includes('/roster-site/')?'/roster-site/':'/';
       if(document.referrer&&document.referrer.includes(location.host)) history.back();
       else location.href=base;
@@ -1165,7 +1207,10 @@
         renderSchedule();
       }catch(err){
         const wrap=document.getElementById('searchAvatarWrap');
-        if(wrap) wrap.style.display='none';        document.getElementById('area').innerHTML=`
+        if(wrap) wrap.style.display='none';
+        const bm=document.getElementById('brandMini');
+        if(bm) bm.style.display='none';
+        document.getElementById('area').innerHTML=`
           <div class="state-view">
             <span class="state-emoji">❌</span>
             <div class="state-title">${t('notFound')}</div>
@@ -1335,14 +1380,14 @@
 <!-- Employee Banner -->
         <div class="emp-banner">
           <div class="emp-info" style="min-width:0;flex:1">
-            <div class="emp-name">${esc(data.name)}</div>
-            <div class="emp-tags">
-              <span class="emp-tag">🆔 ${esc(data.id)}</span>
-              <span class="emp-tag">📋 ${esc(data.department)}</span>
+            <div class="emp-name-row">
+              <div class="emp-name">${esc(data.name)}</div>
+              <span class="emp-idpill">ID9&nbsp;${esc(data.id)}</span>
             </div>
+            <div class="emp-dept">${esc(data.department)}</div>
           </div>
 
-          <!-- Month Picker (same row) -->
+          <!-- Month Picker -->
           <div class="month-wrap" style="position:relative;flex:0 0 auto">
             <button class="month-picker-btn" id="mpBtn" onclick="toggleMonthPicker()">
               ${esc(mLabel)} <span class="mpb-arrow">▼</span>

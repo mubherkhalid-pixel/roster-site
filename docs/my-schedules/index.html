@@ -122,6 +122,9 @@
     }
     .tips-pill:hover{background:rgba(255,255,255,.1);color:var(--ink)}
     .search-form{display:flex;gap:8px;align-items:center}
+    .search-avatar-wrap{
+      display:flex;align-items:center;gap:4px;flex:0 0 auto;
+    }
     .search-avatar{
       width:36px;height:36px;
       border-radius:10px;
@@ -134,6 +137,19 @@
       font-family:'Sora',system-ui,sans-serif;
       animation:avatarPop .2s cubic-bezier(.22,1,.36,1);
     }
+    .search-change-btn{
+      width:28px;height:28px;
+      background:transparent;
+      border:1px solid var(--border2);
+      color:var(--muted);
+      border-radius:7px;
+      font-size:13px;
+      display:grid;place-items:center;
+      flex:0 0 auto;
+      transition:all .15s;
+      cursor:pointer;
+    }
+    .search-change-btn:hover{background:rgba(255,255,255,.08);color:var(--ink)}
     @keyframes avatarPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
     .search-input{
       width:130px;flex:0 0 130px;
@@ -694,7 +710,10 @@
   <section class="search-section">
     <form id="searchForm">
       <div class="search-form">
-        <div class="search-avatar" id="searchAvatar" style="display:none"></div>
+        <div class="search-avatar-wrap" id="searchAvatarWrap" style="display:none">
+          <div class="search-avatar" id="searchAvatar"></div>
+          <button class="search-change-btn" type="button" id="searchChangeBtn" style="display:none"></button>
+        </div>
         <input class="search-input" id="empId" inputmode="numeric" autocomplete="off"
                placeholder="e.g. 12345" pattern="[0-9]+" required/>
         <button class="search-btn" type="submit" id="sbtn">📅 View</button>
@@ -759,6 +778,16 @@
   <script>
     let data=null, month=null, months=[], lang='ar', theme='dark';
 
+    // ── Restore saved preferences ──
+    (function(){
+      const sl=localStorage.getItem('prefLang');
+      const st=localStorage.getItem('prefTheme');
+      if(sl==='en'||sl==='ar') lang=sl;
+      if(st==='light'||st==='dark') theme=st;
+      if(theme==='light') document.body.classList.add('light');
+      if(lang==='en'){ document.documentElement.lang='en'; document.documentElement.dir='ltr'; }
+    })();
+
     const COLORS={
       Morning:       {icon:'☀️', dot:'#d29922'},
       Afternoon:     {icon:'🌤️', dot:'#db6d28'},
@@ -821,6 +850,9 @@
     function t(k){ return T[lang][k]; }
     function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+    // Set initial button states from restored prefs
+    document.getElementById('themeBtn').textContent=(theme==='dark'?'🌙':'☀️');
+
     function applyLangUI(){
       document.documentElement.lang=lang;
       document.documentElement.dir=lang==='ar'?'rtl':'ltr';
@@ -849,12 +881,17 @@
       theme=(theme==='dark'?'light':'dark');
       document.body.classList.toggle('light', theme==='light');
       document.getElementById('themeBtn').textContent=(theme==='dark'?'🌙':'☀️');
+      localStorage.setItem('prefTheme', theme);
     }
-    function toggleLang(){ lang=(lang==='en'?'ar':'en'); applyLangUI(); }
+    function toggleLang(){
+      lang=(lang==='en'?'ar':'en');
+      localStorage.setItem('prefLang', lang);
+      applyLangUI();
+    }
 
     function goBack(){
-      const avatarEl=document.getElementById('searchAvatar');
-      if(avatarEl){avatarEl.style.display='none';avatarEl.textContent='';}
+      const wrap=document.getElementById('searchAvatarWrap');
+      if(wrap) wrap.style.display='none';
       const base=location.pathname.includes('/roster-site/')?'/roster-site/':'/';
       if(document.referrer&&document.referrer.includes(location.host)) history.back();
       else location.href=base;
@@ -890,9 +927,8 @@
         month=months.includes(cur)?cur:months[months.length-1];
         renderSchedule();
       }catch(err){
-        const avatarEl=document.getElementById('searchAvatar');
-        if(avatarEl){avatarEl.style.display='none';avatarEl.textContent='';}
-        document.getElementById('area').innerHTML=`
+        const wrap=document.getElementById('searchAvatarWrap');
+        if(wrap) wrap.style.display='none';        document.getElementById('area').innerHTML=`
           <div class="state-view">
             <span class="state-emoji">❌</span>
             <div class="state-title">${t('notFound')}</div>
@@ -1028,9 +1064,28 @@
           <div class="stat-lbl">${lang==='ar'?m.label_ar:m.label_en}</div>
         </div>`).join('');
 
-      // Show avatar next to search input
+      // Show avatar + change button next to search input
+      const avatarWrap=document.getElementById('searchAvatarWrap');
       const avatarEl=document.getElementById('searchAvatar');
-      if(avatarEl){avatarEl.textContent=initials;avatarEl.style.display='grid';}
+      const changeSearchBtn=document.getElementById('searchChangeBtn');
+      if(avatarEl){ avatarEl.textContent=initials; }
+      if(avatarWrap){ avatarWrap.style.display='flex'; }
+      if(changeSearchBtn){
+        const savedId=localStorage.getItem('savedEmpId');
+        if(savedId===data.id){
+          changeSearchBtn.textContent='✏️';
+          changeSearchBtn.title=t('changeId');
+          changeSearchBtn.style.display='grid';
+          changeSearchBtn.onclick=()=>changeMyId();
+        } else if(!savedId){
+          changeSearchBtn.style.display='none';
+        } else {
+          changeSearchBtn.textContent='📌';
+          changeSearchBtn.title=t('setAsMyId');
+          changeSearchBtn.style.display='grid';
+          changeSearchBtn.onclick=()=>setAsMyId();
+        }
+      }
 
       document.getElementById('area').innerHTML=`
         <!-- Employee Banner — no avatar here -->

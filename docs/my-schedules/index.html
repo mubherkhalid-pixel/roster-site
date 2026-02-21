@@ -1504,7 +1504,7 @@
     }
     function confirmSave(id){ localStorage.setItem('savedEmpId',id); dismissToast(); if(data) renderSchedule(); }
     function dismissToast(){ const m=document.getElementById('toastMount'); m.innerHTML=''; m.style.display='none'; }
-    function changeMyId(){ openIdActionModal('change'); } }
+    function changeMyId(){ openIdActionModal('change'); }
     
     // ── Styled ID actions (instead of browser confirm) ──
     let _pendingIdAction=null;
@@ -1545,7 +1545,7 @@
       }
     }
 
-    function setAsMyId(){ openIdActionModal('pin'); } }
+    function setAsMyId(){ openIdActionModal('pin'); }
 
     function calcStats(s){
       const r={work:0,off:0,morning:0,afternoon:0,night:0,standby:0,leaves:0};

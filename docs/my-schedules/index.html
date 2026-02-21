@@ -1385,7 +1385,7 @@
     }
 
     /* IMAGE / PDF EXPORT (captures UI exactly) */
-async function captureExportCanvas(){
+    async function captureExportCanvas(){
       const source = document.getElementById('exportArea') || document.querySelector('.main');
       if(!source) throw new Error('export area not found');
 
@@ -1419,6 +1419,7 @@ async function captureExportCanvas(){
       document.body.removeChild(wrap);
       return canvas;
     }
+
     async function dlIMG(){
       try{
         const canvas = await captureExportCanvas();
@@ -1430,14 +1431,6 @@ async function captureExportCanvas(){
         alert(lang==='ar'?'تعذر حفظ الصورة.':'Image export failed.');
         console.error(e);
       }
-    });
-
-      const link = document.createElement('a');
-      link.download = `schedule-${data.id}-${month}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-
-      // document.querySelector('.actions-card')?.classList.remove('no-export');
     }
 
     /* ICS */
@@ -1476,18 +1469,15 @@ async function captureExportCanvas(){
         const imgW = pageW - margin*2;
         const imgH = (canvas.height * imgW) / canvas.width;
 
-        let y = margin;
-        let remaining = imgH;
+        // Draw the same image; add pages by shifting it up
+        pdf.addImage(imgData, 'PNG', margin, margin, imgW, imgH);
 
-        // Add first page
-        pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
-
-        // If content is taller than one page, add extra pages by shifting image up
-        while(remaining > (pageH - margin*2)){
-          remaining -= (pageH - margin*2);
+        let remaining = imgH - (pageH - margin*2);
+        while(remaining > 0){
           pdf.addPage();
           const shiftY = margin - (imgH - remaining);
           pdf.addImage(imgData, 'PNG', margin, shiftY, imgW, imgH);
+          remaining -= (pageH - margin*2);
         }
 
         pdf.save(`schedule-${data.id}-${month}.pdf`);
@@ -1495,36 +1485,6 @@ async function captureExportCanvas(){
         alert(lang==='ar'?'تعذر حفظ PDF.':'PDF export failed.');
         console.error(e);
       }
-    });
-
-      const imgData = canvas.toDataURL('image/png');
-
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-
-      const imgW = pageW - margin * 2;
-      const imgH = (canvas.height * imgW) / canvas.width;
-
-      let heightLeft = imgH;
-      let position = margin;
-
-      // First page
-      pdf.addImage(imgData, 'PNG', margin, position, imgW, imgH);
-      heightLeft -= (pageH - margin * 2);
-
-      // Additional pages (shift image up)
-      while (heightLeft > 0) {
-        pdf.addPage();
-        position = margin - (imgH - heightLeft);
-        pdf.addImage(imgData, 'PNG', margin, position, imgW, imgH);
-        heightLeft -= (pageH - margin * 2);
-      }
-
-      pdf.save(`schedule-${data.id}-${month}.pdf`);
     }
 
     /* SHARE */

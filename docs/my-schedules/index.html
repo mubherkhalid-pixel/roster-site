@@ -279,6 +279,7 @@
 
     /* ── EMPLOYEE BANNER ── */
     .emp-banner{
+      align-items:flex-start;
       background:var(--surface);
       border:1px solid var(--border);
       border-radius:var(--r-lg);
@@ -981,6 +982,53 @@
     /* Fine alignment: drop month control slightly */
     .month-wrap{ margin-top:4px; }
 
+
+    /* Position month under ID line */
+    .month-wrap{
+      margin-top:8px;
+    }
+
+
+    /* Smaller glass month button */
+    .month-picker-btn{
+      font-size:12px !important;
+      padding:0 10px !important;
+      height:32px !important;
+      border-radius:8px !important;
+      background:rgba(255,255,255,.08) !important;
+      border:1px solid rgba(255,255,255,.18) !important;
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      box-shadow:0 10px 25px rgba(0,0,0,.25);
+    }
+    body.light .month-picker-btn{
+      background:rgba(255,255,255,.75) !important;
+      border:1px solid rgba(0,0,0,.12) !important;
+      box-shadow:0 10px 20px rgba(0,0,0,.08);
+    }
+
+
+    /* ── Banner right column: ID above Month ── */
+    .emp-right{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    body.ar .emp-right{align-items:flex-start;}
+
+    /* Fine spacing */
+    .month-wrap{ margin-top:2px !important; }
+
+    /* Name typography polish */
+    .emp-name{
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:-.3px;
+    }
+    body.light .emp-name{letter-spacing:-.2px;}
+
 </style>
 </head>
 <body>
@@ -1404,17 +1452,20 @@
           <div class="emp-info" style="min-width:0;flex:1">
             <div class="emp-name-row">
               <div class="emp-name">${esc(data.name)}</div>
-              <span class="emp-idpill">ID&nbsp;${esc(data.id)}</span>
             </div>
             <div class="emp-dept">${esc(data.department)}</div>
           </div>
 
-          <!-- Month Picker -->
-          <div class="month-wrap" style="position:relative;flex:0 0 auto">
-            <button class="month-picker-btn" id="mpBtn" onclick="toggleMonthPicker()">
-              ${esc(mLabel)} <span class="mpb-arrow">▼</span>
-            </button>
-            <div class="month-popup" id="monthPopup">${popupHTML}</div>
+          <div class="emp-right">
+            <span class="emp-idpill">ID&nbsp;${esc(data.id)}</span>
+
+            <!-- Month Picker -->
+            <div class="month-wrap" style="position:relative;flex:0 0 auto">
+              <button class="month-picker-btn" id="mpBtn" onclick="toggleMonthPicker()">
+                ${esc(mLabel)} <span class="mpb-arrow">▼</span>
+              </button>
+              <div class="month-popup" id="monthPopup">${popupHTML}</div>
+            </div>
           </div>
         </div>
 

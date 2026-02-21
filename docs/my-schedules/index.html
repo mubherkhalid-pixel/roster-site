@@ -1029,6 +1029,67 @@
     }
     body.light .emp-name{letter-spacing:-.2px;}
 
+
+    /* ── ID prefix inside input ── */
+    .id-input{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:0;
+      flex:0 0 auto;
+    }
+    .id-prefix{
+      height:36px;
+      padding:0 10px;
+      display:flex;
+      align-items:center;
+      border-radius:10px 0 0 10px;
+      font-family:'DM Mono',monospace;
+      font-weight:800;
+      font-size:12px;
+      color:var(--muted);
+      background:var(--glass-bg);
+      border:1px solid var(--glass-border);
+      border-right:none;
+      backdrop-filter: blur(14px) saturate(170%);
+      -webkit-backdrop-filter: blur(14px) saturate(170%);
+      box-shadow: var(--glass-shadow);
+    }
+    body.ar .id-prefix{
+      border-radius:0 10px 10px 0;
+      border-right:1px solid var(--glass-border);
+      border-left:none;
+    }
+    .id-input .search-input{
+      border-radius:0 10px 10px 0 !important;
+      width:130px;
+      flex:0 0 130px;
+      padding-left:12px;
+      height:36px;
+    }
+    body.ar .id-input .search-input{
+      border-radius:10px 0 0 10px !important;
+    }
+
+
+    /* Month button sizing (compact, not same as name) */
+    .month-picker-btn{
+      font-size:12px !important;
+      height:32px !important;
+      padding:0 10px !important;
+      border-radius:10px !important;
+    }
+
+
+    /* ── Topbar squares: identical size & perfectly stacked ── */
+    .brand-mark{gap:6px !important}
+    .brand-icon, .brand-mini{
+      width:38px !important;
+      height:38px !important;
+      border-radius:10px !important;
+      box-shadow:0 0 0 1px rgba(56,139,253,.28),0 4px 12px rgba(31,111,235,.28) !important;
+    }
+
 </style>
 </head>
 <body>
@@ -1062,8 +1123,11 @@
           <div class="search-avatar" id="searchAvatar"></div>
           <button class="search-change-btn" type="button" id="searchChangeBtn" style="display:none"></button>
         </div>
-        <input class="search-input" id="empId" inputmode="numeric" autocomplete="off"
-               placeholder="e.g. 12345" pattern="[0-9]+" required/>
+        <div class="id-input">
+          <span class="id-prefix">ID</span>
+          <input class="search-input" id="empId" inputmode="numeric" autocomplete="off"
+                 placeholder="e.g. 12345" pattern="[0-9]+" required/>
+        </div>
         <button class="search-btn" type="submit" id="sbtn">📅 View</button>
         <button class="tips-pill" type="button" onclick="openTips()" id="tipsBtn" aria-label="Tips">❔</button>
       </div>
@@ -1456,9 +1520,7 @@
             <div class="emp-dept">${esc(data.department)}</div>
           </div>
 
-          <div class="emp-right">
-            <span class="emp-idpill">ID&nbsp;${esc(data.id)}</span>
-
+                    <div class="emp-right">
             <!-- Month Picker -->
             <div class="month-wrap" style="position:relative;flex:0 0 auto">
               <button class="month-picker-btn" id="mpBtn" onclick="toggleMonthPicker()">

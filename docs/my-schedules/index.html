@@ -753,6 +753,104 @@
       inset-inline-end:auto;
     }
 
+
+    /* ── Glass buttons + subtle reflection (matches language button vibe) ── */
+    :root{
+      --glass-bg: rgba(255,255,255,.06);
+      --glass-bg-hover: rgba(255,255,255,.10);
+      --glass-border: rgba(255,255,255,.16);
+      --glass-border-hover: rgba(255,255,255,.24);
+      --glass-shadow: 0 10px 28px rgba(0,0,0,.22);
+    }
+    body.light{
+      --glass-bg: rgba(255,255,255,.70);
+      --glass-bg-hover: rgba(255,255,255,.86);
+      --glass-border: rgba(0,0,0,.10);
+      --glass-border-hover: rgba(0,0,0,.16);
+      --glass-shadow: 0 10px 24px rgba(0,0,0,.10);
+    }
+
+    /* Base glass style */
+    .ghost-btn,
+    .tips-pill,
+    .month-picker-btn,
+    .search-btn,
+    .search-change-btn,
+    .change-btn,
+    .action-btn{
+      position:relative;
+      background:var(--glass-bg)!important;
+      border:1px solid var(--glass-border)!important;
+      box-shadow:var(--glass-shadow);
+      backdrop-filter: blur(14px) saturate(170%);
+      -webkit-backdrop-filter: blur(14px) saturate(170%);
+      color: var(--ink);
+    }
+
+    /* Subtle reflection under buttons */
+    .ghost-btn::after,
+    .tips-pill::after,
+    .month-picker-btn::after,
+    .search-btn::after,
+    .search-change-btn::after,
+    .change-btn::after,
+    .action-btn::after{
+      content:"";
+      position:absolute;
+      left:10%;
+      right:10%;
+      bottom:-9px;
+      height:10px;
+      background:linear-gradient(to bottom, rgba(255,255,255,.22), rgba(255,255,255,0));
+      filter: blur(6px);
+      opacity:.35;
+      pointer-events:none;
+      border-radius:999px;
+    }
+    body.light .ghost-btn::after,
+    body.light .tips-pill::after,
+    body.light .month-picker-btn::after,
+    body.light .search-btn::after,
+    body.light .search-change-btn::after,
+    body.light .change-btn::after,
+    body.light .action-btn::after{
+      background:linear-gradient(to bottom, rgba(0,0,0,.14), rgba(0,0,0,0));
+      opacity:.20;
+    }
+
+    /* Hover/active */
+    .ghost-btn:hover,
+    .tips-pill:hover,
+    .month-picker-btn:hover,
+    .search-btn:hover,
+    .search-change-btn:hover,
+    .change-btn:hover,
+    .action-btn:hover{
+      background:var(--glass-bg-hover)!important;
+      border-color:var(--glass-border-hover)!important;
+      transform: translateY(-1px);
+    }
+    .ghost-btn:active,
+    .tips-pill:active,
+    .month-picker-btn:active,
+    .search-btn:active,
+    .search-change-btn:active,
+    .change-btn:active,
+    .action-btn:active{
+      transform: translateY(0);
+      filter: brightness(1.02);
+    }
+
+    /* Keep primary actions readable while staying glassy */
+    .action-btn.primary{
+      color: var(--ink) !important;
+      font-weight: 700;
+    }
+
+    /* Remove old gradient shadows for these (override) */
+    .search-btn{ box-shadow: var(--glass-shadow) !important; }
+    .search-change-btn{ box-shadow: var(--glass-shadow) !important; }
+
 </style>
 </head>
 <body>

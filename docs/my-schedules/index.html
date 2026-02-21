@@ -739,6 +739,20 @@
       gap:4px;
     }
 
+
+    /* ── Month popup placement fixes (mobile + RTL) ── */
+    .month-wrap{position:relative}
+    .month-popup{
+      inset-inline-end:0;
+      max-width:min(260px, calc(100vw - 40px));
+      max-height:240px;
+      overflow:auto;
+    }
+    body.ar .month-popup{
+      inset-inline-start:0;
+      inset-inline-end:auto;
+    }
+
 </style>
 </head>
 <body>
@@ -1148,38 +1162,22 @@
 
       document.getElementById('area').innerHTML=`
         
-        <!-- Employee Banner -->
+                <!-- Employee Banner -->
         <div class="emp-banner">
-          <div class="emp-left">
-            <div class="emp-avatar">${initials}</div>
-            <div class="emp-info" style="min-width:0">
-              <div class="emp-name">${esc(data.name)}</div>
-              <div class="emp-tags">
-                <span class="emp-tag">🆔 ${esc(data.id)}</span>
-                <span class="emp-tag">📋 ${esc(data.department)}</span>
-              </div>
+          <div class="emp-info" style="min-width:0;flex:1">
+            <div class="emp-name">${esc(data.name)}</div>
+            <div class="emp-tags">
+              <span class="emp-tag">🆔 ${esc(data.id)}</span>
+              <span class="emp-tag">📋 ${esc(data.department)}</span>
             </div>
           </div>
 
-          <div style="position:relative">
+          <!-- Month Picker (same row) -->
+          <div class="month-wrap" style="position:relative;flex:0 0 auto">
             <button class="month-picker-btn" id="mpBtn" onclick="toggleMonthPicker()">
               ${esc(mLabel)} <span class="mpb-arrow">▼</span>
             </button>
-            <div class="month-popup" id="monthPopup">
-              ${popupHTML}
-            </div>
-          </div>
-        </div>
-
-          <div style="display:flex;align-items:center;gap:5px;flex:0 0 auto">
-            
-            <div style="position:relative">
-              <button class="month-picker-btn" id="mpBtn" onclick="toggleMonthPicker()">
-                ${esc(mLabel)} <span class="mpb-arrow">▼</span>
-              </button>
-              <div class="month-popup" id="monthPopup">${popupHTML}</div>
-            </div>
-            
+            <div class="month-popup" id="monthPopup">${popupHTML}</div>
           </div>
         </div>
 

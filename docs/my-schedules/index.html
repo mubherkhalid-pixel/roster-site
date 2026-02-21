@@ -838,21 +838,26 @@
     /* ── TOAST ── */
     .toast-container{
       position:fixed;
-      bottom:calc(16px + var(--safe-bot));
-      left:16px;right:16px;
+      inset:0;
       z-index:9999;
-      display:flex;justify-content:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       pointer-events:none;
+      padding:20px;
+      background:rgba(0,0,0,.45);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
     }
     .toast-card{
       pointer-events:auto;
-      width:min(560px,100%);
-      background:var(--surface2);
-      border:1px solid var(--border2);
-      border-radius:16px;
-      padding:14px;
-      box-shadow:0 20px 60px rgba(0,0,0,.5);
-      animation:slideUp .2s cubic-bezier(.22,1,.36,1);
+      width:min(400px,100%);
+      background:var(--surface);
+      border:1px solid rgba(56,139,253,.25);
+      border-radius:20px;
+      padding:20px;
+      box-shadow:0 24px 64px rgba(0,0,0,.7), 0 0 0 1px rgba(56,139,253,.1);
+      animation:slideUp .22s cubic-bezier(.22,1,.36,1);
     }
     .toast-row{display:flex;align-items:flex-start;gap:10px}
     .toast-ico{
@@ -1416,24 +1421,23 @@
 
 
   <!-- ID ACTION MODAL -->
-  <div class="modal" id="idActionModal" role="dialog" aria-modal="true">
+  <div class="modal" id="idActionModal" role="dialog" aria-modal="true" style="align-items:center;padding:20px">
     <div class="modal-backdrop" onclick="closeIdActionModal()"></div>
-    <div class="modal-sheet">
-      <div class="modal-handle"></div>
-      <div class="modal-head">
+    <div class="modal-sheet" style="border-radius:20px;max-width:400px;width:100%">
+      <div class="modal-head" style="border-bottom:none;padding-bottom:8px">
         <div>
           <div class="modal-title" id="idActionTitle">Action</div>
           <div class="modal-sub" id="idActionSub">Confirm</div>
         </div>
         <button class="modal-close" onclick="closeIdActionModal()">✕</button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="padding-top:4px">
         <div class="modal-intro">
           <div class="modal-intro-title" id="idActionIntroTitle">Confirm</div>
           <div class="modal-intro-desc" id="idActionIntroDesc">—</div>
         </div>
       </div>
-      <div class="modal-foot" style="gap:10px;justify-content:space-between">
+      <div class="modal-foot" style="gap:10px;justify-content:space-between;padding:0 22px 22px">
         <button class="tbtn" style="flex:1;height:42px" onclick="closeIdActionModal()" id="idActionCancel">Cancel</button>
         <button class="tbtn primary" style="flex:1;height:42px" onclick="confirmIdAction()" id="idActionOk">OK</button>
       </div>
@@ -1555,11 +1559,11 @@
         days:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],
         months:['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
         legend:{Morning:'صباحي',Afternoon:'مسائي',Night:'ليلي','Off Day':'إجازة','Annual Leave':'سنوية','Sick Leave':'مرضية',Training:'تدريب',Standby:'احتياطي',Other:'أخرى'},
-        saveTitle:'هل تريد حفظ الرقم؟',saveSub:'لفتح الجدول بسرعة في المرات القادمة.',saveYes:'✅ احفظ',saveNo:'ليس الآن',
+        saveTitle:'هل تريد حفظ الرقم الوظيفي؟',saveSub:'لفتح الجدول بسرعة في المرات القادمة.',saveYes:'✅ احفظ',saveNo:'ليس الآن',
         idActTitle:'الرقم الوظيفي',
-        idActChange:'تغيير الرقم المحفوظ؟',
-        idActChangeSub:'سيتم حذف الرقم المحفوظ من هذا الجهاز.',
-        idActPin:'تعيين كرقمي؟',
+        idActChange:'هل تريد حذف الرقم الوظيفي؟',
+        idActChangeSub:'سيتم حذف الرقم المحفوظ من هذا الجهاز نهائياً.',
+        idActPin:'هل تريد حفظ الرقم الوظيفي؟',
         idActPinSub:'سيتم حفظ هذا الرقم على هذا الجهاز لفتح الجدول بسرعة.',
         cancel:'إلغاء',
         ok:'موافق'
@@ -1663,15 +1667,14 @@
 
     function showSaveToast(id,name){
       const mount=document.getElementById('toastMount');
-      const first=(name?name.split(' ')[0]:id);
       mount.style.display='flex';
       mount.innerHTML=`
         <div class="toast-card">
           <div class="toast-row">
             <div class="toast-ico">💾</div>
             <div class="toast-text">
-              <p><strong>${t('saveTitle')}</strong><br>
-              ${lang==='ar'?'هل أنت ':'Are you '}<strong>${esc(first)}</strong>? ${t('saveSub')}</p>
+              <p><strong>${lang==='ar'?'هل تريد حفظ الرقم الوظيفي؟':'Save Employee ID?'}</strong><br>
+              ${t('saveSub')}</p>
             </div>
           </div>
           <div class="toast-btns">

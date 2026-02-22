@@ -544,13 +544,8 @@ window.openDatePicker = function() {
   // Group shift cards by shift type
   var shiftGroups = {};
   allShiftCards.forEach(function(card){
-    var summary = card.querySelector('.shiftSummary');
-    if(!summary) return;
-    
-    var label = summary.querySelector('.shiftLabel');
-    if(!label) return;
-    
-    var shiftType = label.textContent.trim();
+    var shiftType = card.dataset.shift;
+    if(!shiftType) return;
     if(!shiftGroups[shiftType]) shiftGroups[shiftType] = [];
     shiftGroups[shiftType].push(card);
   });

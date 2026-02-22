@@ -476,11 +476,11 @@ async function loadSchedule(idParam) {{
   var days = data.days || [];
   var rows = days.map(d => '<tr><td>'+d.day+'</td><td>'+d.weekday+'</td><td>'+badge(d.code)+'</td></tr>').join('');
   var html = `
-    <div style="font-weight:900;font-size:18px">${data.name}</div>
-    <div style="color:#64748b;font-weight:700;margin-top:2px">${data.department} · ${data.monthLabel}</div>
+    <div style="font-weight:900;font-size:18px">${{data.name}}</div>
+    <div style="color:#64748b;font-weight:700;margin-top:2px">${{data.department}} · ${{data.monthLabel}}</div>
     <table style="margin-top:12px">
       <thead><tr><th>Day</th><th>Weekday</th><th>Shift</th></tr></thead>
-      <tbody>${rows}</tbody>
+      <tbody>${{rows}}</tbody>
     </table>
   `;
 
